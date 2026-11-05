@@ -925,13 +925,13 @@ extra=function(dt,t){_x(dt,t);
 
 </script>
 <script>
-/* ===== WARD13 v9 PATCH ===== */
+/* ===== WARD13 v10 PATCH ===== */
 (()=>{
 /* 1. no visible ghost */
 ghostFig=function(){};try{gh.g.visible=false}catch(e){}
 /* 2. fewer dead bodies (keep every other one) */
 {const cs=[];scene.traverse(o=>{if(o.isGroup&&o.children.length==1&&o.children[0].isGroup&&Math.abs(Math.abs(o.children[0].rotation.x)-1.5708)<.02&&Math.abs(o.children[0].position.y-.17)<.01)cs.push(o)});
-cs.forEach((o,i)=>{if(i%2){o.visible=false;for(let k=cols.length-1;k>=0;k--){const c=cols[k];if(Math.abs((c[0]+c[1])/2-o.position.x)<.01&&Math.abs((c[2]+c[3])/2-o.position.z)<.01)cols.splice(k,1)}}})}
+cs.forEach((o,i)=>{if(i%3){o.visible=false;for(let k=cols.length-1;k>=0;k--){const c=cols[k];if(Math.abs((c[0]+c[1])/2-o.position.x)<.01&&Math.abs((c[2]+c[3])/2-o.position.z)<.01)cols.splice(k,1)}}})}
 /* 3. sound: quiet low ambience, soft reverb, realistic sobbing */
 ambInit=function(){A.g=AC.createGain();A.g.connect(mst);const s=AC.createBufferSource(),b=AC.createBiquadFilter(),g=AC.createGain();s.buffer=NB;s.loop=true;b.type='lowpass';b.frequency.value=380;g.gain.value=.016;s.connect(b);b.connect(g);g.connect(A.g);s.start();A.wind=b;const h=AC.createOscillator(),hg=AC.createGain();h.type='sine';h.frequency.value=55;hg.gain.value=.03;h.connect(hg);hg.connect(A.g);h.start()};
 const _ai=audioInit;audioInit=function(){if(AC)return;_ai();try{mst.disconnect();const cv=AC.createConvolver(),n=AC.sampleRate*1.8|0,ib=AC.createBuffer(2,n,AC.sampleRate);for(let c=0;c<2;c++){const d=ib.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3)}cv.buffer=ib;const w=AC.createGain();w.gain.value=.25;const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3500;mst.connect(AC.destination);mst.connect(lp);lp.connect(cv);cv.connect(w);w.connect(AC.destination);mst.gain.value=.8}catch(e){}};
@@ -965,7 +965,7 @@ function hang(x,z,g){const c=makeChar(0xb0b8c0,0x20242a,0x120c08,1),w=new T.Grou
  const fan=new T.Group();fan.position.set(x,3.1,z);box(.12,.1,.12,mMetal,0,0,0,fan);const bl=new T.Group();for(let i=0;i<3;i++){const b=box(.9,.02,.16,M(0x2a2622,.8),0,0,0,bl);b.position.set(Math.cos(i*2.09)*.5,0,Math.sin(i*2.09)*.5);b.rotation.y=-i*2.09}fan.add(bl);
  w.userData.ph=rnd(0,6);SW.push(w);FN.push(bl);col(x,z,.5,.5);if(g){g.add(w);g.add(fan)}else{scene.add(w);scene.add(fan)}}
 /* main building */
-hang(-1.1,18.5);hang(5,17.5);hang(-5.5,36.5);hang(-14,33.5);
+hang(5,17.5);hang(-14,33.5);
 wr('SHE IS STILL HERE',-1.84,1.7,21.4,Math.PI/2);wr('DO NOT LISTEN',1.84,1.8,20.5,-Math.PI/2);wr('NOBODY LEFT',-1.84,1.6,27.6,Math.PI/2);wr('13',-18.84,1.7,28,Math.PI/2,null,1.2);wr('HELP US',8.84,1.7,40,-Math.PI/2);
 [[-1.2,10],[1,15],[-.8,24],[-6,.5],[4,-2],[-4,33],[5,38],[-15,20],[-12,34],[6,14]].forEach(([x,z],i)=>{i%2?chair(x,z):shards(x,z)});
 [[.6,11],[-14,26],[3,36]].forEach(([x,z])=>papers(x,z));
@@ -975,6 +975,23 @@ WG.forEach((w,i)=>{const g=WGR[i],L=w.n*7;
  for(let k=0;k<w.n;k++){if((k+i)%2==0)hang(w.ox+7*k+3.5,w.cz+(k%2?1:-1)*7,g);
   const s=k%2?1:-1;shards(w.ox+7*k+rnd(1.5,5.5),w.cz+s*rnd(4,9),g);chair(w.ox+7*k+rnd(1.5,5.5),w.cz+s*rnd(3,9),g);papers(w.ox+7*k+rnd(1.5,5.5),w.cz+s*rnd(3,8),g)}
  for(let j=0;j<4;j++){const x=w.ox+rnd(2,L-2),s=j%2?1:-1;wr(TX[(i*3+j)%TX.length],x,rnd(1.5,2),w.cz+s*1.83,s>0?Math.PI:0,g);shards(x,w.cz+rnd(-1.2,1.2),g)}});
+/* fallen bodies near beds (only some rooms) */
+{const fb=(x,z,ry,g)=>{const n0=scene.children.length;corpse(x,z,ry);if(g)scene.children.slice(n0).forEach(o=>g.add(o))};
+fb(-1.8,2.6,.4);fb(-15.5,13.6,0);
+WG.forEach((w,i)=>{for(let k=0;k<w.n;k++)if((k+i)%3==1){const s=k%2?1:-1;fb(w.ox+7*k+2.4,w.cz+s*4.8,rnd(0,.5),WGR[i])}})}
+/* sound pack: follows the master sound prompt */
+S.wheel=function(x,z){let t=0;for(let i=0;i<14;i++){nse(rnd(900,1400),8,t,.02,.18,.05,x+i*.05,z);nse(140,1,t,.02,.14,.08,x,z,'lowpass');t+=rnd(.18,.3)}nse(2800,3,t,.001,.05,.12,x,z)};
+S.trolley=function(x,z){for(let i=0;i<22;i++){const t=i*.36;nse(rnd(700,1200),6,t,.02,.2,.05,x,z);nse(220,2,t,.01,.1,.05,x,z,'lowpass');if(i%5==2)snd('sine',rnd(2500,3500),t,.001,.15,.03,x,z)}};
+S.phone=function(x,z){for(let r=0;r<4;r++)for(let i=0;i<16;i++)snd('square',i%2?1350:1800,r*2+i*.045,.002,.04,.05,x,z);nse(2000,.5,8.1,.1,1.6,.06,x,z);nse(900,1,8.2,.4,1.2,.03,x,z)};
+S.mbox=function(x,z){const n=[523,659,784,659,523,659,784,1047,988,880,784,698];let t=0;n.forEach((f,i)=>{if(i==7||i==10){t+=.9;return}const d=1+rnd(-.03,.03)-(i>8?.04:0);snd('triangle',f*d,t,.002,1.1,.07,x,z);snd('sine',f*d*3.99,t,.001,.3,.02,x,z);nse(3500,4,t,.001,.02,.02,x,z);t+=.55+(i>8?.12:0)})};
+S.mon=function(x,z){for(let i=0;i<10;i++)nse(rnd(1500,4000),.7,i*rnd(.5,1),.01,rnd(.1,.5),.08,x,z,'highpass');voice(rnd(500,620),rnd(380,450),.35,.15,x,z,7,[800,2500],rnd(1,3));nse(300,.5,0,.1,5,.03,x,z,'lowpass')};
+S.step=function(){const x=G.x+rnd(-.2,.2);nse(180,1,0,.004,.1,.28,x,G.z,'lowpass');nse(900,2,.015,.002,.05,.12,x,G.z);nse(2200,3,.04,.001,.03,.05,x,G.z)};
+S.scream=function(){nse(1600,.8,0,.12,.1,.35);voice(330,820,.9,.9,null,null,9,[800,1700],.2);voice(660,1500,.8,.5,null,null,11,[1200,2800],.25);nse(2500,1,.25,.05,.7,.3);snd('sine',45,.9,.005,.3,.8,null,null,30)};
+{const sl=S.slam;S.slam=function(x,z){sl(x,z);snd('square',2200,.4,.001,.015,.1,x,z)}}
+{const ai0=ambInit;ambInit=function(){ai0();const r=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();r.buffer=NB;r.loop=true;f.type='highpass';f.frequency.value=3500;g.gain.value=.006;r.connect(f);f.connect(g);g.connect(A.g);r.start();const h=AC.createOscillator(),hg=AC.createGain();h.type='sine';h.frequency.value=100;hg.gain.value=.01;h.connect(hg);hg.connect(A.g);h.start()}}
+{let ev=rnd(12,20),dr=3;const _am=amb;amb=function(dt){_am(dt);if(!AC||!started||G.dead||fin)return;ev-=dt;dr-=dt;
+if(ev<=0){ev=rnd(18,40);const a=rnd(0,6.28),d=rnd(8,15),x=P.pos.x+Math.sin(a)*d,z=P.pos.z+Math.cos(a)*d,r=Math.random();(r<.2?S.wheel:r<.4?S.trolley:r<.55?S.phone:r<.75?S.mbox:S.mon)(x,z)}
+if(dr<=0){dr=rnd(2.5,6);const x=P.pos.x+rnd(-6,6),z=P.pos.z+rnd(-6,6);snd('sine',rnd(1000,1500),0,.001,.07,.07,x,z,rnd(350,500));snd('sine',rnd(300,500),.07,.001,.2,.02,x,z)}}}
 /* exit signs */
 sign('EXIT AHEAD',1.84,2.35,28,-Math.PI/2,1.8,.4,'#7fe39a','rgba(5,25,10,.9)',32);sign('FINAL GATE AHEAD',-8.84,2.4,36,Math.PI/2,2.6,.4,'#7fe39a','rgba(5,25,10,.9)',30);sign('FINAL GATE AHEAD',8.84,2.4,32,-Math.PI/2,2.6,.4,'#7fe39a','rgba(5,25,10,.9)',30);
 const _x9=extra;extra=function(dt,t){_x9(dt,t);for(const w of SW){w.rotation.z=Math.sin(t*.8+w.userData.ph)*.04;w.rotation.x=Math.sin(t*.6+w.userData.ph)*.025}for(const b of FN)b.rotation.y+=dt*.25};
