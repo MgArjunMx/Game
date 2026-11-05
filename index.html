@@ -993,7 +993,7 @@ S.scream=function(){nse(1600,.8,0,.12,.1,.35);voice(330,820,.9,.9,null,null,9,[8
 if(ev<=0){ev=rnd(18,40);const a=rnd(0,6.28),d=rnd(8,15),x=P.pos.x+Math.sin(a)*d,z=P.pos.z+Math.cos(a)*d,r=Math.random();(r<.2?S.wheel:r<.4?S.trolley:r<.55?S.phone:r<.75?S.mbox:S.mon)(x,z)}
 if(dr<=0){dr=rnd(2.5,6);const x=P.pos.x+rnd(-6,6),z=P.pos.z+rnd(-6,6);snd('sine',rnd(1000,1500),0,.001,.07,.07,x,z,rnd(350,500));snd('sine',rnd(300,500),.07,.001,.2,.02,x,z)}}}
 /* ===== room detailing pack ===== */
-{const mm=(c,r,t)=>M(c,r||.8,t||0),wood=mm(0x4a3524),steel=mm(0x8a9094,.35,.8),dk=mm(0x1a1a1a,.6),wh=mm(0xc8ccc8,.4),red=mm(0x8a1a14,.4),
+{const mm=(c,r,t)=>M(c,r||.8,t||0),wood=mm(0x4a3524),steel=mm(0x8a9094,.35,.8),dk=mm(0x1a1a1a,.6),wh=mm(0xc8ccc8,.4),paper=mm(0xd8d4c4,1),red=mm(0x8a1a14,.4),
  glM=new T.MeshStandardMaterial({color:0x9fd0d8,transparent:true,opacity:.4,roughness:.05}),
  curt=new T.MeshStandardMaterial({color:0x8fa8a0,roughness:1,transparent:true,opacity:.75,side:T.DoubleSide}),
  stM=decalM(tex(256,256,c=>{for(let i=0;i<9;i++){const x=rnd(20,236),y=rnd(10,120),r=rnd(25,60),q=c.createRadialGradient(x,y,2,x,y,r);q.addColorStop(0,'rgba(40,30,15,.5)');q.addColorStop(1,'rgba(40,30,15,0)');c.fillStyle=q;c.fillRect(0,0,256,256)}c.strokeStyle='rgba(20,15,8,.5)';for(let i=0;i<14;i++){let x=rnd(10,246),y=rnd(0,60);c.lineWidth=rnd(1,4);c.beginPath();c.moveTo(x,y);for(let k=0;k<6;k++){x+=rnd(-4,4);y+=rnd(15,35);c.lineTo(x,y)}c.stroke()}})),
@@ -1004,6 +1004,7 @@ const pd=(x,z,r,g)=>{const m=new T.Mesh(new T.CircleGeometry(r,16),new T.MeshSta
 const wst=(x,y,z,ry,s,g)=>{g.add(dWall(stM,x,y,z,s,s,ry))};
 const cy=(r,h,m,x,y,z,g)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,h,14),m);o.position.set(x,y,z);o.castShadow=true;g.add(o);return o};
 const ext=(x,z,g)=>{cy(.09,.45,red,x,.75,z,g);box(.1,.12,.1,dk,x,1.03,z,g)};
+window.DH={stM,gr,pd,wst,cy,ext,mm,wood,steel,dk,wh,red,glM,curt,paper};
 MLAB.slice().forEach(([name,cx,zc])=>{
  const wi=WG.findIndex(w=>cx>w.ox&&cx<w.ox+w.n*7&&Math.abs(zc-w.cz)<13);if(wi<0)return;
  const Wg=WG[wi],g=WGR[wi],dir=zc>Wg.cz?1:-1,x0=cx-3.5,zf=Wg.cz+dir*2,ry=dir<0?0:Math.PI,ky=KIND[name]||'crate';
@@ -1078,6 +1079,85 @@ function bigWing(ox,cz,names,zn){const L=N*RW,n0=scene.children.length,m0=MLAB.l
 defs.forEach(([cz,zn,sg,a,b])=>{bigWing(45,cz,[a,b],zn);sign(sg,41.16,2.6,cz,Math.PI/2,3.6,.45,'#c9c3a8','rgba(20,20,20,.9)',30)});
 curZone=function(){for(let i=0;i<WG.length;i++){const w=WG[i],rw=w.rw||7,d=w.d||8;if(P.pos.x>w.ox-3&&P.pos.x<w.ox+w.n*rw+3&&Math.abs(P.pos.z-w.cz)<d+5)return{i,x:w.ox-4,zt:w.cz+d+5,w:w.n*rw+8,h:2*d+10,n:w.name}}return{i:-1,x:-21,zt:53,w:32,h:60,n:''}};
 }
+/* ===== detail the new floors ===== */
+{const {stM,gr,pd,wst,cy,ext,mm,wood,steel,dk,wh,red,glM,curt,paper}=DH;const RW=10,D=11,tx=['THEY NEVER LEFT','HELP ME','LISTEN','DO NOT SLEEP','SHE CRIES AT NIGHT','NO ONE CAME'];
+MLAB.filter(m=>m[1]>45&&m[2]>270).forEach(([name,cx,zc])=>{
+ const wi=WG.findIndex(w=>w.rw==RW&&cx>w.ox&&cx<w.ox+w.n*RW&&Math.abs(zc-w.cz)<D+5);if(wi<0)return;
+ const Wg=WG[wi],g=WGR[wi],dir=zc>Wg.cz?1:-1,x0=cx-RW/2,zf=Wg.cz+dir*2,ry=dir<0?0:Math.PI,ky=KIND[name]||'crate';
+ const Q=(u,v)=>[x0+u,zf+dir*v],B=(w,h,d,m,u,v,y)=>{const[a,b]=Q(u,v);return box(w,h,d,m,a,y==null?h/2:y,b,g)},Cy=(r,h,m,u,v,y)=>{const[a,b]=Q(u,v);return cy(r,h,m,a,y,b,g)},Co=(w,d,u,v)=>{const[a,b]=Q(u,v);col(a,b,w,d)},add=f=>{const n=scene.children.length;f();scene.children.slice(n).forEach(o=>g.add(o))};
+ for(let i=0;i<4;i++){const[a,b]=Q(rnd(1,9),D-.16);wst(a,rnd(1.3,1.9),b,ry,rnd(1.4,2.4),g)}
+ {const[a,b]=Q(.16,rnd(1.5,10));wst(a,1.5,b,Math.PI/2,2.2,g)}{const[a,b]=Q(RW-.16,rnd(1.5,10));wst(a,1.5,b,-Math.PI/2,2.2,g)}
+ for(let i=0;i<2;i++){const[a,b]=Q(rnd(1.5,8.5),rnd(1.5,10));gr(a,b,rnd(1.4,2.2),g);const[c,d]=Q(rnd(1,9),rnd(5,10));pd(c,d,rnd(.3,.8),g)}
+ {const[a,b]=Q(rnd(1,9),rnd(1,6));const t=box(.6,.03,.6,mm(0x7a7a70,1),a,.04,b,g);t.rotation.set(rnd(-.1,.1),rnd(0,6),rnd(-.1,.1))}
+ if(Math.random()<.6){const[a,b]=Q(rnd(2.5,7.5),D-.16);wr(tx[Math.random()*6|0],a,rnd(1.5,2),b,ry,g,2.6)}
+ if(ky=='ward'){const kk=['','body','blood',''];
+  for(const u of[4.2,6.5]){const[a,b]=Q(u,8.6);add(()=>bed(a,b,kk[Math.random()*4|0]))}
+  for(const u of[3.1,5.35]){B(.03,.04,2.6,steel,u,8.6,2.25);for(let j=0;j<6;j++){const h=rnd(1,1.9);B(.02,h,.38,curt,u,7.4+j*.4,2.2-h/2)}}
+  B(.4,.6,.4,wood,7.6,8.2);Co(.4,.4,7.6,8.2);B(.4,.6,.4,wood,.35,9.8);Co(.4,.4,.35,9.8);B(.08,.2,.08,glM,7.6,8.2,.7);
+  if(/ICU|Dialysis|Neonatal/.test(name))for(const u of[3.4,7.2]){B(.05,1.1,.05,steel,u,7.9);B(.45,.32,.14,dk,u,7.9,1.3);B(.36,.22,.02,new T.MeshBasicMaterial({color:0x0a3a1a}),u,7.98,1.3)}
+  if(/Dialysis/.test(name))for(const u of[3.2,6.8]){B(.6,1.1,.5,wh,u,3.4);B(.4,.25,.05,new T.MeshBasicMaterial({color:0x0a2a3a}),u,3.12,1.25);B(.02,.6,.02,red,u+.3,3.4,.8)}
+  const f=B(.04,.04,1.7,steel,rnd(2,8),rnd(3,6),.04);f.rotation.y=rnd(0,6)}
+ else if(ky=='desk'){B(2.4,.8,1,wood,5,8.4);Co(2.4,1,5,8.4);B(.45,.3,.05,dk,5,8.1,.98);{const[a,b]=Q(5,7);chair(a,b,g)}
+  for(const v of[3,4]){B(.5,1.3,.6,mm(0x5a5f5a,.5,.5),.5,v);Co(.5,.6,.5,v)}B(.4,2.2,3,wood,.3,9.2);Co(.4,3,.3,9.2);for(let i=0;i<10;i++)B(.05,rnd(.2,.35),.2,mm(0x302010+(Math.random()*0x303030|0)),.35,7.8+i*.3,rnd(.9,2))}
+ else if(ky=='bench'){if(/Chapel/.test(name)){for(const u of[2.2,7.8])for(let i=0;i<3;i++){B(2.4,.45,.5,wood,u,2.8+i*1.3,.28);B(2.4,.6,.06,wood,u,3.05+i*1.3,.75)}
+   B(2.4,1,.8,wood,5,10.3);Co(2.4,.8,5,10.3);for(const u of[4.2,5.8]){Cy(.04,.3,mm(0xe8dcc0),u,10.3,1.15);const[a,b]=Q(u,10.3);box(.03,.05,.03,new T.MeshBasicMaterial({color:0xffc060}),a,1.33,b,g)}B(.08,1.2,.08,wood,5,10.9,2);B(.5,.08,.08,wood,5,10.9,2.3)}
+  else{for(let i=0;i<10;i++){const[a,b]=Q(rnd(1,9),rnd(1.5,10));add(()=>toy(a,b,[0xb04a6a,0x6a4ab0,0x4a8ab0][i%3]))}B(1.2,.4,1.2,wood,3,3.4);Co(1.2,1.2,3,3.4)}}
+ else if(ky=='ot'){{const[a,b]=Q(5,8.4);add(()=>bed(a,b,'blood'))}B(.05,1,.05,steel,5,8.4,2.7);Cy(.5,.08,steel,5,8.4,2.2);Cy(.4,.02,new T.MeshBasicMaterial({color:0xfff0c0}),5,8.4,2.15);
+  B(.6,.04,.4,steel,3.2,8.4,.95);for(const x of[-.27,.27])for(const z of[-.17,.17])B(.03,.9,.03,steel,3.2+x,8.4+z,.45);for(let i=0;i<5;i++){const s=B(.14,.012,.02,steel,3+i*.08,8.4+rnd(-.1,.1),.98);s.rotation.y=rnd(-.6,.6)}Co(.6,.4,3.2,8.4);
+  Cy(.12,1.1,mm(0x2a5a8a,.4,.5),.6,10.3,.55);Cy(.12,1.1,mm(0x2a5a8a,.4,.5),.95,10.3,.55);B(2,.9,.5,steel,7.5,10.5);Co(2,.5,7.5,10.5);
+  if(/Sterilisation/.test(name))for(const u of[3,5]){Cy(.5,1.4,steel,u,10,.7);Co(1,1,u,10)}if(/Labour/.test(name)){const[a,b]=Q(5,8.4);add(()=>grow(dFloor(1,a,b,2.2),1.6,0))}}
+ else if(ky=='tunnel'){const cn=mm(0x4a4640,.9);for(let i=0;i<10;i++){B(2,.25*(i+1),.3,cn,3,7.4+i*.3);Co(2,.3,3,7.4+i*.3)}{const[a,b]=Q(7,D-.2);sign('ROOF ACCESS',a,2.3,b,ry,2.4,.4,'#7fe39a','rgba(5,25,10,.9)',30)}B(1.4,2.2,.08,mm(0x4a5a52,.5,.6),7,D-.4);B(1.2,.05,.05,steel,7,D-.5,1.1)}
+ else{for(let i=0;i<5;i++){const u=rnd(.7,9.3),v=rnd(2.4,10);if(Math.abs(u-5)<1&&v<6.5)continue;Cy(.3,.9,mm(0x3a4a5a,.5,.5),u,v,.45);Co(.6,.6,u,v)}for(let i=0;i<5;i++){const p=B(.22,.02,.3,paper,rnd(1.2,8.8),rnd(1.5,6),.02);p.rotation.y=rnd(0,6)}}
+});
+/* corridors of the new floors */
+WG.filter(w=>w.rw==RW).forEach(Wg=>{const g=WGR[WG.indexOf(Wg)];
+ for(const s of[-1,1]){const z=Wg.cz+s*1.78,ry=s>0?Math.PI:0;
+  for(let k=0;k<Wg.n;k++){const x0=Wg.ox+RW*k,len=k==Wg.n-1?4.1:8.2;box(len,.06,.06,steel,x0+5.9+len/2,1,z,g);
+   if((k+(s>0?1:0))%2==0)ext(x0+2,z,g);else{box(.8,.6,.03,wood,x0+8,1.6,Wg.cz+s*1.82,g);for(let j=0;j<3;j++)box(.18,.24,.01,paper,x0+7.7+j*.27,1.6+rnd(-.08,.08),Wg.cz+s*1.8,g)}
+   wst(x0+rnd(.5,9.5),1.5,Wg.cz+s*1.84,ry,rnd(1.4,2.2),g)}}
+ {const x=Wg.ox+RW*2.5,z=Wg.cz+1.55;box(1.6,.45,.45,wood,x,.28,z,g);box(1.6,.5,.06,wood,x,.65,z+.2,g);col(x,z,1.6,.45)}
+ for(let j=0;j<8;j++){const h=rnd(.5,1.2);box(.02,h,.02,dk,Wg.ox+rnd(2,RW*5-2),3.2-h/2,Wg.cz+rnd(-1.2,1.2),g)}});
+/* long hall */
+box(.06,.06,131,steel,41.12,1,334,scene);for(let z=280;z<400;z+=24){wst(41.16,1.5,z,Math.PI/2,2,scene);wr(tx[(z/24|0)%tx.length],41.16,1.7,z+8,Math.PI/2,null,2.4)}
+[[43.1,300,.4],[42.6,345,2.1],[43.3,378,1.2]].forEach(([x,z,r])=>corpse(x,z,r));
+}
+/* ===== map v2: rotates with the player, always shows what is in front of you at the top ===== */
+{mapOpen=function(){if(!P.map){toast('You have no map yet.');return}if(mv.style.display=='flex'){mv.style.display='none';return}S.map();mv.style.display='flex';drawMap()};
+window.drawMap=function(){const s=Math.min(innerWidth,innerHeight)*.96|0,R=30,sc=s/(2*R);if(mc.width!=s){mc.width=s;mc.height=s}
+ const g=mc.getContext('2d'),cs=Math.cos(P.yaw),sn=Math.sin(P.yaw),cx=s/2,cy=s*.58,S2=(x,z)=>{const dx=x-P.pos.x,dz=z-P.pos.z;return[cx+(-cs*dx+sn*dz)*sc,cy-(sn*dx+cs*dz)*sc]};
+ g.fillStyle='#cdb98a';g.fillRect(0,0,s,s);g.fillStyle='rgba(60,40,20,.9)';g.beginPath();
+ for(const c of cols){if(Math.abs((c[0]+c[1])/2-P.pos.x)>R*1.6||Math.abs((c[2]+c[3])/2-P.pos.z)>R*1.6)continue;const a=S2(c[0],c[2]),b=S2(c[1],c[2]),d=S2(c[1],c[3]),e=S2(c[0],c[3]);g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.lineTo(d[0],d[1]);g.lineTo(e[0],e[1]);g.closePath()}g.fill();
+ g.font='italic bold 13px Georgia';g.textAlign='center';g.fillStyle='#4a0a0a';
+ [['Ward 13',0,-1],['Safe room',-6,17.5],['Nurse',5.5,18],['Reception',0,38],['Patient rooms',-15,18],['X-ray',-15,32],['FINAL GATE',0,45.5]].concat(MLAB).forEach(a=>{const p=S2(a[1],a[2]);if(p[0]>30&&p[0]<s-30&&p[1]>20&&p[1]<s-10)g.fillText(a[0],p[0],p[1])});
+ if(clues.size>=3){g.fillStyle='#c90';items.filter(i=>/pick up/.test(i.t)).forEach(i=>{const p=S2(i.x,i.z);g.beginPath();g.arc(p[0],p[1],6,0,7);g.fill()})}
+ {const p=S2(kabir.g.position.x,kabir.g.position.z);g.fillStyle='#3c3';g.beginPath();g.arc(p[0],p[1],7,0,7);g.fill()}
+ g.fillStyle='#37f';g.beginPath();g.moveTo(cx,cy-15);g.lineTo(cx-10,cy+10);g.lineTo(cx+10,cy+10);g.closePath();g.fill();
+ g.fillStyle='#7a0a0a';g.font='bold 18px Georgia';g.fillText('N',Math.max(14,Math.min(s-14,cx+sn*s*.45)),Math.max(20,Math.min(s-8,cy-cs*s*.45)));
+ g.font='italic 15px Georgia';g.fillText(curZone().n||'MAIN BUILDING',s/2,22);g.strokeStyle='#4a0a0a';g.lineWidth=6;g.strokeRect(0,0,s,s)};
+const _xm=extra;extra=function(dt,t){_xm(dt,t);if(mv.style.display=='flex')drawMap()}}
+/* ===== no walking through walls or gates (swept collision) ===== */
+{const _us=update;update=function(dt,t){const px=P.pos.x,pz=P.pos.z;_us(dt,t);const dx=P.pos.x-px,dz=P.pos.z-pz;if(G.dead||Math.abs(dx)+Math.abs(dz)<.002)return;const e=.15;
+ for(const c of cols){const x0=c[0]-e,x1=c[1]+e,z0=c[2]-e,z1=c[3]+e;if(px>x0&&px<x1&&pz>z0&&pz<z1)continue;let a=0,b=1;
+  if(Math.abs(dx)<1e-9){if(px<x0||px>x1)continue}else{let t1=(x0-px)/dx,t2=(x1-px)/dx;if(t1>t2){const q=t1;t1=t2;t2=q}a=Math.max(a,t1);b=Math.min(b,t2);if(a>b)continue}
+  if(Math.abs(dz)<1e-9){if(pz<z0||pz>z1)continue}else{let t1=(z0-pz)/dz,t2=(z1-pz)/dz;if(t1>t2){const q=t1;t1=t2;t2=q}a=Math.max(a,t1);b=Math.min(b,t2);if(a>b)continue}
+  P.pos.x=px;P.pos.z=pz;P.vel.set(0,0,0);return}}}
+/* ===== proper doorways + exit route lights ===== */
+{const fr=M(0x2a2a28,.7),th=M(0x1a1a18,.9);
+ WG.forEach((w,i)=>{const g=WGR[i],rw=w.rw||7;for(let k=0;k<w.n;k++){const gx=w.ox+rw*k+rw/2;for(const s of[-1,1]){const z=w.cz+s*2;for(const a of[-.85,.85])box(.12,2.7,.4,fr,gx+a,1.35,z,g);box(1.8,.02,.4,th,gx,.012,z,g)}}});
+ const gm=new T.MeshBasicMaterial({color:0x1f7a45});for(let z=8;z<43;z+=1.6){box(.1,.01,.5,gm,-1.5,.02,z);box(.1,.01,.5,gm,1.5,.02,z)}}
+/* ===== ending screen ===== */
+{const _fi=finale;finale=function(){_fi();setTimeout(()=>{const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:30;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;color:#d8d2c8;font-family:Georgia,serif;opacity:0;transition:opacity 2s';
+ const tx=(t,css)=>{const e=document.createElement('div');e.textContent=t;e.style.cssText=css;d.appendChild(e)};
+ tx('GAME FINISHED','font-size:34px;letter-spacing:8px;color:#9b1c1c');tx('You did it. You escaped Ward 13.','font-size:20px');tx('Thanks for playing.','opacity:.6;font-size:14px');
+ const row=document.createElement('div');row.style.cssText='display:flex;gap:12px;margin-top:14px';
+ const bt=(t,f)=>{const b=document.createElement('button');b.textContent=t;b.style.cssText='padding:12px 26px;background:transparent;color:#d8d2c8;border:1px solid #9b1c1c;font:16px Georgia,serif';b.onclick=f;row.appendChild(b)};
+ if(parent!==window)bt('LEAVE',()=>parent.postMessage({t:'exit'},'*'));bt('PLAY AGAIN',()=>location.reload());
+ d.appendChild(row);document.body.appendChild(d);requestAnimationFrame(()=>requestAnimationFrame(()=>d.style.opacity=1))},29500)}}
+/* ===== torch on: no more glitch / vanishing character ===== */
+spot.castShadow=false;
+{let lw=innerWidth,lh=innerHeight;const ss=renderer.setSize.bind(renderer);renderer.setSize=(w,h,u)=>{if(w==lw&&h==lh)return;lw=w;lh=h;ss(w,h,u)};renderer.setPixelRatio=()=>{}}
+scene.children.filter(o=>o.isMesh&&o.geometry&&o.geometry.type=='ConeGeometry'&&o.material&&o.material.blending===T.AdditiveBlending).forEach(o=>scene.remove(o));
+{aarav.g.traverse(o=>{o.frustumCulled=false});const _ev=extra;extra=function(dt,t){_ev(dt,t);aarav.g.visible=true;aarav.s.visible=true}}
 /* exit signs */
 sign('EXIT AHEAD',1.84,2.35,28,-Math.PI/2,1.8,.4,'#7fe39a','rgba(5,25,10,.9)',32);sign('FINAL GATE AHEAD',-8.84,2.4,36,Math.PI/2,2.6,.4,'#7fe39a','rgba(5,25,10,.9)',30);sign('FINAL GATE AHEAD',8.84,2.4,32,-Math.PI/2,2.6,.4,'#7fe39a','rgba(5,25,10,.9)',30);
 const _x9=extra;extra=function(dt,t){_x9(dt,t);for(const w of SW){w.rotation.z=Math.sin(t*.8+w.userData.ph)*.04;w.rotation.x=Math.sin(t*.6+w.userData.ph)*.025}for(const b of FN)b.rotation.y+=dt*.25};
