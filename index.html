@@ -1049,6 +1049,35 @@ WG.forEach((Wg,i)=>{const g=WGR[i],L=Wg.n*7;
 ext(1.76,9,scene);ext(-1.76,24,scene);ext(1.76,28,scene);
 wst(-6.84,1.5,-2,Math.PI/2,2.4,scene);wst(6.84,1.5,2,-Math.PI/2,2.4,scene);wst(-1.84,1.5,19.5,Math.PI/2,1.8,scene);wst(1.84,1.5,24,-Math.PI/2,1.8,scene);wst(-8.84,1.5,34,Math.PI/2,2.2,scene);wst(8.84,1.5,40,-Math.PI/2,2.2,scene);
 }
+/* ===== big hospital: 4 new floors (womens, mens, children/ICU, operation block) with bigger rooms ===== */
+{const fm=(w,h)=>{const m=floorM.clone();m.map=floorM.map.clone();m.map.repeat.set(w/4,h/4);m.map.needsUpdate=true;return m};
+const RW=10,D=11,N=5,ZE=403,defs=[
+ [285,'FLOOR 4 · WOMENS BLOCK','FLOOR 4 · WOMEN',[`Women's Ward`,`Women's Ward 2`,'Pregnancy Ward','Labour Room','Neonatal ICU'],['Gynaecology Clinic','Post-Natal Ward','Nurse Station','Recovery Room','Linen Store']],
+ [320,'FLOOR 5 · MENS BLOCK','FLOOR 5 · MEN',[`Men's Ward`,`Men's Ward 2`,'Orthopaedic Ward','Trauma Room','Cast Room'],['Surgical Ward','Burns Unit','Nurse Station','Pharmacy','Store Room']],
+ [355,'FLOOR 6 · CHILDREN AND ICU','FLOOR 6 · ICU',['Pediatric Ward','Pediatric ICU','Play Room','Isolation Room','Observation Room'],['ICU','Cardiac ICU','Dialysis Ward','Blood Bank','Doctor Lounge']],
+ [390,'FLOOR 7 · OPERATION BLOCK','FLOOR 7 · SURGERY',['Operation Theatre','Operation Theatre 2','Surgery Store','Sterilisation Room','Anaesthesia Room'],['Chapel','Admin Office',`Director's Office`,'Records Room','Rooftop Exit Stairs']]];
+[`Women's Ward`,`Women's Ward 2`,'Pregnancy Ward','Neonatal ICU','Post-Natal Ward',`Men's Ward`,`Men's Ward 2`,'Orthopaedic Ward','Surgical Ward','Burns Unit','Pediatric Ward','Pediatric ICU','Cardiac ICU','Dialysis Ward','Recovery Room'].forEach(n=>KIND[n]='ward');
+['Labour Room','Trauma Room','Operation Theatre 2','Sterilisation Room','Anaesthesia Room','Cast Room'].forEach(n=>KIND[n]='ot');
+['Gynaecology Clinic','Nurse Station',`Director's Office`].forEach(n=>KIND[n]='desk');['Play Room','Chapel'].forEach(n=>KIND[n]='bench');KIND['Rooftop Exit Stairs']='tunnel';
+/* open the hall end and extend it */
+{const wi=walls.findIndex(o=>Math.abs(o.position.x-43)<.1&&Math.abs(o.position.z-265)<.1);if(wi>=0){const o=walls[wi];o.parent&&o.parent.remove(o);walls.splice(wi,1)}
+ const ci=cols.findIndex(c=>Math.abs(c[0]-40.85)<.1&&Math.abs(c[1]-45.15)<.1&&Math.abs((c[2]+c[3])/2-265)<.1);if(ci>=0)cols.splice(ci,1)}
+{const len=ZE-265,zc=(ZE+265)/2,f=new T.Mesh(new T.PlaneGeometry(4.3,len),fm(4.3,len)),c=new T.Mesh(new T.PlaneGeometry(4.3,len),M(0x2a2c2a,1));f.rotation.x=-Math.PI/2;f.position.set(43,0,zc);f.receiveShadow=true;c.rotation.x=Math.PI/2;c.position.set(43,3.2,zc);scene.add(f,c)}
+seg(41,265,41,ZE);seg(41,ZE,45,ZE);seg(45,265,45,defs[0][0]-13);for(let i=0;i<3;i++)seg(45,defs[i][0]+13,45,defs[i+1][0]-13);
+for(let z=272;z<ZE;z+=7)tube(43,z,{intensity:0},1,Math.random()<.3);
+const crib=(x,z,g)=>{const m=M(0x9a8a70,.6);box(.8,.08,1.2,m,x,.35,z,g);for(const a of[-1,1]){box(.04,.5,1.2,m,x+a*.38,.65,z,g);box(.8,.5,.04,m,x,.65,z+a*.58,g)}box(.6,.1,.9,M(0xb8b4a8,1),x,.44,z,g);col(x,z,.8,1.2)};
+function bigWing(ox,cz,names,zn){const L=N*RW,n0=scene.children.length,m0=MLAB.length,H=2*(2+D)+2,f=new T.Mesh(new T.PlaneGeometry(L+2,H),fm(L+2,H)),c=new T.Mesh(new T.PlaneGeometry(L+2,H),M(0x2a2c2a,1));
+ f.rotation.x=-Math.PI/2;c.rotation.x=Math.PI/2;f.position.set(ox+L/2,0,cz);c.position.set(ox+L/2,3.2,cz);f.receiveShadow=true;scene.add(f,c);
+ WG.push({ox,cz,n:N,name:zn,rw:RW,d:D});seg(ox+L,cz-2,ox+L,cz+2);
+ for(let i=0;i<=N;i++){const x=ox+i*RW;seg(x,cz-2-D,x,cz-2);seg(x,cz+2,x,cz+2+D)}
+ for(const s of[-1,1]){const zf=cz+s*2,zb=zf+s*D;seg(ox,zb,ox+L,zb);for(let i=0;i<N;i++){const x0=ox+i*RW,gx=x0+RW/2;seg(x0,zf,gx-.8,zf);seg(gx+.8,zf,x0+RW,zf);seg(gx-.8,zf,gx+.8,zf,.5,.3,2.7);room(x0,cz,s,RW,D,names[s<0?0:1][i])}}
+ for(let x=ox+3;x<ox+L;x+=6)tube(x,cz,{intensity:0},1,Math.random()<.3);
+ for(let i=0;i<N*2;i++){const x=ox+rnd(2,L-2);if(i%3==0)wheelchair(x,cz+rnd(-.9,.9),rnd(0,6));else if(i%3==1)iv(x,cz+(i%2?1.4:-1.4));dWall(handM,x,1.3,cz+(i%2?1.83:-1.83),.45,.56,i%2?Math.PI:0);grow(dFloor(i,x,cz+rnd(-1,1),rnd(.4,.8)),1,i)}
+ const g=new T.Group();scene.children.slice(n0).forEach(o=>g.add(o));scene.add(g);WGR.push(g);g.visible=false;
+ MLAB.slice(m0).forEach(([nm,cx,zc])=>{if(/Neonatal|Pregnancy|Post-Natal|Pediatric Ward/.test(nm)){const s=zc>cz?1:-1,x0=cx-RW/2,zf=cz+s*2;for(const u of[2,5])crib(x0+u,zf+s*8,g)}})}
+defs.forEach(([cz,zn,sg,a,b])=>{bigWing(45,cz,[a,b],zn);sign(sg,41.16,2.6,cz,Math.PI/2,3.6,.45,'#c9c3a8','rgba(20,20,20,.9)',30)});
+curZone=function(){for(let i=0;i<WG.length;i++){const w=WG[i],rw=w.rw||7,d=w.d||8;if(P.pos.x>w.ox-3&&P.pos.x<w.ox+w.n*rw+3&&Math.abs(P.pos.z-w.cz)<d+5)return{i,x:w.ox-4,zt:w.cz+d+5,w:w.n*rw+8,h:2*d+10,n:w.name}}return{i:-1,x:-21,zt:53,w:32,h:60,n:''}};
+}
 /* exit signs */
 sign('EXIT AHEAD',1.84,2.35,28,-Math.PI/2,1.8,.4,'#7fe39a','rgba(5,25,10,.9)',32);sign('FINAL GATE AHEAD',-8.84,2.4,36,Math.PI/2,2.6,.4,'#7fe39a','rgba(5,25,10,.9)',30);sign('FINAL GATE AHEAD',8.84,2.4,32,-Math.PI/2,2.6,.4,'#7fe39a','rgba(5,25,10,.9)',30);
 const _x9=extra;extra=function(dt,t){_x9(dt,t);for(const w of SW){w.rotation.z=Math.sin(t*.8+w.userData.ph)*.04;w.rotation.x=Math.sin(t*.6+w.userData.ph)*.025}for(const b of FN)b.rotation.y+=dt*.25};
