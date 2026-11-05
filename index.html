@@ -247,12 +247,12 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 <div id="wrap"></div><div id="vig"></div>
 <div id="hud">
 <div id="bat"><span id="ti">🔦</span><div class="bar"><i id="bf" style="width:0"></i></div><b id="bp">–</b><b id="lv" style="color:#c33;margin-left:8px"></b></div>
-<div id="obj">तुम hospital में जागे हो। पहले torch ढूँढो।</div><div id="prompt"></div><div id="toast"></div>
+$1You wake up in the hospital. Find a torch first.</div><div id="prompt"></div><div id="toast"></div>
 <div id="joy"><div id="knob"></div></div>
 <button id="bSpr">RUN</button><div id="stm"><i id="sf"></i></div><div id="btns"><button id="bInt">TAP</button><button id="bTorch">🔦 OFF</button><button id="bMap">MAP</button><button id="bMan">MANTRA</button><button id="bCro">CROUCH</button></div>
 </div>
 <div id="blk"></div><div id="kp"><div id="kd">----</div><div id="kg"></div></div><div id="note"></div>
-<div id="start"><h1>ESCAPE THE HOSPITAL</h1><p class="tag">कुछ दरवाज़े सिर्फ बंद नहीं होते… वे तुम्हें अंदर रखते हैं।</p><p>WASD move · Shift run · F torch · E interact · M map · Q mantra · drag / mouse to look<br>Mobile: left joystick, drag right side to look</p><button id="go">ENTER THE HOSPITAL</button></div>
+<div id="start"><h1>ESCAPE THE HOSPITAL</h1>$1Some doors do not just close... they keep you inside.</p><p>WASD move · Shift run · F torch · E interact · M map · Q mantra · drag / mouse to look<br>Mobile: left joystick, drag right side to look</p><button id="go">ENTER THE HOSPITAL</button></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const T=THREE,$=i=>document.getElementById(i),rnd=(a,b)=>a+Math.random()*(b-a);
@@ -400,8 +400,8 @@ const items=[
 {x:.3,z:-1.45,t:'Tap to take hospital map',f(){P.map=true;mapMesh.visible=false;wtxt.visible=true;obj('Read the notice board · open the Ward door');toast('Blood writes itself on the wall…\nSomething is walking in the corridor.',5000)}},
 {x:6.2,z:0,t:'Tap to read notice',keep:1,f(){note('<b>St. Mary’s Hospital</b><br>Children’s Ward closed on <b>17/08/2004</b>.<br><i>Never speak of the night shift.</i>')}},
 {x:0,z:42.6,t:'Tap to inspect gate',keep:1,f(){note('The gate is locked.<br>Three slots: <b>Trishul Coin · Sacred Ash · Master Key</b>')}},
-{x:-5.6,z:14.6,t:'Tap to read diary page',keep:1,f(){note('<i>“Agar koi mujhe sun lega, to shayad main ghar chali jaun.”</i>')}}];
-items.push({x:-15,z:38.5,t:'Tap to read nurse diary',keep:1,f(){note('<i>“Uska naam wahan likha hai jahan wo akeli thi.”</i><br>— Nurse Diary, last page')}},{x:-17.5,z:15,t:'Tap to read X-ray film',keep:1,f(){note('<b>X-RAY FILM</b><br>An arrow points down… toward the basement.')}});
+{x:-5.6,z:14.6,t:'Tap to read diary page',keep:1,f(){note('<i>“If someone listens to me, maybe I can finally go home.”</i>')}}];
+items.push({x:-15,z:38.5,t:'Tap to read nurse diary',keep:1,f(){note('<i>“Her name is written where she was alone.”</i><br>— Nurse Diary, last page')}},{x:-17.5,z:15,t:'Tap to read X-ray film',keep:1,f(){note('<b>X-RAY FILM</b><br>An arrow points down… toward the basement.')}});
 const prompt=el('prompt');let cur=null;
 /* Ward door: 4-digit lock (1708) */
 const door=box(2.4,2.6,.12,M(0x4a5a52,.5,.6),0,1.3,6),doorCol=[-1.2,1.2,5.85,6.15];cols.push(doorCol);const dg=new T.Group();dg.position.set(-1.2,0,6);scene.add(dg);dg.add(door);door.position.set(1.2,1.3,0);let dOpen=0,dShake=0,WCt=3;box(.2,.3,.05,new T.MeshBasicMaterial({color:0x33ff66}),1.45,1.3,5.82);
@@ -524,21 +524,21 @@ const clues=new Set(),inv=new Set();let fin=0,mantraUsed=0;
 const refreshObj=()=>{if(doorOpen&&!fin)obj(`Clues ${clues.size}/3 · Ritual items ${inv.size}/3 · reach the Final Gate`)};
 function gotClue(k){if(clues.has(k))return;clues.add(k);refreshObj();toast(clues.size>=3?'All 3 clues found.\nA red handprint marks the Final Gate on your map.':'Clue found ('+clues.size+'/3)')}
 items.forEach(i=>{if(/X-ray/.test(i.t)){const f=i.f;i.f=()=>{f();gotClue('xray')}}if(/nurse diary/.test(i.t)){const f=i.f;i.f=()=>{f();gotClue('diary')}}});
-items.push({x:-6.3,z:-1.5,t:'Tap to read blood note',keep:1,f(){note('<i>“Wahan jao jahan murdon ko sulaaya jata hai.”</i><br>— scrawled in blood');gotClue('blood')}});
+items.push({x:-6.3,z:-1.5,t:'Tap to read blood note',keep:1,f(){note('<i>“Go where the dead are put to sleep.”</i><br>— scrawled in blood');gotClue('blood')}});
 function pickup(name,x,z,c,y){const m=box(.22,.22,.22,new T.MeshBasicMaterial({color:c}),x,y,z);const l=lamp(x,y+.4,z,c,.35,3);items.push({x,z,t:'Tap to pick up '+name,f(){m.visible=false;l.visible=false;inv.add(name);refreshObj();toast(name+' taken ('+inv.size+'/3)')}})}
 pickup('Trishul Coin',-7.5,36,0xffcc33,.2);pickup('Sacred Ash',-8.4,19,0xcfcfcf,.2);pickup('Hospital Master Key',-12.5,38.5,0x88ccff,.2);
 items.splice(items.findIndex(i=>i.t=='Tap to inspect gate'),1);
 items.push({x:0,z:42.6,t:'Tap to use final gate',keep:1,f(){if(fin)return;const need=['Trishul Coin','Sacred Ash','Hospital Master Key'].filter(k=>!inv.has(k));if(need.length)note('The gate is locked.<br>Missing: <b>'+need.join(' · ')+'</b>');else finale()}});
 const S2={knock(){for(let i=0;i<3;i++){snd('sine',90,i*.7,.002,.25,.9,null,null,50);nse(300,1,i*.7,.002,.1,.6,null,null,'lowpass')}},maa(){voice(520,430,1.3,.7,null,null)}};
 function finale(){fin=1;S.piano();G.on=0;G.st=0;G.bo=0;P.on=false;obj('Read the Raksha Mantra');
- note('<b>The three items fit the slots.</b><br><br><i>“Jo andhere me chhupa hai,<br>wo roshni se door ho jaye.<br>Jo mere peeche aaya hai,<br>wo wapas mud jaye.”</i>');
- setTimeout(()=>note('<i>“Maa ne kaha tha, ‘Meera, aankh band karke mat ro.’<br>Lekin aaj sab so rahe hain… aur main akeli jaag rahi hoon.<br>Agar koi mujhe sun lega, to shayad main ghar chali jaun.”</i><br>— Meera’s diary'),7000);
+ note('<b>The three items fit the slots.</b><br><br><i>“What hides in the dark,<br>be driven out by the light.<br>What follows behind me,<br>turn back and be gone.”</i>');
+ setTimeout(()=>note('<i>“Maa ne kaha tha, ‘Meera, aankh band karke mat ro.’<br>Lekin aaj sab so rahe hain… aur main akeli jaag rahi hoon.<br>If someone listens to me, maybe I can finally go home.”</i><br>— Meera’s diary'),7000);
  setTimeout(()=>{el('note').style.display='none';scene.children.filter(o=>o.type==='Mesh'&&o.position.z===44&&o.geometry.parameters&&o.geometry.parameters.width<=5&&o.geometry.parameters.height<=2.7).forEach(o=>gateParts.push(o));const k=cols.findIndex(c=>c[2]==43.85);if(k>=0)cols.splice(k,1);toast('The gate swings open.',3000);S.creak()},15000);
  setTimeout(()=>{el('blk').style.opacity=1;S2.knock()},18500);
  setTimeout(()=>{S2.maa();et.style.opacity=1},22500)}
-const et=document.createElement('div');et.style.cssText='position:fixed;inset:0;z-index:7;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font:italic 22px Georgia,serif;color:#c9c3a8;opacity:0;transition:opacity 2s;pointer-events:none';et.innerHTML='“Maa…”<br><br>सुबह हो गई।<br>तुम hospital से बाहर निकल आए।';document.body.appendChild(et);
+const et=document.createElement('div');et.style.cssText='position:fixed;inset:0;z-index:7;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font:italic 22px Georgia,serif;color:#c9c3a8;opacity:0;transition:opacity 2s;pointer-events:none';et.innerHTML='';document.body.appendChild(et);
 const gold=document.createElement('div');gold.style.cssText='position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 130px rgba(255,200,90,.7);opacity:0;transition:opacity 1s;z-index:4';document.body.appendChild(gold);
-function mantra(){if(!started||G.dead||fin)return;if(mantraUsed){toast('The mantra has been spent.');return}mantraUsed=1;if(G.st){setSt(0);G.bo=0}G.t=rnd(40,60);G.prot=15;G.x=P.pos.x;G.z=P.pos.z+30;S.mantra();gold.style.opacity=1;setTimeout(()=>gold.style.opacity=0,5000);toast('“Jo andhere me chhupa hai,\nwo roshni se door ho jaye.”',5000)}
+function mantra(){if(!started||G.dead||fin)return;if(mantraUsed){toast('The mantra has been spent.');return}mantraUsed=1;if(G.st){setSt(0);G.bo=0}G.t=rnd(40,60);G.prot=15;G.x=P.pos.x;G.z=P.pos.z+30;S.mantra();gold.style.opacity=1;setTimeout(()=>gold.style.opacity=0,5000);toast('“What hides in the dark,\nbe driven out by the light.”',5000)}
 const mv=document.createElement('div');mv.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;z-index:9;align-items:center;justify-content:center';const mc=document.createElement('canvas');mv.appendChild(mc);document.body.appendChild(mv);mv.onclick=()=>mv.style.display='none';
 function mapOpen(){if(!P.map){toast('You have no map yet.');return}if(mv.style.display=='flex'){mv.style.display='none';return}S.map();mv.style.display='flex';
  const ZN=curZone(),sc=Math.min(Math.min(innerHeight*.92,620)/ZN.h,innerWidth*.96/ZN.w),W=ZN.w*sc,H=ZN.h*sc;mc.width=W;mc.height=H;const g=mc.getContext('2d'),X=x=>(x-ZN.x)*sc,Y=z=>(ZN.zt-z)*sc;
@@ -1148,7 +1148,7 @@ const _xm=extra;extra=function(dt,t){_xm(dt,t);if(mv.style.display=='flex')drawM
 /* ===== ending screen ===== */
 {const _fi=finale;finale=function(){_fi();setTimeout(()=>{const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:30;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;color:#d8d2c8;font-family:Georgia,serif;opacity:0;transition:opacity 2s';
  const tx=(t,css)=>{const e=document.createElement('div');e.textContent=t;e.style.cssText=css;d.appendChild(e)};
- tx('ESCAPE THE HOSPITAL','font-size:30px;letter-spacing:5px;color:#9b1c1c');tx('तुम बच निकले। सुबह हो गई।','font-size:20px');tx('Thanks for playing.','opacity:.6;font-size:14px');
+ tx('ESCAPE THE HOSPITAL','font-size:30px;letter-spacing:5px;color:#9b1c1c');tx('You escaped. Morning has come.','font-size:20px');tx('Thanks for playing.','opacity:.6;font-size:14px');
  const row=document.createElement('div');row.style.cssText='display:flex;gap:12px;margin-top:14px';
  const bt=(t,f)=>{const b=document.createElement('button');b.textContent=t;b.style.cssText='padding:12px 26px;background:transparent;color:#d8d2c8;border:1px solid #9b1c1c;font:16px Georgia,serif';b.onclick=f;row.appendChild(b)};
  if(parent!==window)bt('LEAVE',()=>parent.postMessage({t:'exit'},'*'));bt('PLAY AGAIN',()=>location.reload());
@@ -1185,7 +1185,7 @@ extra=function(dt,t){_e(dt,t);const z=curZone(),ti=z.i>=0?TI[z.i]:-1,th=ti>=0?TH
 if(th){fT.set(th.fog);tL.set(th.l);hC.set(th.h[0]);hG.set(th.h[1]);zl.color.copy(tL);zl.distance=18;zl.intensity*=1.5;scene.fog.density+=(th.fd-scene.fog.density)*k;for(const tb of tubes)if(tb.m.parent===WGR[z.i])tb.m.material.color.multiply(tL)}
 else{fT.set(0x030304);hC.set(0x3a4a5a);hG.set(0x100808);scene.fog.density+=(.075-scene.fog.density)*k}
 scene.fog.color.lerp(fT,k);scene.background.lerp(fT,k);hemi.color.lerp(hC,k);hemi.groundColor.lerp(hG,k);
-if(z.n!==cur){cur=z.n;if(z.n&&th){bn.innerHTML=z.n+'<br><span style="font-size:15px;opacity:.8">'+th.hi+'</span>';bn.style.color='#'+new T.Color(th.l).getHexString();bn.style.opacity=1;clearTimeout(bt);bt=setTimeout(()=>bn.style.opacity=0,2800)}}};
+if(z.n!==cur){cur=z.n;if(z.n&&th){bn.innerHTML=z.n;bn.style.color='#'+new T.Color(th.l).getHexString();bn.style.opacity=1;clearTimeout(bt);bt=setTimeout(()=>bn.style.opacity=0,2800)}}};
 })()}catch(e){console.log('phase2',e)}
 /* ===== PLAY ZONE hook: auto-start, squad avatars, leave button ===== */
 (()=>{if(parent===window)return;
@@ -1207,6 +1207,66 @@ spot.shadow.mapSize.set(512,512);if(spot.shadow.map){spot.shadow.map.dispose();s
 let pr=1,fa=0,fn=0,lt=performance.now();
 const _e6=extra;extra=function(dt,t){_e6(dt,t);const n=performance.now();fa+=n-lt;lt=n;fn++;if(fa>2000){const fps=fn*1000/fa;fa=0;fn=0;if(fps<50&&pr>.6){pr=Math.max(.6,pr-.1);renderer.setPixelRatio(pr);renderer.setSize(innerWidth,innerHeight)}}};
 parent.postMessage({t:'ready'},host);
+})();
+</script><style>#toast{top:36%!important;font-size:15px}#prompt{bottom:30%!important;max-width:70%;text-align:center}#obj{background:rgba(0,0,0,.4);padding:3px 10px;font-size:13px;max-width:40%!important}</style><script>
+/* ETH-PATCH-ENDING */
+(()=>{
+const _t=toast;toast=function(t,ms){if(/^(GROUND|FIRST|SECOND|THIRD|FLOOR|OPD|MATERNITY|PSYCHIATRIC|OLD MORTUARY|BASEMENT)/.test(String(t)))return;_t(t,ms)};
+[...document.body.children].forEach(e=>{if(e.style&&e.style.top=='20%')e.style.top='22%'});
+const M2=(c,r)=>new T.MeshStandardMaterial({color:c,roughness:r||.9}),MB=c=>new T.MeshBasicMaterial({color:c});
+const pl=(w,d,c,x,y,z)=>{const m=new T.Mesh(new T.PlaneGeometry(w,d),M2(c,1));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);m.receiveShadow=false;scene.add(m);return m};
+const ground=pl(400,400,0x14201a,0,-.03,90),yard=pl(28,18,0x1f3a1f,0,-.005,82);
+pl(12,10,0x5a4a38,0,.012,82);
+/* safe house */
+seg(-6,77,-1,77);seg(1,77,6,77);seg(-1,77,1,77,.5,.3,2.7);seg(-6,77,-6,87);seg(6,77,6,87);seg(-6,87,6,87);
+box(13,.3,11.6,M2(0x3a2a22),0,3.35,82);
+sign('SAFE HOUSE',0,2.95,76.84,Math.PI,2.6,.4,'#ffd98a','rgba(30,18,6,.95)',40);
+const hl=new T.PointLight(0xffc070,1.3,15,2);hl.position.set(0,2.4,82);scene.add(hl);
+/* path lights */
+const gm=MB(0x1f7a45);for(let z=47;z<76;z+=2){box(.1,.01,.5,gm,-1.6,.02,z);box(.1,.01,.5,gm,1.6,.02,z)}
+/* trees */
+const leaves=[];{const tg=new T.CylinderGeometry(.18,.25,2.4,6),cg=new T.SphereGeometry(1.2,8,6),tm=M2(0x3a2a1a),lm=M2(0x1c3a1c);leaves.push(lm);
+for(let i=0;i<14;i++){const x=(i%2?1:-1)*rnd(7,17),z=rnd(48,98);if(Math.abs(x)<8&&z>74&&z<90)continue;const a=new T.Mesh(tg,tm),b=new T.Mesh(cg,lm);a.position.set(x,1.2,z);b.position.set(x,3,z);b.scale.y=1.3;scene.add(a,b)}}
+/* prayer room: four respectful symbol panels */
+const gold='#e8c872',bg='#241810';
+const sym=[
+['HINDU',g=>{g.font='150px serif';g.textAlign='center';g.fillStyle=gold;g.fillText('\u0950',128,170)}],
+['MUSLIM',g=>{g.fillStyle=gold;g.beginPath();g.arc(120,125,66,0,7);g.fill();g.fillStyle=bg;g.beginPath();g.arc(144,115,56,0,7);g.fill();g.fillStyle=gold;g.beginPath();for(let i=0;i<10;i++){const r=i%2?7:16,a=-1.57+i*.628;g.lineTo(176+Math.cos(a)*r,100+Math.sin(a)*r)}g.fill()}],
+['SIKH',g=>{g.strokeStyle=g.fillStyle=gold;g.lineWidth=7;g.beginPath();g.arc(128,125,34,0,7);g.stroke();g.beginPath();g.moveTo(128,35);g.lineTo(141,125);g.lineTo(128,215);g.lineTo(115,125);g.closePath();g.fill();g.lineWidth=11;g.beginPath();g.arc(150,150,72,Math.PI*.62,Math.PI*1.08);g.stroke();g.beginPath();g.arc(106,150,72,-Math.PI*.08,Math.PI*.38);g.stroke()}],
+['CHRISTIAN',g=>{g.fillStyle=gold;g.fillRect(116,50,24,170);g.fillRect(76,100,104,24)}]];
+const xs=[-4.5,-1.5,1.5,4.5];
+sym.forEach(([nm,fn],i)=>{const t=tex(256,320,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle='#8a6a30';g.lineWidth=6;g.strokeRect(8,8,w-16,h-16);fn(g);g.fillStyle='#d8c9a0';g.font='bold 28px Georgia';g.textAlign='center';g.fillText(nm,128,290)});
+ dWall(MB(0xffffff).clone(),0,0,0,0,0,0);});
+sym.forEach(([nm,fn],i)=>{const t=tex(256,320,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle='#8a6a30';g.lineWidth=6;g.strokeRect(8,8,w-16,h-16);fn(g);g.fillStyle='#d8c9a0';g.font='bold 28px Georgia';g.textAlign='center';g.fillText(nm,128,290)});
+ const m=new T.Mesh(new T.PlaneGeometry(2.08,2.6),new T.MeshBasicMaterial({map:t}));m.position.set(xs[i],1.75,86.8);m.rotation.y=Math.PI;scene.add(m);
+ box(.16,.1,.16,MB(0xffb347),xs[i],.66,86.2)});
+box(11.4,.6,.5,M2(0x4a3524),0,.3,86.45);col(0,86.45,11.4,.5);
+box(1.2,.03,2,M2(0x2a5a3a),-1.5,.03,84);box(1.4,.05,1.4,M2(0xd0801a),1.5,.03,84.6);
+{const p=new T.Mesh(new T.CylinderGeometry(.22,.17,.3,10),M2(0x6a3a22));p.position.set(-4.5,.15,85.3);const s=new T.Mesh(new T.SphereGeometry(.3,8,6),M2(0x2a6a2a));s.position.set(-4.5,.55,85.3);scene.add(p,s);box(.16,.26,.16,MB(0xffcc66),-2.7,.14,85.2);
+for(const dx of[-.3,.3]){box(.05,.2,.05,M2(0xe8dcc0),4.5+dx,.7,86.2);box(.04,.05,.04,MB(0xffc060),4.5+dx,.84,86.2)}}
+/* sun */
+const sun=new T.DirectionalLight(0xfff0d0,0);sun.position.set(30,40,-20);scene.add(sun);
+/* gate + new finale */
+let ended=0,morn=0;
+finale=function(){if(fin)return;fin=1;S.piano();G.on=0;G.st=0;G.bo=0;P.on=false;obj('Open the Final Gate');
+ note('<b>The three items fit the slots.</b><br><br><i>"What hides in the dark, be driven out by the light. What follows behind me, turn back and be gone."</i>');
+ setTimeout(()=>{el('note').style.display='none';scene.children.filter(o=>o.type==='Mesh'&&o.position.z===44&&o.geometry&&o.geometry.parameters&&o.geometry.parameters.width<=5&&o.geometry.parameters.height<=2.7).forEach(o=>gateParts.push(o));const k=cols.findIndex(c=>c[2]==43.85);if(k>=0)cols.splice(k,1);toast('The gate swings open.',3500);S.creak();obj('Walk out. Cross the road to the safe house.')},6000)};
+const _am=amb;amb=function(dt){if(ended){if(A.g)A.g.gain.value=0;return}_am(dt)};
+function birds(){if(!AC)return;for(let i=0;i<8;i++)snd('sine',rnd(2600,4200),i*.4+rnd(0,.3),.01,.12,.05,null,null,rnd(3500,5200))}
+function arrive(){ended=1;obj('You are safe.');P.vel.set(0,0,0);el('blk').style.opacity=1;
+ setTimeout(()=>{morn=1;ground.material.color.set(0x3f7f35);yard.material.color.set(0x4a9a3a);road.material.color.set(0x4a4d52);leaves[0].color.set(0x2f7a2f);if(mst)mst.gain.value=.7;birds();setInterval(birds,4000);el('blk').style.opacity=0},4200);
+ setTimeout(()=>{const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;background:rgba(0,0,0,.45);color:#fff;font-family:Georgia,serif;opacity:0;transition:opacity 2s';
+  const tx=(t,c)=>{const e=document.createElement('div');e.textContent=t;e.style.cssText=c;d.appendChild(e)};
+  tx('ESCAPE THE HOSPITAL','font-size:28px;letter-spacing:5px;color:#ffd98a');tx('Morning has come. You escaped the hospital.','font-size:20px');
+  const r=document.createElement('div');r.style.cssText='display:flex;gap:12px;margin-top:12px';
+  const b=(t,f)=>{const x=document.createElement('button');x.textContent=t;x.style.cssText='padding:12px 24px;background:rgba(0,0,0,.5);color:#fff;border:1px solid #ffd98a;font:16px Georgia,serif';x.onclick=f;r.appendChild(x)};
+  b('RESTART GAME',()=>location.reload());b('MAIN MENU',()=>{parent!==window?parent.postMessage({t:'exit'},'*'):location.reload()});
+  d.appendChild(r);document.body.appendChild(d);requestAnimationFrame(()=>requestAnimationFrame(()=>d.style.opacity=1))},10500)}
+const _x=extra;
+extra=function(dt,t){_x(dt,t);
+ if(fin&&!ended&&P.pos.z>78.5&&P.pos.z<86&&Math.abs(P.pos.x)<5.4)arrive();
+ if(ended&&!morn&&mst)mst.gain.value=Math.max(0,mst.gain.value-dt*.6);
+ if(morn){scene.fog.color.set(0xcfe6ff);scene.fog.density=.012;scene.background.set(0x8fc8ff);hemi.color.set(0xdfeeff);hemi.groundColor.set(0x6a7a5a);hemi.intensity=1.2;sun.intensity=1.1}};
 })();
 </script></body></html>
 
@@ -1360,7 +1420,7 @@ $('#lo').onclick=async()=>{if(confirm('Guest accounts cannot be recovered after 
 // ----- game launch: WARD 13 runs in an iframe (ward13.html); this page keeps voice + party alive -----
 const G={on:0};
 $('#start').onclick=()=>{if(Object.keys(members).length>1)ch.send({type:'broadcast',event:'go',payload:{}});launch()};
-function launch(){loadTo('Hospital में दाख़िल हो रहे हो',()=>{fs();show('game');G.on=1;document.body.classList.add('ingame');$('#gf').srcdoc='<!DOCTYPE html>'+$('#w13').innerHTML})}
+function launch(){loadTo('Entering the hospital',()=>{fs();show('game');G.on=1;document.body.classList.add('ingame');$('#gf').srcdoc='<!DOCTYPE html>'+$('#w13').innerHTML})}
 function leave(){G.on=0;document.body.classList.remove('ingame');$('#gf').srcdoc='<body style="background:#000">';show('lobby')}
 addEventListener('message',e=>{if(e.source!==$('#gf').contentWindow)return;const m=e.data||{};
  if(m.t=='ready')e.source.postMessage({t:'start'},'*');
