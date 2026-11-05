@@ -421,7 +421,7 @@ addEventListener('pointermove',e=>{if(document.pointerLockElement){look(e.moveme
 addEventListener('pointerup',e=>{if(e.pointerId===lid)lid=null});
 cv.addEventListener('click',e=>{if(e.pointerType==='mouse'&&started)try{cv.requestPointerLock()}catch(_){}});
 const jy=el('joy'),kn=el('knob');let jid=null;
-function jm(e){const r=jy.getBoundingClientRect(),dx=e.clientX-(r.left+60),dy=e.clientY-(r.top+60),d=Math.min(50,Math.hypot(dx,dy)),a=Math.atan2(dy,dx);const x=Math.cos(a)*d,y=Math.sin(a)*d;kn.style.left=36+x+'px';kn.style.top=36+y+'px';joy.x=x/50;joy.y=-y/50}
+function jm(e){const r=jy.getBoundingClientRect(),dx=e.clientX-(r.left+60),dy=e.clientY-(r.top+60),d=Math.min(50,Math.hypot(dx,dy)),a=Math.atan2(dy,dx);const x=Math.cos(a)*d,y=Math.sin(a)*d;kn.style.left=36+x+'px';kn.style.top=36+y+'px';{let mx=x/50,my=-y/50,m=Math.hypot(mx,my);if(m<.16){mx=my=0}else{const q=(m-.16)/.84/m;mx*=q;my*=q}joy.x=mx;joy.y=my}}
 jy.addEventListener('pointerdown',e=>{jid=e.pointerId;jy.setPointerCapture(jid);jm(e)});jy.addEventListener('pointermove',e=>{if(e.pointerId===jid)jm(e)});
 const jend=e=>{if(e.pointerId===jid){jid=null;joy.x=joy.y=0;kn.style.left=kn.style.top='36px'}};jy.addEventListener('pointerup',jend);jy.addEventListener('pointercancel',jend);
 el('bInt').onpointerdown=interact;el('bTorch').onpointerdown=tTorch;el('bMan').onpointerdown=()=>mantra();el('bCro').onpointerdown=()=>{P.crouch=!P.crouch};el('bMap').onpointerdown=()=>mapOpen();
@@ -490,10 +490,10 @@ function update(dt,t){
  const wantRun=(keys.ShiftLeft||keys.Spr)&&mag>.1;
  P.tired=Math.max(0,P.tired-dt);P.sprint=wantRun&&P.stam>0&&P.tired<=0;
  if(P.sprint){P.stam-=dt;if(P.stam<=0){P.stam=0;P.tired=2}}else P.stam=Math.min(5,P.stam+dt*5/3);
- const sp=P.sprint?5.8:P.crouch?1.6:3.2;w.multiplyScalar(sp*mag);if(G.dead){if(G.tm<.9)w.set(-Math.sin(P.face),0,-Math.cos(P.face)).multiplyScalar(2.4);else w.set(0,0,0)}P.vel.lerp(w,1-Math.exp(-16*dt));
+ const sp=P.sprint?4.4:P.crouch?1.6:2.7;w.multiplyScalar(sp*mag*(window.JJ&&JJ.y>0?.8:1));if(G.dead){if(G.tm<.9)w.set(-Math.sin(P.face),0,-Math.cos(P.face)).multiplyScalar(2.4);else w.set(0,0,0)}P.vel.lerp(w,1-Math.exp(-(w.lengthSq()>.01?6:9)*dt));
  P.pos.addScaledVector(P.vel,dt);for(let i=0;i<2;i++){for(const c of cols){const cx=Math.max(c[0],Math.min(P.pos.x,c[1])),cz=Math.max(c[2],Math.min(P.pos.z,c[3])),dx=P.pos.x-cx,dz=P.pos.z-cz,d=Math.hypot(dx,dz);if(d<R){if(d>1e-4){P.pos.x+=dx/d*(R-d);P.pos.z+=dz/d*(R-d)}else P.pos.x+=R}}}
- const spd=P.vel.length();if(spd>.15&&!G.dead){let d=Math.atan2(P.vel.x,P.vel.z)-P.face;d=Math.atan2(Math.sin(d),Math.cos(d));P.face+=d*(1-Math.exp(-22*dt))}
- P.ph+=dt*spd*2.6;aarav.g.position.set(P.pos.x,Math.abs(Math.cos(P.ph))*.05*Math.min(1,spd/3.2),P.pos.z);aarav.g.rotation.y=P.face;
+ const spd=P.vel.length();if(spd>.15&&!G.dead){let d=Math.atan2(P.vel.x,P.vel.z)-P.face;d=Math.atan2(Math.sin(d),Math.cos(d));P.face+=d*(1-Math.exp(-9*dt))}
+ P.ph+=dt*spd*3;aarav.g.position.set(P.pos.x,0,P.pos.z);aarav.g.rotation.y=P.face;
  animChar(aarav,P.ph,Math.min(1.5,spd/3.2),t);
  aarav.armR.rotation.x=P.has?(P.sprint?-.5:-1.25)+Math.sin(t*9)*.012*(P.tired>0?4:1):Math.sin(P.ph)*.7*Math.min(1.5,spd/3.2);
  animChar(kabir,0,0,t+2,false);kabir.armR.rotation.x=Math.sin(t*5)*.03-.1;kabir.g.rotation.y=Math.sin(t*.4)*.3;
@@ -502,9 +502,9 @@ function update(dt,t){
  P.cz+=((P.crouch?1:0)-P.cz)*Math.min(1,dt*8);const head=new T.Vector3(P.pos.x,1.6-P.cz*.45,P.pos.z),dist=1.7;
  const want=head.clone().addScaledVector(L,-dist).addScaledVector(rv,.3);const dv=want.clone().sub(head),len=dv.length();dv.normalize();ray.set(head,dv);ray.far=len;
  const h=ray.intersectObjects(walls)[0];if(h)want.copy(head).addScaledVector(dv,Math.max(.3,h.distance-.25));want.y=Math.max(.25,Math.min(3,want.y));
- if(P.sprint)want.add(V.set(rnd(-.02,.02),rnd(-.02,.02),0));if(G.st>=3||G.dead)want.add(V.set(rnd(-.04,.04),rnd(-.03,.03),0).multiplyScalar(G.dead?4:1));
+ if(G.st>=3||G.dead)want.add(V.set(rnd(-.04,.04),rnd(-.03,.03),0).multiplyScalar(G.dead?4:1));
  cam.position.lerp(want,1-Math.exp(-22*dt));cam.lookAt(cam.position.clone().add(L));
- cam.fov+=((P.sprint?78:70)-cam.fov)*(1-Math.exp(-6*dt));cam.updateProjectionMatrix();
+ cam.fov+=((P.sprint?74:70)-cam.fov)*(1-Math.exp(-6*dt));cam.updateProjectionMatrix();
  // torch
  if(P.on&&P.has){P.bat-=dt*100/270;if(P.bat<=0){P.bat=0;P.on=false;toast('The torch dies.')}}
  aarav.g.updateMatrixWorld(true);aarav.armR.localToWorld(hp.set(0,-.85,0));aarav.torch.userData.beam.visible=false;spot.position.copy(hp);spot.target.position.copy(head).addScaledVector(L,10);spot.visible=P.on;
@@ -750,13 +750,13 @@ const _e3=extra;extra=function(dt,t){_e3(dt,t);dripUpdate(dt);ghostFig(dt,t)};
 
 /* ===== WARD13 v5 patch ===== */
 (()=>{
-const RUN={on:0},J={y:0,v:0,ca:0},tap=(b,f)=>{b.onpointerdown=e=>{e.preventDefault();e.stopPropagation();f()}};
+const RUN={on:0},J=window.JJ={y:0,v:0,ca:0},tap=(b,f)=>{b.onpointerdown=e=>{e.preventDefault();e.stopPropagation();f()}};
 /* RUN toggle: tap once = keeps running, tap again = stop */
 const rb=el('bSpr').cloneNode(true);el('bSpr').replaceWith(rb);
 const setRun=v=>{RUN.on=v;rb.textContent=v?'RUN ✓':'RUN';rb.style.background=v?'rgba(155,28,28,.6)':''};
 tap(rb,()=>setRun(!RUN.on));
 /* JUMP replaces CROUCH */
-const jump=()=>{if(started&&!G.dead&&J.y<=0&&J.v<=0)J.v=4.6};
+const jump=()=>{if(started&&!G.dead&&J.y<=0&&J.v<=0)J.v=4.1};
 const bj=el('bCro');bj.textContent='JUMP';tap(bj,jump);
 addEventListener('keydown',e=>{if(e.code=='Space'){e.preventDefault();jump()}});
 /* OPEN = item list */
@@ -781,9 +781,9 @@ update=function(dt,t){
  P.crouch=false;P.stam=5;P.tired=0;keys.Spr=RUN.on?1:0;
  cam.position.y-=J.ca;
  _u(dt,t);
- if(J.y>0||J.v>0){J.v-=13*dt;J.y+=J.v*dt;if(J.y<=0){J.y=0;J.v=0}}
+ if(J.y>0||J.v>0){J.v-=13.5*dt;J.y+=J.v*dt;if(J.y<=0){J.y=0;J.v=0}}
  aarav.g.position.y+=J.y;spot.position.y+=J.y;J.ca=J.y*.7;cam.position.y+=J.ca};
-function pose(){const sp=P.vel.length();
+function pose(){return;const sp=P.vel.length();
  if(J.y>0){aarav.legL.rotation.x=-.9;aarav.legR.rotation.x=.5;aarav.armL.rotation.x=-2.3;aarav.torso.rotation.x=-.1}
  else if(P.sprint&&sp>.5){aarav.torso.rotation.x+=.25;aarav.legL.rotation.x*=1.5;aarav.legR.rotation.x*=1.5;aarav.armL.rotation.x*=1.6}}
 const _x=extra;
@@ -798,6 +798,58 @@ function upg(c,hc,gc){const t=c.torso,hm=M(hc,1),gm=M(gc,.9),wh=M(0xf2efe6,.4),b
  [.05,-.05].forEach(x=>{S3(.028,x,.53,.113,wh,t,1.1,.8,.5);box(.05,.011,.012,br,x,.572,.126,t)});
  [.25,-.25].forEach(x=>S3(.078,x,.3,0,gm,t))}
 upg(aarav,0x0a0a0a,0x8fa6c4);upg(kabir,0x1a120a,0xe8e8e8);
+})();
+
+</script>
+<script>
+
+/* ===== WARD13 v6: human character + movement ===== */
+(()=>{
+const a=aarav,mk=(g,m,x,y,z,p,sx,sy,sz,rx)=>{const o=new T.Mesh(g,m);o.position.set(x,y,z);o.scale.set(sx||1,sy||1,sz||1);o.rotation.x=rx||0;o.castShadow=true;p.add(o);return o};
+const jk=M(0x39465a,.9),pt=M(0x262d3a,.9),cl=M(0x6a7b92,.9),bt=M(0x3a2618,.7),shm=M(0x1a1512,.55),hr=M(0x0d0b0a,1),wh=M(0xf2efe6,.4),sk=M(0xc79a7a,.65),fd=M(0x232c3a,1);
+const SP=new T.SphereGeometry(1,10,8),CY=(r1,r2,h)=>new T.CylinderGeometry(r1,r2,h,10);
+const sph=(r,m,x,y,z,p,sx,sy,sz)=>mk(SP,m,x,y,z,p,r*(sx||1),r*(sy||1),r*(sz||1));
+const hide=g=>g.children.slice().forEach(o=>{if(o!==a.torch)o.visible=false});
+[a.legL,a.legR,a.armL,a.armR,a.torso].forEach(hide);
+function arm(g){
+ mk(CY(.052,.044,.3),jk,0,-.15,0,g);sph(.052,jk,0,0,0,g);
+ const e=new T.Group();e.position.y=-.3;g.add(e);
+ sph(.045,jk,0,0,0,e);mk(CY(.044,.036,.26),jk,0,-.13,0,e);mk(CY(.04,.04,.04),cl,0,-.265,0,e);
+ const w=new T.Group();w.position.y=-.29;e.add(w);
+ sph(.04,sk,0,-.04,0,w,1,1.15,.5);
+ for(let i=0;i<4;i++)mk(CY(.0085,.0075,.06),sk,-.027+i*.018,-.095,.004,w);
+ const th=mk(CY(.01,.008,.05),sk,.04,-.05,.015,w);th.rotation.z=.5;
+ return e}
+function leg(g){
+ mk(CY(.088,.07,.4),pt,0,-.2,0,g);sph(.088,pt,0,0,0,g);
+ const k=new T.Group();k.position.y=-.4;g.add(k);sph(.07,pt,0,0,0,k);mk(CY(.068,.055,.38),pt,0,-.19,0,k);
+ const f=new T.Group();f.position.y=-.38;k.add(f);
+ sph(.075,shm,0,-.005,.055,f,1,.62,1.9);sph(.056,shm,0,.01,-.02,f);
+ return k}
+a.kneeL=leg(a.legL);a.kneeR=leg(a.legR);a.elbL=arm(a.armL);a.elbR=arm(a.armR);
+mk(CY(.042,.042,.03),wh,0,-.2,0,a.elbL);
+const t=a.torso;
+sph(.2,jk,0,.12,0,t,1.12,1.15,.7);mk(CY(.17,.155,.36),jk,0,-.13,0,t,1,1,.72);
+sph(.07,jk,.25,.3,0,t);sph(.07,jk,-.25,.3,0,t);
+mk(CY(.05,.055,.12),sk,0,.4,0,t);mk(new T.TorusGeometry(.075,.02,6,12),cl,0,.37,0,t,1,1,1,Math.PI/2);
+mk(new T.BoxGeometry(.36,.05,.24),bt,0,-.3,0,t);sph(.17,pt,0,-.38,0,t,1.1,.75,.85);
+[[0,.0],[.01,-.1],[-.01,-.2]].forEach(([x,y],i)=>{const o=mk(new T.BoxGeometry(.11,.006,.01),fd,x,y,.126,t);o.rotation.z=.3-i*.3});
+sph(.115,sk,0,.55,0,t,1,1.12,1.02);sph(.122,hr,0,.575,-.012,t,1,.95,1.06);sph(.07,hr,0,.63,.07,t,2,.45,.7);
+[-.045,.045].forEach(x=>{sph(.021,wh,x,.555,.098,t,1,.8,.5);sph(.011,hr,x,.555,.108,t);mk(new T.BoxGeometry(.045,.008,.01),hr,x,.585,.105,t);sph(.025,sk,x*2.65,.55,0,t,.5,1,.8)});
+sph(.02,sk,0,.52,.115,t,.8,1.2,1);
+let lt=0,was=0;
+const _x=extra;
+extra=function(dt,t2){_x(dt,t2);
+ const sp=P.vel.length(),k=Math.min(1,sp/2.7),r=Math.max(0,Math.min(1,(sp-2.7)/1.7)),c=Math.cos(P.ph),s=Math.sin(P.ph),air=JJ.y>0;
+ if(was&&!air)lt=.3;was=air?1:0;if(lt>0)lt-=dt;
+ const A=(.5+.35*r)*k,bw=(.4+.5*r)*k;
+ let hl=s*A,hq=-s*A,kl=.08*k+Math.max(0,-c)*(.7+.5*r)*k,kr=.08*k+Math.max(0,c)*(.7+.5*r)*k,al=-s*bw,ar=s*bw,el=-(.12+.9*r*k),er=el,ln=.22*r,dy=Math.abs(c)*(.02+.03*r)*k;
+ if(air){hl=-.9;kl=1.2;hq=.45;kr=.6;al=ar=-2.4;el=er=-.3;ln=.18;dy=0}
+ else if(lt>0){const f=Math.sin(Math.PI*(1-lt/.3));hl=hq=-.7*f;kl=kr=1.3*f;ln=.3*f;dy=-.16*f;al=ar=-.5*f}
+ a.legL.rotation.x=hl;a.legR.rotation.x=hq;a.kneeL.rotation.x=kl;a.kneeR.rotation.x=kr;
+ a.armL.rotation.x=al;a.elbL.rotation.x=el;
+ if(P.has){a.elbR.rotation.x=-.5;if(air)a.armR.rotation.x=-1.7}else{a.armR.rotation.x=ar;a.elbR.rotation.x=er}
+ a.torso.rotation.x+=ln;a.s.position.y=dy};
 })();
 
 </script>
