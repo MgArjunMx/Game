@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#070b14"><title>PLAY ZONE</title>
+<meta name="theme-color" content="#070b14"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>PLAY ZONE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Russo+One&display=swap" rel="stylesheet">
 <style>
@@ -38,11 +38,9 @@ input[type=text]:focus-visible,button:focus-visible{outline:2px solid var(--ice)
 .sl.e{border-left-color:#2a3555;color:var(--mu);cursor:pointer;border-style:dashed}
 .sl .av{width:36px;height:36px;font-size:16px}.sl small{display:block;color:var(--mu);font-size:12px;font-weight:500}
 .side{position:absolute;right:12px;top:calc(env(safe-area-inset-top) + 74px);display:flex;flex-direction:column;gap:10px;z-index:4}
-.stage{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
 .stage svg{height:min(64vh,430px);animation:pop .9s cubic-bezier(.2,.9,.3,1.2) both,fl 4s 1s ease-in-out infinite;filter:drop-shadow(-7px 0 12px rgba(63,216,255,.4)) drop-shadow(7px 0 12px rgba(255,110,30,.35))}
 
 @keyframes fl{50%{transform:translateY(-8px)}}
-.tag{position:absolute;top:calc(env(safe-area-inset-top) + 76px);font:400 20px 'Russo One';text-shadow:0 2px 10px #000}
 .go{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 18px);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:5}
 .go .btn{font-size:26px;padding:16px 64px}
 .sheet{position:fixed;inset:0;background:rgba(3,6,12,.65);display:none;align-items:flex-end;justify-content:center;z-index:50}.sheet.on{display:flex}
@@ -77,16 +75,21 @@ input[type=range]{width:55%;accent-color:var(--amb)}
 .card:before{top:-1px;left:-1px;border-right:0;border-bottom:0;border-radius:14px 0 0 0}.card:after{bottom:-1px;right:-1px;border-left:0;border-top:0;border-radius:0 0 14px 0}
 .btn{position:relative;overflow:hidden}.btn:after{content:"";position:absolute;top:0;bottom:0;width:38%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-20deg);animation:bs 3.4s ease-in-out infinite}.btn.g:after{display:none}
 .go{filter:drop-shadow(0 0 14px rgba(255,110,30,.5));animation:gl 2.4s ease-in-out infinite}
-.pad,.ring{position:absolute;bottom:calc(50% - min(32vh,215px) - 30px);width:250px;height:60px;border-radius:50%;border:2px solid rgba(255,176,32,.6)}
-.pad{box-shadow:0 0 44px rgba(255,176,32,.4),inset 0 0 30px rgba(255,176,32,.3);background:radial-gradient(rgba(255,176,32,.25),transparent 70%)}
-.ring{border-color:rgba(63,216,255,.7);animation:rp 2.6s ease-out infinite}
-.beam{position:absolute;bottom:calc(50% - min(32vh,215px));width:230px;height:62vh;background:linear-gradient(to top,rgba(63,216,255,.2),transparent);clip-path:polygon(14% 100%,86% 100%,100% 0,0 0)}
 .me,.sl:not(.e){clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%)}
 .xp{height:4px;width:96px;background:#1a2440;border-radius:2px;margin-top:4px;overflow:hidden}.xp i{display:block;width:30%;height:100%;background:linear-gradient(90deg,var(--ice),var(--amb))}
 .lv{font:400 13px 'Russo One';font-style:normal;color:#101010;background:var(--amb);padding:3px 9px;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%)}
-.modes{display:flex;gap:6px}.modes span{font:400 12px 'Russo One';letter-spacing:1px;padding:5px 14px;color:var(--mu);border:1px solid var(--ln);background:var(--pn);clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);transition:.25s}.modes span.on{color:#0a0f1a;background:var(--ice);box-shadow:0 0 14px var(--ice)}
 #lobby.on .top{animation:dn .6s both}#lobby.on #squad{animation:lf .6s .15s both}#lobby.on .side{animation:rt .6s .15s both}#lobby.on .go{animation:upb .6s .3s both,gl 2.4s .9s ease-in-out infinite}
 @media(max-width:600px){.hero{width:120px;height:120px}.hero b{font-size:32px}}
+
+.stage{position:absolute;inset:0}#c3{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+#nt{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.nt{position:absolute;transform:translate(-50%,-100%);font:400 15px 'Russo One';white-space:nowrap;padding:3px 12px;background:rgba(7,11,20,.65);border-bottom:2px solid var(--amb);text-shadow:0 2px 8px #000}
+.hint{position:absolute;top:calc(env(safe-area-inset-top) + 74px);left:50%;transform:translateX(-50%);color:var(--mu);font-size:13px;letter-spacing:2px;pointer-events:none;z-index:3}
+#rot{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#rot .ph{width:70px;height:120px;border:3px solid var(--amb);border-radius:14px;animation:rr 2.4s ease-in-out infinite}
+@keyframes rr{0%,25%{transform:rotate(0)}65%,100%{transform:rotate(-90deg)}}
+@media(orientation:portrait) and (max-width:900px){#rot{display:flex}}
+@media(max-height:450px){.hero{width:80px;height:80px}.hero b{font-size:22px}#login .hero,#name .hero{display:none}.logo{font-size:28px}.card{padding:14px;gap:8px}input[type=text]{padding:9px 12px}.sl{min-height:42px}.ib{width:42px;height:42px}#squad,.side{top:calc(env(safe-area-inset-top) + 62px)}.go{bottom:calc(env(safe-area-inset-bottom) + 10px)}.go .btn{font-size:20px;padding:12px 44px}.hint{top:calc(env(safe-area-inset-top) + 64px)}}
 @media(max-width:600px){#squad{width:128px}.sl{font-size:13px;padding:5px}.sl .av{width:30px;height:30px;font-size:14px}.logo{font-size:32px}.go .btn{padding:15px 48px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style></head><body>
@@ -100,10 +103,11 @@ input[type=range]{width:55%;accent-color:var(--amb)}
 <symbol id="i-usr" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0112 0"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14a5 5 0 014 5"/></symbol>
 <symbol id="i-add" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
 </defs></svg>
-<div id="toasts"></div><div id="audios" hidden></div>
+<div id="rot"><div class="ph"></div><div class="logo" style="font-size:24px">ROTATE YOUR PHONE</div><div class="sub">Play Zone runs in landscape</div></div><div id="toasts"></div><div id="audios" hidden></div>
 
 <section class="scr on" id="loading"><div class="hero"><i></i><i></i><i></i><b>PZ</b></div><div class="logo">PLAY<b>ZONE</b></div><div class="bar"><i id="lb"></i></div><div class="sub" id="lt">Loading</div></section>
 
+<section class="scr" id="wb"><div class="hero"><i></i><i></i><i></i><b>PZ</b></div><div class="logo">PLAY<b>ZONE</b></div><div class="card"><h2 id="wbn"></h2><div class="sub">Tap to enter in full screen.</div><button class="btn" id="wbb">ENTER</button></div></section>
 <section class="scr" id="login"><div class="hero"><i></i><i></i><i></i><b>PZ</b></div><div class="logo">PLAY<b>ZONE</b></div>
 <div class="card"><h2>Drop in</h2><div class="sub">No sign-up. Play as a guest, find friends by username and talk live while you play.</div>
 <button class="btn" id="guest">PLAY AS GUEST</button><div class="er" id="er0"></div></div></section>
@@ -117,22 +121,13 @@ input[type=range]{width:55%;accent-color:var(--amb)}
 <section class="scr" id="lobby">
 <div class="top"><div class="me"><div class="av" id="mav"></div><div><b id="mn"></b><span id="mu"></span><div class="xp"><i></i></div></div><em class="lv">LV 1</em></div>
 <div style="display:flex;align-items:center"><span class="onl" id="onc"></span><button class="ib" id="bset" aria-label="Settings"><svg class="i"><use href="#i-set"/></svg></button></div></div>
-<div class="stage"><div class="beam"></div><div class="pad"></div><div class="ring"></div><div class="ring" style="animation-delay:1.3s"></div>
-<svg viewBox="0 0 200 360"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b6b3a"/><stop offset="1" stop-color="#2e3a1c"/></linearGradient><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3142"/><stop offset="1" stop-color="#11151f"/></linearGradient></defs>
-<ellipse cx="100" cy="348" rx="62" ry="8" fill="#000" opacity=".4"/>
-<path d="M70 210l-6 124h30l6-90 6 90h30l-6-124z" fill="#3b4254"/><path d="M62 330h36v14H58zM102 330h36l4 14h-42z" fill="#161a22"/>
-<path d="M62 118c-14 8-22 30-24 56l10 6c4-18 10-30 18-36zM138 118c14 8 22 30 24 56l-10 6c-4-18-10-30-18-36z" fill="url(#g1)"/>
-<path d="M38 172l12 8-4 14-14-4zM162 172l-12 8 4 14 14-4z" fill="#1a1e27"/>
-<path d="M64 112h72l8 108H56z" fill="url(#g1)"/><path d="M72 120h56l4 82H68z" fill="url(#g2)"/><path d="M84 150h32v22H84z" fill="#232b3d" stroke="#ffb020" stroke-width="1.5"/><path d="M76 206h48v10H76z" fill="#11151f"/>
-<path d="M88 98h24v18H88z" fill="#c99872"/><circle cx="100" cy="80" r="26" fill="#d6a67e"/>
-<path d="M72 78c0-30 56-30 56 0v6H72z" fill="#26301a"/><path d="M76 74h48v14c-10 6-38 6-48 0z" fill="#0c1420" stroke="#3fd8ff" stroke-width="2"/><path d="M84 78h18" stroke="#3fd8ff" stroke-width="2" opacity=".7"/></svg></div>
-<div class="tag" id="tg"></div>
+<div class="stage"><canvas id="c3"></canvas><div id="nt"></div></div><div class="hint">DRAG TO ROTATE</div>
 <div id="squad"></div>
 <div class="side"><button class="ib" id="bfr" aria-label="Friends"><svg class="i"><use href="#i-usr"/></svg><em id="bdg" hidden></em></button>
 <button class="ib" id="binv" aria-label="Invite"><svg class="i"><use href="#i-add"/></svg></button>
 <button class="ib" id="bmic" aria-label="Mic"><svg class="i"><use href="#i-mic"/></svg></button>
 <button class="ib" id="bspk" aria-label="Speaker"><svg class="i"><use href="#i-spk"/></svg></button></div>
-<div class="go"><div class="modes"><span>SOLO</span><span>DUO</span><span>SQUAD</span></div><button class="btn" id="start">START</button><div class="sub" id="mode"></div></div>
+<div class="go"><button class="btn" id="start">START</button><div class="sub" id="mode"></div></div>
 </section>
 
 <section class="scr" id="game"><canvas id="cv"></canvas><button class="btn g" id="xit">EXIT</button>
@@ -153,6 +148,7 @@ input[type=range]{width:55%;accent-color:var(--amb)}
 <div class="sheet" id="shI" style="align-items:flex-start"><div class="card" style="margin-top:calc(env(safe-area-inset-top) + 10px);border-radius:14px"><div id="it"></div>
 <div style="display:flex;gap:8px"><button class="btn sb" id="ij">JOIN</button><button class="btn g sb" data-x>LATER</button></div></div></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 <script>
 // ===== CONFIG =====
@@ -187,11 +183,14 @@ function applyMusic(){if(!st.mus){ac&&ac.suspend()}else{music();ac&&ac.resume()}
 
 // ----- auth -----
 (async()=>{loadTo('Loading',async()=>{const {data:{session}}=await sb.auth.getSession();if(session){me=session.user;afterAuth()}else show('login')})})();
-$('#guest').onclick=async e=>{e.target.disabled=true;music();const {data,error}=await sb.auth.signInAnonymously();e.target.disabled=false;
+$('#guest').onclick=async e=>{fs();fresh=1;e.target.disabled=true;music();const {data,error}=await sb.auth.signInAnonymously();e.target.disabled=false;
  if(error)return $('#er0').textContent='Guest login failed: '+error.message+' (turn on Anonymous sign-ins in Supabase > Authentication > Sign In / Providers)';
  me=data.user;afterAuth()};
-async function afterAuth(){const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();if(data){prof=data;enterLobby()}else show('name')}
-$('#next').onclick=async()=>{const n=$('#nm').value.trim(),u=$('#un').value.trim().toLowerCase(),er=$('#er1');er.textContent='';
+let fresh=0;
+async function fs(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen({navigationUI:'hide'})}catch(e){}try{await screen.orientation.lock('landscape')}catch(e){}}
+async function afterAuth(){const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();if(data){prof=data;if(fresh)enterLobby();else{$('#wbn').textContent='Welcome back, '+prof.name;show('wb')}}else show('name')}
+$('#wbb').onclick=()=>{fs();enterLobby()};
+$('#next').onclick=async()=>{fs();const n=$('#nm').value.trim(),u=$('#un').value.trim().toLowerCase(),er=$('#er1');er.textContent='';
  if(n.length<2)return er.textContent='Enter your name (2+ letters).';
  if(!/^[a-z0-9_]{3,16}$/.test(u))return er.textContent='Username: 3-16 letters, numbers or _ only.';
  const {data,error}=await sb.from('profiles').insert({id:me.id,name:n,username:u}).select().single();
@@ -199,9 +198,9 @@ $('#next').onclick=async()=>{const n=$('#nm').value.trim(),u=$('#un').value.trim
  prof=data;enterLobby()};
 
 // ----- lobby -----
-async function enterLobby(){music();show('lobby');
+async function enterLobby(){music();show('lobby');init3d();
  $('#mav').outerHTML=av(prof.username,prof.name).replace('class="av"','class="av" id="mav"');
- $('#mn').textContent=prof.name;$('#mu').textContent='@'+prof.username;$('#tg').textContent=prof.name;
+ $('#mn').textContent=prof.name;$('#mu').textContent='@'+prof.username;
  const o=sb.channel('online',{config:{presence:{key:me.id}}});
  o.on('presence',{event:'sync'},()=>{online=new Set(Object.keys(o.presenceState()));$('#onc').textContent=online.size+' online';renderFr()}).subscribe(s=>{if(s=='SUBSCRIBED')o.track({u:prof.username})});
  sb.channel('u:'+me.id).on('broadcast',{event:'invite'},({payload:p})=>{pend=p.party;$('#it').innerHTML=`<b>${esc(p.name)}</b> invited you to their squad.`;$('#shI').classList.add('on')})
@@ -256,12 +255,45 @@ async function onSig(m){const p=pc[m.from]||mk(m.from);
  else if(m.c){p.remoteDescription?p.addIceCandidate(m.c).catch(()=>{}):(p._q=p._q||[]).push(m.c)}}
 function renderSquad(){const ids=Object.keys(members),host=party==me.id;let h='';
  ids.slice(0,4).forEach(k=>{const m=members[k][0];h+=`<div class="sl">${av(m.u,m.n)}<div>${esc(m.n)}${k==me.id?' (you)':''}<small>${k==party?'Host':'Squad'}${pc[k]&&pc[k].connectionState=='connected'?' · voice on':''}</small></div></div>`});
- for(let i=ids.length;i<4;i++)h+=`<div class="sl e" data-inv>${'<svg class="i"><use href="#i-add"/></svg>'}<div>Invite friend</div></div>`;
- $('#squad').innerHTML=h;{const mi=Math.max(0,Math.min(ids.length,3)-1);$$('.modes span').forEach((q,i)=>q.classList.toggle('on',i==mi))}$('#squad').onclick=e=>e.target.closest('[data-inv]')&&$('#binv').click();
- $('#start').disabled=!host;$('#start').textContent=host?'START':'WAITING';$('#mode').textContent=ids.length>1?(host?'Squad of '+ids.length:'Host will start the match'):'Solo mode. Invite friends any time.'}
+ if(ids.length<4)h+=`<div class="sl e" data-inv><svg class="i"><use href="#i-add"/></svg><div>Invite friend</div></div>`;sync3d(ids);
+ $('#squad').innerHTML=h;$('#squad').onclick=e=>e.target.closest('[data-inv]')&&$('#binv').click();
+ $('#start').disabled=!host;$('#start').textContent=host?'START':'WAITING';$('#mode').textContent=host?'':'Host will start the match'}
 $('#bmic').onclick=()=>{if(!stream)return initMic().then(()=>joinParty(party));muted=!muted;stream.getAudioTracks().forEach(t=>t.enabled=!muted);ic($('#bmic'),muted?'mic0':'mic');$('#bmic').classList.toggle('off',muted)};
 $('#bspk').onclick=()=>{deaf=!deaf;$$('#audios audio').forEach(a=>a.muted=deaf);ic($('#bspk'),deaf?'spk0':'spk');$('#bspk').classList.toggle('off',deaf)};
 
+// ----- 3D lobby: drag to rotate 360 -----
+let R3,S3,C3,chars={},rot=0,vel=0,drag=null;const V3=()=>new THREE.Vector3(),hueOf=s=>[...s].reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7)%360;
+function soldier(hue){const g=new THREE.Group(),M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.75,metalness:.1},o));
+ const B=(w,h,d,m,x,y,z,p)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);(p||g).add(o);return o};
+ const ol=M(0x56653a),dk=M(0x1b2029),gr=M(0x3a4150),sk=M(0xd1a07a),bk=M(0x0d1016);
+ const pl=new THREE.Mesh(new THREE.CylinderGeometry(1,1.08,.08,48),M(0x101828,{metalness:.6,roughness:.4}));pl.position.y=-.04;g.add(pl);
+ const rg=new THREE.Mesh(new THREE.RingGeometry(.84,.96,48),new THREE.MeshBasicMaterial({color:0xffb020,side:2}));rg.rotation.x=-Math.PI/2;rg.position.y=.01;g.add(rg);
+ B(.24,.8,.28,gr,-.16,.48,0);B(.24,.8,.28,gr,.16,.48,0);B(.26,.14,.4,bk,-.16,.07,.05);B(.26,.14,.4,bk,.16,.07,.05);B(.52,.12,.34,dk,0,.9,0);
+ const t=new THREE.Group();t.position.y=.95;g.add(t);
+ B(.62,.72,.34,ol,0,.38,0,t);B(.68,.5,.42,dk,0,.45,0,t);B(.2,.16,.1,gr,-.16,.33,.24,t);B(.2,.16,.1,gr,.16,.33,.24,t);B(.5,.5,.14,dk,0,.45,-.28,t);B(.12,.1,.12,sk,0,.8,0,t);
+ const hd=new THREE.Mesh(new THREE.SphereGeometry(.17,24,16),sk);hd.position.y=.97;t.add(hd);
+ const hl=new THREE.Mesh(new THREE.SphereGeometry(.22,24,16,0,7,0,1.7),M(0x2d3a1f));hl.position.y=.99;t.add(hl);
+ B(.3,.07,.06,new THREE.MeshStandardMaterial({color:0,emissive:new THREE.Color('hsl('+hue+',90%,55%)'),emissiveIntensity:1.5}),0,.97,.17,t);
+ const arm=x=>{const a=new THREE.Group();a.position.set(x,.68,0);t.add(a);B(.18,.62,.2,ol,0,-.3,0,a);B(.2,.16,.22,bk,0,-.66,0,a);return a};
+ const l=arm(-.42),r=arm(.42);r.rotation.x=-.7;B(.08,.1,.85,dk,.42,.14,.5,t);
+ return {g,t,l,r}}
+function init3d(){if(S3||!window.THREE)return;const cv=$('#c3');R3=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});R3.setPixelRatio(Math.min(devicePixelRatio,2));R3.outputEncoding=THREE.sRGBEncoding;
+ S3=new THREE.Scene();C3=new THREE.PerspectiveCamera(30,1,.1,50);C3.position.set(0,1.5,8.5);C3.lookAt(0,1,0);
+ S3.add(new THREE.HemisphereLight(0x9bb4ff,0x1a1208,.8));const k=new THREE.DirectionalLight(0xfff0dd,1.2);k.position.set(-3,4,5);S3.add(k);
+ const a=new THREE.PointLight(0x3fd8ff,2.4,16);a.position.set(3,2.5,-3);S3.add(a);const b=new THREE.PointLight(0xff6a1f,2.2,16);b.position.set(-3,2,-3);S3.add(b);
+ const rs=()=>{const w=cv.clientWidth,h=cv.clientHeight;R3.setSize(w,h,false);C3.aspect=w/h;C3.updateProjectionMatrix()};rs();addEventListener('resize',rs);
+ cv.addEventListener('pointerdown',e=>{drag=e.clientX;vel=0;cv.setPointerCapture(e.pointerId)});
+ cv.addEventListener('pointermove',e=>{if(drag==null)return;const d=(e.clientX-drag)*.012;rot+=d;vel=d;drag=e.clientX});
+ const up=()=>drag=null;cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+ const v=V3();(function f(t){requestAnimationFrame(f);if(!$('#lobby').classList.contains('on'))return;if(drag==null){rot+=vel;vel*=.93}
+  for(const id in chars){const c=chars[id],s=Math.sin(t/700+c.ph);c.g.rotation.y=rot;c.t.scale.y=1+s*.012;c.l.rotation.x=s*.05;c.r.rotation.x=-.7-s*.03;c.g.position.x+=(c.x-c.g.position.x)*.1;
+   v.set(c.g.position.x,2.25,0).project(C3);c.n.style.left=(v.x*.5+.5)*cv.clientWidth+'px';c.n.style.top=(-v.y*.5+.5)*cv.clientHeight+'px'}
+  R3.render(S3,C3)})(0);sync3d(Object.keys(members))}
+function sync3d(ids){if(!S3)return;const all=[...new Set([me.id,...ids])],order=all.filter(k=>k!=me.id);order.splice(Math.floor((all.length-1)/2),0,me.id);
+ Object.keys(chars).forEach(k=>{if(!all.includes(k)){S3.remove(chars[k].g);chars[k].n.remove();delete chars[k]}});
+ order.forEach((k,i)=>{const m=(members[k]&&members[k][0])||{n:prof.name,u:prof.username};let c=chars[k];const x=(i-(order.length-1)/2)*1.7;
+  if(!c){c=chars[k]=soldier(hueOf(m.u));c.ph=Math.random()*6;c.n=document.createElement('div');c.n.className='nt';$('#nt').append(c.n);S3.add(c.g);c.g.position.x=x}
+  c.n.textContent=m.n;c.x=x})}
 // ----- settings -----
 function setUI(){$('#smv').value=st.mv;$('#svv').value=st.vv;$('#ssfx').textContent=st.sfx?'ON':'OFF';$('#smus').textContent=st.mus?'ON':'OFF'}
 $('#bset').onclick=()=>{setUI();$('#sinfo').textContent='Signed in as @'+prof.username+' (guest)';$('#shS').classList.add('on')};
