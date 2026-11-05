@@ -194,7 +194,7 @@ document.addEventListener('pointerdown',on,{passive:true})})();
 <div class="go"><button class="btn" id="start">START</button><div class="sub" id="mode"></div></div>
 </section>
 
-<section class="scr" id="game"><iframe id="gf" title="Ward 13" allow="autoplay;fullscreen"></iframe></section>
+<section class="scr" id="game"><iframe id="gf" title="Escape The Hospital" allow="autoplay;fullscreen"></iframe></section>
 
 <div class="sheet" id="shF"><div class="card"><div class="hd"><h2>Friends</h2><button class="btn g sb" data-x>CLOSE</button></div>
 <div style="display:flex;gap:8px"><input type="text" id="q" placeholder="Search username" autocapitalize="none" autocomplete="off"><button class="btn sb" id="qb">FIND</button></div>
@@ -211,7 +211,7 @@ document.addEventListener('pointerdown',on,{passive:true})})();
 <template id="w13">
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>WARD 13: The Last Cry – World Prototype</title>
+<title>ESCAPE THE HOSPITAL</title>
 <style>
 :root{--bg:#050506;--fg:#d8d2c8;--red:#9b1c1c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#050506;--fg:#d8d2c8}}
@@ -232,7 +232,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 #btns button{pointer-events:auto;width:64px;height:64px;border-radius:50%;border:2px solid rgba(255,255,255,.3);background:rgba(20,20,20,.55);color:var(--fg);font:12px Georgia,serif;touch-action:none}
 #note{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(80%,420px);background:#d8c9a0;color:#2a1a0a;padding:18px;display:none;font-size:17px;line-height:1.5;box-shadow:0 0 40px #000;text-align:center}
 #start{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;gap:6px}
-#start h1{font-size:44px;letter-spacing:8px;color:var(--red);margin:0}#start p{margin:4px;opacity:.8;font-size:14px}
+#start h1{font-size:clamp(26px,7vw,54px);letter-spacing:6px;color:#b01818;margin:0;text-shadow:0 0 18px #a00,0 0 40px #500;animation:tflk 4s infinite}#start .tag{color:#ff2a2a;text-shadow:0 0 12px #f00;opacity:1;font-size:16px;font-style:italic}@keyframes tflk{0%,100%{opacity:1}46%{opacity:1}48%{opacity:.25}50%{opacity:.9}52%{opacity:.3}54%{opacity:1}}#start p{margin:4px;opacity:.8;font-size:14px}
 #go{margin-top:16px;padding:12px 34px;font:18px Georgia,serif;background:transparent;color:var(--fg);border:1px solid var(--red)}
 #toast{white-space:pre-line}
 #bSpr{left:46px;bottom:calc(164px + env(safe-area-inset-bottom,0px));width:72px;height:72px;border-radius:50%;border:2px solid rgba(255,255,255,.35);background:rgba(20,20,20,.6);color:var(--fg);font:13px Georgia,serif;pointer-events:auto;touch-action:none}
@@ -247,12 +247,12 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:
 <div id="wrap"></div><div id="vig"></div>
 <div id="hud">
 <div id="bat"><span id="ti">🔦</span><div class="bar"><i id="bf" style="width:0"></i></div><b id="bp">–</b><b id="lv" style="color:#c33;margin-left:8px"></b></div>
-<div id="obj">You wake up. Find the torch.</div><div id="prompt"></div><div id="toast"></div>
+<div id="obj">तुम hospital में जागे हो। पहले torch ढूँढो।</div><div id="prompt"></div><div id="toast"></div>
 <div id="joy"><div id="knob"></div></div>
 <button id="bSpr">RUN</button><div id="stm"><i id="sf"></i></div><div id="btns"><button id="bInt">TAP</button><button id="bTorch">🔦 OFF</button><button id="bMap">MAP</button><button id="bMan">MANTRA</button><button id="bCro">CROUCH</button></div>
 </div>
 <div id="blk"></div><div id="kp"><div id="kd">----</div><div id="kg"></div></div><div id="note"></div>
-<div id="start"><h1>WARD 13</h1><p>THE LAST CRY · world prototype</p><p>WASD move · Shift run · F torch · E interact · M map · Q mantra · drag / mouse to look<br>Mobile: left joystick, drag right side to look</p><button id="go">ENTER</button></div>
+<div id="start"><h1>ESCAPE THE HOSPITAL</h1><p class="tag">कुछ दरवाज़े सिर्फ बंद नहीं होते… वे तुम्हें अंदर रखते हैं।</p><p>WASD move · Shift run · F torch · E interact · M map · Q mantra · drag / mouse to look<br>Mobile: left joystick, drag right side to look</p><button id="go">ENTER THE HOSPITAL</button></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 const T=THREE,$=i=>document.getElementById(i),rnd=(a,b)=>a+Math.random()*(b-a);
@@ -295,7 +295,7 @@ seg(-9,12,-2,12);seg(-9,20,-2,20);seg(-9,12,-9,20);seg(2,12,9,12);seg(2,20,9,20)
 // reception + final gate
 seg(-9,30,-2,30);seg(2,30,9,30);seg(-9,30,-9,44);seg(9,30,9,44);seg(-9,44,-2.5,44);seg(2.5,44,9,44);seg(-2.5,44,2.5,44,.5,.3,2.7);cols.push([-2.5,2.5,43.85,44.15]);
 for(let x=-2.3;x<=2.31;x+=.46)box(.05,2.7,.05,M(0x1a1a1a,.5,.8),x,1.35,44);box(5,.06,.06,M(0x1a1a1a,.5,.8),0,.5,44);box(5,.06,.06,M(0x1a1a1a,.5,.8),0,2.2,44);
-sign('WARD 13',0,2.88,5.84,Math.PI,2.3,.45,'#c9c3a8','rgba(40,10,10,.9)');sign('WARD 13',0,2.88,6.16,0,2.3,.45,'#c9c3a8','rgba(40,10,10,.9)');
+sign('EMERGENCY',0,2.88,5.84,Math.PI,2.3,.45,'#c9c3a8','rgba(40,10,10,.9)');sign('EMERGENCY',0,2.88,6.16,0,2.3,.45,'#c9c3a8','rgba(40,10,10,.9)');
 sign('SAFE ROOM',-1.84,2.95,15.5,Math.PI/2,2.6,.4,'#7fe39a','rgba(5,25,10,.9)',44);sign('NURSE STATION',1.84,2.95,15.5,-Math.PI/2,2.8,.4,'#c9c3a8','rgba(20,20,20,.9)',36);
 sign('RECEPTION',0,2.95,29.84,Math.PI,2.8,.4,'#c9c3a8','rgba(20,20,20,.9)',44);sign('FINAL GATE – LOCKED',0,2.95,43.84,Math.PI,4,.4,'#d44','rgba(20,5,5,.9)',34);
 /* ---------- lights ---------- */
@@ -426,7 +426,7 @@ jy.addEventListener('pointerdown',e=>{jid=e.pointerId;jy.setPointerCapture(jid);
 const jend=e=>{if(e.pointerId===jid){jid=null;joy.x=joy.y=0;kn.style.left=kn.style.top='36px'}};jy.addEventListener('pointerup',jend);jy.addEventListener('pointercancel',jend);
 el('bInt').onpointerdown=interact;el('bTorch').onpointerdown=tTorch;el('bMan').onpointerdown=()=>mantra();el('bCro').onpointerdown=()=>{P.crouch=!P.crouch};el('bMap').onpointerdown=()=>mapOpen();
 el('bSpr').onpointerdown=e=>{keys.Spr=1;P.crouch=false;try{e.target.setPointerCapture(e.pointerId)}catch(_){}};el('bSpr').onpointerup=el('bSpr').onpointerleave=el('bSpr').onpointercancel=()=>keys.Spr=0;
-el('go').onclick=()=>{audioInit();setTimeout(()=>S.start(),60);started=true;el('start').style.display='none'};
+el('go').onclick=()=>{audioInit();setTimeout(()=>{S.start();S.beat();S.creak()},60);started=true;el('start').style.display='none'};
 /* ---------- audio ---------- */
 let AC,mst,NB;
 function audioInit(){if(AC)return;AC=new(window.AudioContext||window.webkitAudioContext)();mst=AC.createGain();mst.gain.value=.9;mst.connect(AC.destination);NB=AC.createBuffer(1,AC.sampleRate,AC.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=48;g.gain.value=.05;o.connect(g);g.connect(mst);o.start();ambInit()}
@@ -461,7 +461,7 @@ function dead2(){G.dead=2;dFloor(0,P.pos.x,P.pos.z,1.8);box(.3,.06,.06,M(0x22222
  if(G.lives<=0){toast('They never found the way out…',4000);setTimeout(()=>location.reload(),4200);return}
  P.vel.set(0,0,0);P.on=false;G.dead=0;G.bo=0;setSt(0);G.t=rnd(120,170);G.prot=6;G.x=P.pos.x;G.z=P.pos.z+40;el('blk').style.opacity=0;toast('You wake where you fell. The cry fades away.\nLives left: '+G.lives,4000)}
 function ghostUpdate(dt){
- G.fk=Math.max(0,G.fk-dt);G.prot=Math.max(0,G.prot-dt);G.dg+=(G.st/4-G.dg)*Math.min(1,dt*2);hemi.intensity=G.bo?.02:.15;
+ G.fk=Math.max(0,G.fk-dt);G.prot=Math.max(0,G.prot-dt);G.dg+=(G.st/4-G.dg)*Math.min(1,dt*2);hemi.intensity=G.bo?.05:.3;
  if(AC){const l=AC.listener;if(l.positionX){l.positionX.value=P.pos.x;l.positionY.value=1.6;l.positionZ.value=P.pos.z;l.forwardX.value=Math.sin(P.yaw);l.forwardY.value=0;l.forwardZ.value=Math.cos(P.yaw);l.upX.value=0;l.upY.value=1;l.upZ.value=0}}
  if(G.dead){G.tm+=dt;if(G.dead==1&&G.tm>2.6)dead2();return}
  if(!G.on)return;
@@ -506,7 +506,7 @@ function update(dt,t){
  cam.position.lerp(want,1-Math.exp(-22*dt));cam.lookAt(cam.position.clone().add(L));
  cam.fov+=((P.sprint?74:70)-cam.fov)*(1-Math.exp(-6*dt));cam.updateProjectionMatrix();
  // torch
- if(P.on&&P.has){P.bat-=dt*100/270;if(P.bat<=0){P.bat=0;P.on=false;toast('The torch dies.')}}
+ if(P.on&&P.has){P.bat=Math.max(4,P.bat-dt*100/420)}
  aarav.g.updateMatrixWorld(true);aarav.armR.localToWorld(hp.set(0,-.85,0));aarav.torch.userData.beam.visible=false;spot.position.copy(hp);spot.target.position.copy(head).addScaledVector(L,10);spot.visible=P.on;
  P.warm=Math.max(0,P.warm-dt);{let k=3.6;if(P.warm>0)k=Math.random()<.5?.3:1.2;else if(P.on&&(P.bat<20||G.st>=2)&&Math.random()<(G.st>=3?.5:.25))k=.3;spot.intensity=k}
  el('bf').style.width=P.bat+'%';el('bf').style.background=P.bat>50?'#3c3':P.bat>20?'#cc3':'#c33';el('bp').textContent=P.has?Math.ceil(P.bat)+'%':'–';
@@ -536,7 +536,7 @@ function finale(){fin=1;S.piano();G.on=0;G.st=0;G.bo=0;P.on=false;obj('Read the 
  setTimeout(()=>{el('note').style.display='none';scene.children.filter(o=>o.type==='Mesh'&&o.position.z===44&&o.geometry.parameters&&o.geometry.parameters.width<=5&&o.geometry.parameters.height<=2.7).forEach(o=>gateParts.push(o));const k=cols.findIndex(c=>c[2]==43.85);if(k>=0)cols.splice(k,1);toast('The gate swings open.',3000);S.creak()},15000);
  setTimeout(()=>{el('blk').style.opacity=1;S2.knock()},18500);
  setTimeout(()=>{S2.maa();et.style.opacity=1},22500)}
-const et=document.createElement('div');et.style.cssText='position:fixed;inset:0;z-index:7;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font:italic 22px Georgia,serif;color:#c9c3a8;opacity:0;transition:opacity 2s;pointer-events:none';et.innerHTML='“Maa…”<br><br>They escaped the hospital…<br>but not Ward 13.';document.body.appendChild(et);
+const et=document.createElement('div');et.style.cssText='position:fixed;inset:0;z-index:7;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font:italic 22px Georgia,serif;color:#c9c3a8;opacity:0;transition:opacity 2s;pointer-events:none';et.innerHTML='“Maa…”<br><br>सुबह हो गई।<br>तुम hospital से बाहर निकल आए।';document.body.appendChild(et);
 const gold=document.createElement('div');gold.style.cssText='position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 130px rgba(255,200,90,.7);opacity:0;transition:opacity 1s;z-index:4';document.body.appendChild(gold);
 function mantra(){if(!started||G.dead||fin)return;if(mantraUsed){toast('The mantra has been spent.');return}mantraUsed=1;if(G.st){setSt(0);G.bo=0}G.t=rnd(40,60);G.prot=15;G.x=P.pos.x;G.z=P.pos.z+30;S.mantra();gold.style.opacity=1;setTimeout(()=>gold.style.opacity=0,5000);toast('“Jo andhere me chhupa hai,\nwo roshni se door ho jaye.”',5000)}
 const mv=document.createElement('div');mv.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;z-index:9;align-items:center;justify-content:center';const mc=document.createElement('canvas');mv.appendChild(mc);document.body.appendChild(mv);mv.onclick=()=>mv.style.display='none';
@@ -544,7 +544,7 @@ function mapOpen(){if(!P.map){toast('You have no map yet.');return}if(mv.style.d
  const ZN=curZone(),sc=Math.min(Math.min(innerHeight*.92,620)/ZN.h,innerWidth*.96/ZN.w),W=ZN.w*sc,H=ZN.h*sc;mc.width=W;mc.height=H;const g=mc.getContext('2d'),X=x=>(x-ZN.x)*sc,Y=z=>(ZN.zt-z)*sc;
  g.fillStyle='#cdb98a';g.fillRect(0,0,W,H);g.strokeStyle='rgba(90,60,30,.35)';g.beginPath();g.moveTo(W/2,0);g.lineTo(W/2,H);g.moveTo(0,H/2);g.lineTo(W,H/2);g.stroke();
  g.fillStyle='rgba(60,40,20,.8)';for(const c of cols)g.fillRect(X(c[0]),Y(c[3]),(c[1]-c[0])*sc,(c[3]-c[2])*sc);
- g.font=`italic ${Math.max(10,sc*.9)|0}px Georgia`;g.fillStyle='#4a0a0a';g.textAlign='center';[['Ward 13',0,-1],['Safe room',-6,17.5],['Nurse',5.5,18],['Reception',0,38],['Patient rooms',-15,18],['X-ray',-15,32],['Final gate',0,45.5]].concat(MLAB).forEach(a=>g.fillText(a[0],X(a[1]),Y(a[2])));
+ g.font=`italic ${Math.max(10,sc*.9)|0}px Georgia`;g.fillStyle='#4a0a0a';g.textAlign='center';[['Emergency Ward',0,-1],['Safe room',-6,17.5],['Nurse',5.5,18],['Reception',0,38],['Patient rooms',-15,18],['X-ray',-15,32],['Final gate',0,45.5]].concat(MLAB).forEach(a=>g.fillText(a[0],X(a[1]),Y(a[2])));
  if(clues.size>=3){g.font=`${sc*2|0}px serif`;g.fillText('✋',X(0),Y(47));g.fillStyle='#c90';items.filter(i=>/pick up/.test(i.t)).forEach(i=>{g.beginPath();g.arc(X(i.x),Y(i.z),sc*.5,0,7);g.fill()})}
  g.fillStyle='#37f';g.beginPath();g.arc(X(P.pos.x),Y(P.pos.z),sc*.6,0,7);g.fill();g.fillStyle='#3c3';g.beginPath();g.arc(X(kabir.g.position.x),Y(kabir.g.position.z),sc*.6,0,7);g.fill()}
 /* extra details */
@@ -947,7 +947,7 @@ mapOpen=function(){if(!P.map){toast('You have no map yet.');return}if(mv.style.d
  g.fillStyle='#cdb98a';g.fillRect(0,0,W,H);
  g.fillStyle='rgba(60,40,20,.85)';for(const c of cols)g.fillRect(X(c[1]),Y(c[3]),(c[1]-c[0])*sc,(c[3]-c[2])*sc);
  g.font=`italic bold ${Math.max(10,sc*.95)|0}px Georgia`;g.fillStyle='#4a0a0a';g.textAlign='center';
- [['Ward 13',0,-1],['Safe room',-6,17.5],['Nurse',5.5,18],['Reception',0,38],['Patient rooms',-15,18],['X-ray',-15,32],['Final gate',0,45.5]].concat(MLAB).forEach(a=>g.fillText(a[0],X(a[1]),Y(a[2])));
+ [['Emergency Ward',0,-1],['Safe room',-6,17.5],['Nurse',5.5,18],['Reception',0,38],['Patient rooms',-15,18],['X-ray',-15,32],['Final gate',0,45.5]].concat(MLAB).forEach(a=>g.fillText(a[0],X(a[1]),Y(a[2])));
  if(clues.size>=3){g.font=`${sc*2|0}px serif`;g.fillText('\u270B',X(0),Y(47));g.fillStyle='#c90';items.filter(i=>/pick up/.test(i.t)).forEach(i=>{g.beginPath();g.arc(X(i.x),Y(i.z),sc*.5,0,7);g.fill()})}
  g.fillStyle='#37f';g.beginPath();g.arc(X(P.pos.x),Y(P.pos.z),sc*.6,0,7);g.fill();
  const px=X(P.pos.x),py=Y(P.pos.z),dx=-Math.sin(P.yaw),dy=-Math.cos(P.yaw);g.strokeStyle='#37f';g.lineWidth=Math.max(2,sc*.3);g.beginPath();g.moveTo(px,py);g.lineTo(px+dx*sc*2.2,py+dy*sc*2.2);g.stroke();
@@ -1128,7 +1128,7 @@ window.drawMap=function(){const s=Math.min(innerWidth,innerHeight)*.96|0,R=30,sc
  g.fillStyle='#cdb98a';g.fillRect(0,0,s,s);g.fillStyle='rgba(60,40,20,.9)';g.beginPath();
  for(const c of cols){if(Math.abs((c[0]+c[1])/2-P.pos.x)>R*1.6||Math.abs((c[2]+c[3])/2-P.pos.z)>R*1.6)continue;const a=S2(c[0],c[2]),b=S2(c[1],c[2]),d=S2(c[1],c[3]),e=S2(c[0],c[3]);g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.lineTo(d[0],d[1]);g.lineTo(e[0],e[1]);g.closePath()}g.fill();
  g.font='italic bold 13px Georgia';g.textAlign='center';g.fillStyle='#4a0a0a';
- [['Ward 13',0,-1],['Safe room',-6,17.5],['Nurse',5.5,18],['Reception',0,38],['Patient rooms',-15,18],['X-ray',-15,32],['FINAL GATE',0,45.5]].concat(MLAB).forEach(a=>{const p=S2(a[1],a[2]);if(p[0]>30&&p[0]<s-30&&p[1]>20&&p[1]<s-10)g.fillText(a[0],p[0],p[1])});
+ [['Emergency Ward',0,-1],['Safe room',-6,17.5],['Nurse',5.5,18],['Reception',0,38],['Patient rooms',-15,18],['X-ray',-15,32],['FINAL GATE',0,45.5]].concat(MLAB).forEach(a=>{const p=S2(a[1],a[2]);if(p[0]>30&&p[0]<s-30&&p[1]>20&&p[1]<s-10)g.fillText(a[0],p[0],p[1])});
  if(clues.size>=3){g.fillStyle='#c90';items.filter(i=>/pick up/.test(i.t)).forEach(i=>{const p=S2(i.x,i.z);g.beginPath();g.arc(p[0],p[1],6,0,7);g.fill()})}
  {const p=S2(kabir.g.position.x,kabir.g.position.z);g.fillStyle='#3c3';g.beginPath();g.arc(p[0],p[1],7,0,7);g.fill()}
  g.fillStyle='#37f';g.beginPath();g.moveTo(cx,cy-15);g.lineTo(cx-10,cy+10);g.lineTo(cx+10,cy+10);g.closePath();g.fill();
@@ -1148,7 +1148,7 @@ const _xm=extra;extra=function(dt,t){_xm(dt,t);if(mv.style.display=='flex')drawM
 /* ===== ending screen ===== */
 {const _fi=finale;finale=function(){_fi();setTimeout(()=>{const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;z-index:30;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;color:#d8d2c8;font-family:Georgia,serif;opacity:0;transition:opacity 2s';
  const tx=(t,css)=>{const e=document.createElement('div');e.textContent=t;e.style.cssText=css;d.appendChild(e)};
- tx('GAME FINISHED','font-size:34px;letter-spacing:8px;color:#9b1c1c');tx('You did it. You escaped Ward 13.','font-size:20px');tx('Thanks for playing.','opacity:.6;font-size:14px');
+ tx('ESCAPE THE HOSPITAL','font-size:30px;letter-spacing:5px;color:#9b1c1c');tx('तुम बच निकले। सुबह हो गई।','font-size:20px');tx('Thanks for playing.','opacity:.6;font-size:14px');
  const row=document.createElement('div');row.style.cssText='display:flex;gap:12px;margin-top:14px';
  const bt=(t,f)=>{const b=document.createElement('button');b.textContent=t;b.style.cssText='padding:12px 26px;background:transparent;color:#d8d2c8;border:1px solid #9b1c1c;font:16px Georgia,serif';b.onclick=f;row.appendChild(b)};
  if(parent!==window)bt('LEAVE',()=>parent.postMessage({t:'exit'},'*'));bt('PLAY AGAIN',()=>location.reload());
@@ -1169,7 +1169,7 @@ const _x9=extra;extra=function(dt,t){_x9(dt,t);for(const w of SW){w.rotation.z=M
 const peers={},host='*';let acc=0;
 el('start').style.display='none';
 const lb=document.createElement('button');lb.textContent='LEAVE';lb.style.cssText="position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:12px;z-index:30;padding:7px 14px;background:rgba(0,0,0,.55);color:#d8d2c8;border:1px solid #9b1c1c;font:13px Georgia,serif";lb.onclick=()=>parent.postMessage({t:'exit'},host);document.body.appendChild(lb);
-const fade=document.createElement('div');fade.style.cssText='position:fixed;inset:0;background:#000;z-index:25;pointer-events:none;transition:opacity 3s;display:flex;align-items:center;justify-content:center;color:#9b1c1c;font:44px Georgia,serif;letter-spacing:10px';fade.textContent='WARD 13';document.body.appendChild(fade);
+const fade=document.createElement('div');fade.style.cssText='position:fixed;inset:0;background:#000;z-index:25;pointer-events:none;transition:opacity 3s;display:flex;align-items:center;justify-content:center;color:#9b1c1c;font:26px Georgia,serif;letter-spacing:4px;text-align:center';fade.textContent='ESCAPE THE HOSPITAL';document.body.appendChild(fade);
 function label(n){const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.font='700 30px Georgia';x.textAlign='center';x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,8,256,48);x.fillStyle='#d8d2c8';x.fillText(n,128,44);const s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),transparent:true,depthTest:false}));s.scale.set(1.4,.35,1);s.position.y=2;return s}
 function mk(n){const g=new T.Group(),m=new T.MeshStandardMaterial({color:0x7d8a99,roughness:.85,emissive:0x141c26});
  const b=new T.Mesh(new T.CylinderGeometry(.22,.26,1,10),m);b.position.y=.75;const h=new T.Mesh(new T.SphereGeometry(.17,12,10),m);h.position.y=1.42;
@@ -1290,7 +1290,7 @@ function renderSquad(){const ids=Object.keys(members),host=party==me.id;let h=''
  ids.slice(0,4).forEach(k=>{const m=members[k][0];h+=`<div class="sl">${av(m.u,m.n)}<div>${esc(m.n)}${k==me.id?' (you)':''}<small>${k==party?'Host':'Squad'}${pc[k]&&pc[k].connectionState=='connected'?' · voice on':''}</small></div></div>`});
  if(false)h+=`<div class="sl e" data-inv><svg class="i"><use href="#i-add"/></svg><div>Invite friend</div></div>`;sync3d(ids);
  $('#squad').innerHTML=h;$('#squad').onclick=e=>e.target.closest('[data-inv]')&&$('#binv').click();
- $('#start').disabled=!host;$('#start').textContent=host?'START':'WAITING';$('#mode').textContent=host?'WARD 13 · THE LAST CRY':'Host will start the match'}
+ $('#start').disabled=!host;$('#start').textContent=host?'START':'WAITING';$('#mode').textContent=host?'ESCAPE THE HOSPITAL':'Host will start the match'}
 $('#bmic').onclick=()=>{if(!stream)return initMic().then(()=>joinParty(party));muted=!muted;stream.getAudioTracks().forEach(t=>t.enabled=!muted);ic($('#bmic'),muted?'mic0':'mic');$('#bmic').classList.toggle('off',muted)};
 $('#bspk').onclick=()=>{deaf=!deaf;$$('#audios audio').forEach(a=>a.muted=deaf);ic($('#bspk'),deaf?'spk0':'spk');$('#bspk').classList.toggle('off',deaf)};
 
@@ -1337,7 +1337,7 @@ $('#lo').onclick=async()=>{if(confirm('Guest accounts cannot be recovered after 
 // ----- game launch: WARD 13 runs in an iframe (ward13.html); this page keeps voice + party alive -----
 const G={on:0};
 $('#start').onclick=()=>{if(Object.keys(members).length>1)ch.send({type:'broadcast',event:'go',payload:{}});launch()};
-function launch(){loadTo('Entering Ward 13',()=>{fs();show('game');G.on=1;document.body.classList.add('ingame');$('#gf').srcdoc='<!DOCTYPE html>'+$('#w13').innerHTML})}
+function launch(){loadTo('Hospital में दाख़िल हो रहे हो',()=>{fs();show('game');G.on=1;document.body.classList.add('ingame');$('#gf').srcdoc='<!DOCTYPE html>'+$('#w13').innerHTML})}
 function leave(){G.on=0;document.body.classList.remove('ingame');$('#gf').srcdoc='<body style="background:#000">';show('lobby')}
 addEventListener('message',e=>{if(e.source!==$('#gf').contentWindow)return;const m=e.data||{};
  if(m.t=='ready')e.source.postMessage({t:'start'},'*');
