@@ -925,6 +925,62 @@ extra=function(dt,t){_x(dt,t);
 
 </script>
 <script>
+/* ===== WARD13 v9 PATCH ===== */
+(()=>{
+/* 1. no visible ghost */
+ghostFig=function(){};try{gh.g.visible=false}catch(e){}
+/* 2. fewer dead bodies (keep every other one) */
+{const cs=[];scene.traverse(o=>{if(o.isGroup&&o.children.length==1&&o.children[0].isGroup&&Math.abs(Math.abs(o.children[0].rotation.x)-1.5708)<.02&&Math.abs(o.children[0].position.y-.17)<.01)cs.push(o)});
+cs.forEach((o,i)=>{if(i%2){o.visible=false;for(let k=cols.length-1;k>=0;k--){const c=cols[k];if(Math.abs((c[0]+c[1])/2-o.position.x)<.01&&Math.abs((c[2]+c[3])/2-o.position.z)<.01)cols.splice(k,1)}}})}
+/* 3. sound: quiet low ambience, soft reverb, realistic sobbing */
+ambInit=function(){A.g=AC.createGain();A.g.connect(mst);const s=AC.createBufferSource(),b=AC.createBiquadFilter(),g=AC.createGain();s.buffer=NB;s.loop=true;b.type='lowpass';b.frequency.value=380;g.gain.value=.016;s.connect(b);b.connect(g);g.connect(A.g);s.start();A.wind=b;const h=AC.createOscillator(),hg=AC.createGain();h.type='sine';h.frequency.value=55;hg.gain.value=.03;h.connect(hg);hg.connect(A.g);h.start()};
+const _ai=audioInit;audioInit=function(){if(AC)return;_ai();try{mst.disconnect();const cv=AC.createConvolver(),n=AC.sampleRate*1.8|0,ib=AC.createBuffer(2,n,AC.sampleRate);for(let c=0;c<2;c++){const d=ib.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3)}cv.buffer=ib;const w=AC.createGain();w.gain.value=.25;const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3500;mst.connect(AC.destination);mst.connect(lp);lp.connect(cv);cv.connect(w);w.connect(AC.destination);mst.gain.value=.8}catch(e){}};
+S.cry=function(){const x=G.x,z=G.z;let t=0;
+ for(let i=0;i<5;i++){nse(1800,1.2,t,.12,.18,.12,x,z);t+=.28;
+  voice(rnd(330,400)*(1-i*.04),rnd(250,300),rnd(.28,.4),.5,x,z,rnd(6,9),[650,2300],t);
+  nse(2600,2,t+.02,.02,.1,.05,x,z);t+=rnd(.45,.7)+(i==2?.5:0)}
+ nse(1200,1,t,.5,.6,.15,x,z)};
+/* 4. map: fixed left/right, bigger */
+mapOpen=function(){if(!P.map){toast('You have no map yet.');return}if(mv.style.display=='flex'){mv.style.display='none';return}S.map();mv.style.display='flex';
+ const ZN=curZone(),sc=Math.min(innerHeight*.96/ZN.h,innerWidth*.98/ZN.w),W=ZN.w*sc,H=ZN.h*sc;mc.width=W;mc.height=H;
+ const g=mc.getContext('2d'),X=x=>(ZN.x+ZN.w-x)*sc,Y=z=>(ZN.zt-z)*sc;
+ g.fillStyle='#cdb98a';g.fillRect(0,0,W,H);
+ g.fillStyle='rgba(60,40,20,.85)';for(const c of cols)g.fillRect(X(c[1]),Y(c[3]),(c[1]-c[0])*sc,(c[3]-c[2])*sc);
+ g.font=`italic bold ${Math.max(10,sc*.95)|0}px Georgia`;g.fillStyle='#4a0a0a';g.textAlign='center';
+ [['Ward 13',0,-1],['Safe room',-6,17.5],['Nurse',5.5,18],['Reception',0,38],['Patient rooms',-15,18],['X-ray',-15,32],['Final gate',0,45.5]].concat(MLAB).forEach(a=>g.fillText(a[0],X(a[1]),Y(a[2])));
+ if(clues.size>=3){g.font=`${sc*2|0}px serif`;g.fillText('\u270B',X(0),Y(47));g.fillStyle='#c90';items.filter(i=>/pick up/.test(i.t)).forEach(i=>{g.beginPath();g.arc(X(i.x),Y(i.z),sc*.5,0,7);g.fill()})}
+ g.fillStyle='#37f';g.beginPath();g.arc(X(P.pos.x),Y(P.pos.z),sc*.6,0,7);g.fill();
+ const px=X(P.pos.x),py=Y(P.pos.z),dx=-Math.sin(P.yaw),dy=-Math.cos(P.yaw);g.strokeStyle='#37f';g.lineWidth=Math.max(2,sc*.3);g.beginPath();g.moveTo(px,py);g.lineTo(px+dx*sc*2.2,py+dy*sc*2.2);g.stroke();
+ g.fillStyle='#3c3';g.beginPath();g.arc(X(kabir.g.position.x),Y(kabir.g.position.z),sc*.6,0,7);g.fill()};
+/* 5. decor: writings, hanging bodies in fans, glass, fallen objects */
+const SW=[],FN=[];
+const wr=(txt,x,y,z,ry,g,w)=>{w=w||2.4;const m=dWall(decalM(tex(512,128,c=>{c.fillStyle='#7a0a0a';c.font='italic bold 54px Georgia';c.textAlign='center';c.textBaseline='middle';c.save();c.translate(256,64);c.rotate(rnd(-.06,.06));c.fillText(txt,0,0);c.restore()})),x,y,z,w,w/4,ry);if(g)g.add(m);return m};
+const gl=M(0xaadde8,.05,.9);
+function shards(x,z,g){for(let i=0;i<9;i++){const p=box(rnd(.03,.11),.006,rnd(.03,.08),gl,x+rnd(-.35,.35),.012,z+rnd(-.35,.35),g||scene);p.rotation.y=rnd(0,6)}}
+function chair(x,z,g){const c=new T.Group(),m=M(0x3a2a1a,.8);box(.45,.05,.45,m,0,.25,0,c);box(.45,.5,.05,m,0,.5,-.22,c);for(const a of[-1,1])for(const b of[-1,1])box(.04,.25,.04,m,a*.2,.12,b*.2,c);c.position.set(x,.2,z);c.rotation.set(rnd(1.2,1.5),rnd(0,6),rnd(-.3,.3));(g||scene).add(c)}
+function papers(x,z,g){for(let i=0;i<6;i++){const p=box(.25,.01,.35,M(0xd8d4c4,1),x+rnd(-.8,.8),.02,z+rnd(-.8,.8),g||scene);p.rotation.y=rnd(0,6)}}
+function hang(x,z,g){const c=makeChar(0xb0b8c0,0x20242a,0x120c08,1),w=new T.Group();w.position.set(x,3.2,z);w.rotation.y=rnd(0,6.28);
+ c.g.position.y=.55-3.2;w.add(c.g);c.legL.rotation.x=.06;c.legR.rotation.x=-.04;c.armL.rotation.z=.12;c.armR.rotation.z=-.12;c.torso.rotation.x=.3;
+ box(.025,1.1,.025,M(0x4a3a22,1),0,-.55,0,w);
+ const fan=new T.Group();fan.position.set(x,3.1,z);box(.12,.1,.12,mMetal,0,0,0,fan);const bl=new T.Group();for(let i=0;i<3;i++){const b=box(.9,.02,.16,M(0x2a2622,.8),0,0,0,bl);b.position.set(Math.cos(i*2.09)*.5,0,Math.sin(i*2.09)*.5);b.rotation.y=-i*2.09}fan.add(bl);
+ w.userData.ph=rnd(0,6);SW.push(w);FN.push(bl);col(x,z,.5,.5);if(g){g.add(w);g.add(fan)}else{scene.add(w);scene.add(fan)}}
+/* main building */
+hang(-1.1,18.5);hang(5,17.5);hang(-5.5,36.5);hang(-14,33.5);
+wr('SHE IS STILL HERE',-1.84,1.7,21.4,Math.PI/2);wr('DO NOT LISTEN',1.84,1.8,20.5,-Math.PI/2);wr('NOBODY LEFT',-1.84,1.6,27.6,Math.PI/2);wr('13',-18.84,1.7,28,Math.PI/2,null,1.2);wr('HELP US',8.84,1.7,40,-Math.PI/2);
+[[-1.2,10],[1,15],[-.8,24],[-6,.5],[4,-2],[-4,33],[5,38],[-15,20],[-12,34],[6,14]].forEach(([x,z],i)=>{i%2?chair(x,z):shards(x,z)});
+[[.6,11],[-14,26],[3,36]].forEach(([x,z])=>papers(x,z));
+/* wings */
+const TX=['IT HEARS YOU','DON\'T LEAVE ME','SHE WATCHES','NO WAY OUT','MERA NAAM MEERA','THEY ALL HANGED','RUN','13'].map(s=>s=='MERA NAAM MEERA'?'MY NAME IS MEERA':s);
+WG.forEach((w,i)=>{const g=WGR[i],L=w.n*7;
+ for(let k=0;k<w.n;k++){if((k+i)%2==0)hang(w.ox+7*k+3.5,w.cz+(k%2?1:-1)*7,g);
+  const s=k%2?1:-1;shards(w.ox+7*k+rnd(1.5,5.5),w.cz+s*rnd(4,9),g);chair(w.ox+7*k+rnd(1.5,5.5),w.cz+s*rnd(3,9),g);papers(w.ox+7*k+rnd(1.5,5.5),w.cz+s*rnd(3,8),g)}
+ for(let j=0;j<4;j++){const x=w.ox+rnd(2,L-2),s=j%2?1:-1;wr(TX[(i*3+j)%TX.length],x,rnd(1.5,2),w.cz+s*1.83,s>0?Math.PI:0,g);shards(x,w.cz+rnd(-1.2,1.2),g)}});
+/* exit signs */
+sign('EXIT AHEAD',1.84,2.35,28,-Math.PI/2,1.8,.4,'#7fe39a','rgba(5,25,10,.9)',32);sign('FINAL GATE AHEAD',-8.84,2.4,36,Math.PI/2,2.6,.4,'#7fe39a','rgba(5,25,10,.9)',30);sign('FINAL GATE AHEAD',8.84,2.4,32,-Math.PI/2,2.6,.4,'#7fe39a','rgba(5,25,10,.9)',30);
+const _x9=extra;extra=function(dt,t){_x9(dt,t);for(const w of SW){w.rotation.z=Math.sin(t*.8+w.userData.ph)*.04;w.rotation.x=Math.sin(t*.6+w.userData.ph)*.025}for(const b of FN)b.rotation.y+=dt*.25};
+})();
+</script>
+<script>
 /* ===== PLAY ZONE hook: auto-start, squad avatars, leave button ===== */
 (()=>{if(parent===window)return;
 const peers={},host='*';let acc=0;
@@ -1001,7 +1057,7 @@ async function enterLobby(){show('lobby');init3d();
  loadFriends();
  const pm=new URLSearchParams(location.search).get('party');history.replaceState(null,'',location.pathname);
  await initMic();joinParty(pm||me.id)}
-async function initMic(){try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}catch(e){stream=null;muted=true;ic($('#bmic'),'mic0');$('#bmic').classList.add('off');toast('Mic blocked. Allow mic in browser settings to talk.')}}
+async function initMic(){try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:{ideal:true},noiseSuppression:{ideal:true},autoGainControl:{ideal:true},channelCount:1,voiceIsolation:true,googEchoCancellation:true,googNoiseSuppression:true,googHighpassFilter:true}})}catch(e){stream=null;muted=true;ic($('#bmic'),'mic0');$('#bmic').classList.add('off');toast('Mic blocked. Allow mic in browser settings to talk.')}}
 async function ping(uid,ev,p){const t=sb.channel('u:'+uid);t.subscribe(s=>{if(s=='SUBSCRIBED'){t.send({type:'broadcast',event:ev,payload:p||{}});setTimeout(()=>sb.removeChannel(t),900)}})}
 
 // ----- friends -----
