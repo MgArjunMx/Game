@@ -1231,7 +1231,7 @@ const sym=[
 ['MUSLIM',g=>{g.fillStyle=gold;g.beginPath();g.arc(120,125,66,0,7);g.fill();g.fillStyle=bg;g.beginPath();g.arc(144,115,56,0,7);g.fill();g.fillStyle=gold;g.beginPath();for(let i=0;i<10;i++){const r=i%2?7:16,a=-1.57+i*.628;g.lineTo(176+Math.cos(a)*r,100+Math.sin(a)*r)}g.fill()}],
 ['SIKH',g=>{g.strokeStyle=g.fillStyle=gold;g.lineWidth=7;g.beginPath();g.arc(128,125,34,0,7);g.stroke();g.beginPath();g.moveTo(128,35);g.lineTo(141,125);g.lineTo(128,215);g.lineTo(115,125);g.closePath();g.fill();g.lineWidth=11;g.beginPath();g.arc(150,150,72,Math.PI*.62,Math.PI*1.08);g.stroke();g.beginPath();g.arc(106,150,72,-Math.PI*.08,Math.PI*.38);g.stroke()}],
 ['CHRISTIAN',g=>{g.fillStyle=gold;g.fillRect(116,50,24,170);g.fillRect(76,100,104,24)}]];
-const xs=[-4.5,-1.5,1.5,4.5];sym.length=0;sym.length=0;sym.length=0;sym.length=0;
+const xs=[-4.5,-1.5,1.5,4.5];
 sym.forEach(([nm,fn],i)=>{const t=tex(256,320,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle='#8a6a30';g.lineWidth=6;g.strokeRect(8,8,w-16,h-16);fn(g);g.fillStyle='#d8c9a0';g.font='bold 28px Georgia';g.textAlign='center';g.fillText(nm,128,290)});
  dWall(MB(0xffffff).clone(),0,0,0,0,0,0);});
 sym.forEach(([nm,fn],i)=>{const t=tex(256,320,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle='#8a6a30';g.lineWidth=6;g.strokeRect(8,8,w-16,h-16);fn(g);g.fillStyle='#d8c9a0';g.font='bold 28px Georgia';g.textAlign='center';g.fillText(nm,128,290)});
@@ -1257,7 +1257,7 @@ function arrive(){ended=1;obj('You are safe.');P.vel.set(0,0,0);el('blk').style.
   tx('ESCAPE THE HOSPITAL','font-size:28px;letter-spacing:5px;color:#ffd98a');tx('Morning has come. You escaped the hospital.','font-size:20px');
   const r=document.createElement('div');r.style.cssText='display:flex;gap:12px;margin-top:12px';
   const b=(t,f)=>{const x=document.createElement('button');x.textContent=t;x.style.cssText='padding:12px 24px;background:rgba(0,0,0,.5);color:#fff;border:1px solid #ffd98a;font:16px Georgia,serif';x.onclick=f;r.appendChild(x)};
-  b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('RESTART GAME',()=>location.reload());b('MAIN MENU',()=>{parent!==window?parent.postMessage({t:'exit'},'*'):location.reload()});
+  b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('RESTART GAME',()=>location.reload());b('MAIN MENU',()=>{parent!==window?parent.postMessage({t:'exit'},'*'):location.reload()});
   d.appendChild(r);document.body.appendChild(d);requestAnimationFrame(()=>requestAnimationFrame(()=>d.style.opacity=1))},10500)}
 const _x=extra;
 extra=function(dt,t){_x(dt,t);
@@ -1451,7 +1451,7 @@ try{
  const GL=new T.GLTFLoader();
  const load=u=>new Promise((ok,no)=>GL.load(abs(u),ok,undefined,no));
  const ready=(async()=>{
-  const g=await load(CFG.url);let clips=g.animations.slice();if(!clips.some(c=>/walk/i.test(c.name))){try{const s=await load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb');clips=s.animations.filter(c=>!/pose/i.test(c.name)).map(c=>{c=c.clone();c.tracks=c.tracks.filter(t=>!/\.position$/.test(t.name));return c})}catch(e){}}
+  let g;for(const u of [CFG.url,'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb','https://threejs.org/examples/models/gltf/Soldier.glb','https://cdn.jsdelivr.net/gh/mrdoob/three.js@r150/examples/models/gltf/Soldier.glb','https://raw.githack.com/mrdoob/three.js/r128/examples/models/gltf/Soldier.glb']){try{g=await load(u);break}catch(e){console.log('model fail',u)}}if(!g)throw new Error('no model');let clips=g.animations.slice();if(!clips.some(c=>/walk/i.test(c.name))){try{const s=await load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb');clips=s.animations.filter(c=>!/pose/i.test(c.name)).map(c=>{c=c.clone();c.tracks=c.tracks.filter(t=>!/\.position$/.test(t.name));return c})}catch(e){}}
   for(const k of ['idle','walk','run']){if(CFG[k]){try{const a=await load(CFG[k]);if(a.animations[0]){a.animations[0].name=k;clips.push(a.animations[0])}}catch(e){}}}
   return{src:g.scene,clips:clips};
  })();
@@ -1461,7 +1461,7 @@ try{
   const b=new T.Box3().setFromObject(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
   const b2=new T.Box3().setFromObject(m);m.position.y-=b2.min.y;
   m.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.frustumCulled=false;
-   [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.26,.26,.26);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
+   [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.38,.38,.4);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
   const a={root:root,m:m,mx:null,A:null,W:{i:1,w:0,r:0}};
   if(clips.length){
    const pick=re=>clips.find(c=>re.test(c.name));
@@ -1473,9 +1473,9 @@ try{
  }
  function upd(a,sp,dt){
   if(a.mx)a.mx.update(dt);if(!a.A)return;
-  const tg=sp<.25?[1,0,0]:sp<3.4?[0,1,0]:[0,0,1],k=Math.min(1,dt*8);
+  const w=Math.min(1,sp/1.2),r=Math.max(0,Math.min(1,(sp-2.9)/1.2)),tg=[1-w,w*(1-r),w*r],k=Math.min(1,dt*10);
   ['i','w','r'].forEach((n,j)=>{a.W[n]+=(tg[j]-a.W[n])*k;a.A[n].setEffectiveWeight(a.W[n])});
-  a.A.w.timeScale=Math.max(.6,Math.min(1.7,sp/1.7));a.A.r.timeScale=Math.max(.8,Math.min(1.4,sp/4.2));
+  a.A.w.timeScale=Math.max(.7,Math.min(1.5,sp/1.9));a.A.r.timeScale=Math.max(.85,Math.min(1.35,sp/4.4));
  }
  function torch(){
   const g=new T.Group(),mt=new T.MeshStandardMaterial({color:0x23262b,roughness:.4}),
@@ -1491,7 +1491,7 @@ try{
   const s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),transparent:true,depthTest:false}));s.scale.set(1.4,.35,1);s.position.y=2.15;return s;
  }
  return{ready:ready,actor:actor,upd:upd,torch:torch,label:label};
-})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/models/gltf/Michelle.glb","idle":"","walk":"","run":"","h":1.75});(function gamePatch(RC){
+})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb","idle":"","walk":"","run":"","h":1.75});(function gamePatch(RC){
  const T=THREE;let PL=null,KB=null;const peers=[];
  const hide=g=>g.traverse(o=>{if(o.isMesh)o.visible=false});
  RC.ready.then(r=>{
@@ -1508,7 +1508,7 @@ try{
  const _x=extra;
  extra=function(dt,t){
   _x(dt,t);
-  if(PL){PL.root.rotation.x=P.fall+(P.sprint?.14:0);PL.root.rotation.z=Math.sin(performance.now()/90)*(P.sprint?.03:0);PL.tm.visible=!!P.has;RC.upd(PL,P.vel.length(),dt)}
+  if(PL){PL.root.rotation.x=P.fall+(P.sprint?.2:0)+(window.JJ&&JJ.y>0?-.08:0);PL.root.rotation.z=Math.sin(performance.now()/110)*(P.sprint?.035:0);PL.tm.visible=!!P.has;RC.upd(PL,P.vel.length(),dt)}
   if(KB)RC.upd(KB,0,dt);
   for(let i=peers.length-1;i>=0;i--){
    const r=peers[i],g=r.o.g;if(!g.parent){peers.splice(i,1);continue}
@@ -2017,7 +2017,7 @@ try{
  const GL=new T.GLTFLoader();
  const load=u=>new Promise((ok,no)=>GL.load(abs(u),ok,undefined,no));
  const ready=(async()=>{
-  const g=await load(CFG.url);let clips=g.animations.slice();if(!clips.some(c=>/walk/i.test(c.name))){try{const s=await load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb');clips=s.animations.filter(c=>!/pose/i.test(c.name)).map(c=>{c=c.clone();c.tracks=c.tracks.filter(t=>!/\.position$/.test(t.name));return c})}catch(e){}}
+  let g;for(const u of [CFG.url,'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb','https://threejs.org/examples/models/gltf/Soldier.glb','https://cdn.jsdelivr.net/gh/mrdoob/three.js@r150/examples/models/gltf/Soldier.glb','https://raw.githack.com/mrdoob/three.js/r128/examples/models/gltf/Soldier.glb']){try{g=await load(u);break}catch(e){console.log('model fail',u)}}if(!g)throw new Error('no model');let clips=g.animations.slice();if(!clips.some(c=>/walk/i.test(c.name))){try{const s=await load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb');clips=s.animations.filter(c=>!/pose/i.test(c.name)).map(c=>{c=c.clone();c.tracks=c.tracks.filter(t=>!/\.position$/.test(t.name));return c})}catch(e){}}
   for(const k of ['idle','walk','run']){if(CFG[k]){try{const a=await load(CFG[k]);if(a.animations[0]){a.animations[0].name=k;clips.push(a.animations[0])}}catch(e){}}}
   return{src:g.scene,clips:clips};
  })();
@@ -2027,7 +2027,7 @@ try{
   const b=new T.Box3().setFromObject(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
   const b2=new T.Box3().setFromObject(m);m.position.y-=b2.min.y;
   m.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.frustumCulled=false;
-   [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.26,.26,.26);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
+   [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.38,.38,.4);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
   const a={root:root,m:m,mx:null,A:null,W:{i:1,w:0,r:0}};
   if(clips.length){
    const pick=re=>clips.find(c=>re.test(c.name));
@@ -2039,9 +2039,9 @@ try{
  }
  function upd(a,sp,dt){
   if(a.mx)a.mx.update(dt);if(!a.A)return;
-  const tg=sp<.25?[1,0,0]:sp<3.4?[0,1,0]:[0,0,1],k=Math.min(1,dt*8);
+  const w=Math.min(1,sp/1.2),r=Math.max(0,Math.min(1,(sp-2.9)/1.2)),tg=[1-w,w*(1-r),w*r],k=Math.min(1,dt*10);
   ['i','w','r'].forEach((n,j)=>{a.W[n]+=(tg[j]-a.W[n])*k;a.A[n].setEffectiveWeight(a.W[n])});
-  a.A.w.timeScale=Math.max(.6,Math.min(1.7,sp/1.7));a.A.r.timeScale=Math.max(.8,Math.min(1.4,sp/4.2));
+  a.A.w.timeScale=Math.max(.7,Math.min(1.5,sp/1.9));a.A.r.timeScale=Math.max(.85,Math.min(1.35,sp/4.4));
  }
  function torch(){
   const g=new T.Group(),mt=new T.MeshStandardMaterial({color:0x23262b,roughness:.4}),
@@ -2057,7 +2057,7 @@ try{
   const s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),transparent:true,depthTest:false}));s.scale.set(1.4,.35,1);s.position.y=2.15;return s;
  }
  return{ready:ready,actor:actor,upd:upd,torch:torch,label:label};
-})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/models/gltf/Michelle.glb","idle":"","walk":"","run":"","h":1.75});(function lobbyPatch(RC){
+})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb","idle":"","walk":"","run":"","h":1.75});(function lobbyPatch(RC){
  const T=THREE,list=[];
  window.soldier=function(hue){
   const g=new T.Group();
@@ -3305,7 +3305,7 @@ const sym=[
 ['MUSLIM',g=>{g.fillStyle=gold;g.beginPath();g.arc(120,125,66,0,7);g.fill();g.fillStyle=bg;g.beginPath();g.arc(144,115,56,0,7);g.fill();g.fillStyle=gold;g.beginPath();for(let i=0;i<10;i++){const r=i%2?7:16,a=-1.57+i*.628;g.lineTo(176+Math.cos(a)*r,100+Math.sin(a)*r)}g.fill()}],
 ['SIKH',g=>{g.strokeStyle=g.fillStyle=gold;g.lineWidth=7;g.beginPath();g.arc(128,125,34,0,7);g.stroke();g.beginPath();g.moveTo(128,35);g.lineTo(141,125);g.lineTo(128,215);g.lineTo(115,125);g.closePath();g.fill();g.lineWidth=11;g.beginPath();g.arc(150,150,72,Math.PI*.62,Math.PI*1.08);g.stroke();g.beginPath();g.arc(106,150,72,-Math.PI*.08,Math.PI*.38);g.stroke()}],
 ['CHRISTIAN',g=>{g.fillStyle=gold;g.fillRect(116,50,24,170);g.fillRect(76,100,104,24)}]];
-const xs=[-4.5,-1.5,1.5,4.5];sym.length=0;sym.length=0;sym.length=0;sym.length=0;
+const xs=[-4.5,-1.5,1.5,4.5];
 sym.forEach(([nm,fn],i)=>{const t=tex(256,320,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle='#8a6a30';g.lineWidth=6;g.strokeRect(8,8,w-16,h-16);fn(g);g.fillStyle='#d8c9a0';g.font='bold 28px Georgia';g.textAlign='center';g.fillText(nm,128,290)});
  dWall(MB(0xffffff).clone(),0,0,0,0,0,0);});
 sym.forEach(([nm,fn],i)=>{const t=tex(256,320,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle='#8a6a30';g.lineWidth=6;g.strokeRect(8,8,w-16,h-16);fn(g);g.fillStyle='#d8c9a0';g.font='bold 28px Georgia';g.textAlign='center';g.fillText(nm,128,290)});
@@ -3331,7 +3331,7 @@ function arrive(){ended=1;obj('You are safe.');P.vel.set(0,0,0);el('blk').style.
   tx('ESCAPE THE HOSPITAL','font-size:28px;letter-spacing:5px;color:#ffd98a');tx('Morning has come. You escaped the hospital.','font-size:20px');
   const r=document.createElement('div');r.style.cssText='display:flex;gap:12px;margin-top:12px';
   const b=(t,f)=>{const x=document.createElement('button');x.textContent=t;x.style.cssText='padding:12px 24px;background:rgba(0,0,0,.5);color:#fff;border:1px solid #ffd98a;font:16px Georgia,serif';x.onclick=f;r.appendChild(x)};
-  b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('RESTART GAME',()=>location.reload());b('MAIN MENU',()=>{parent!==window?parent.postMessage({t:'exit'},'*'):location.reload()});
+  b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('RESTART GAME',()=>location.reload());b('MAIN MENU',()=>{parent!==window?parent.postMessage({t:'exit'},'*'):location.reload()});
   d.appendChild(r);document.body.appendChild(d);requestAnimationFrame(()=>requestAnimationFrame(()=>d.style.opacity=1))},10500)}
 const _x=extra;
 extra=function(dt,t){_x(dt,t);
@@ -3525,7 +3525,7 @@ try{
  const GL=new T.GLTFLoader();
  const load=u=>new Promise((ok,no)=>GL.load(abs(u),ok,undefined,no));
  const ready=(async()=>{
-  const g=await load(CFG.url);let clips=g.animations.slice();if(!clips.some(c=>/walk/i.test(c.name))){try{const s=await load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb');clips=s.animations.filter(c=>!/pose/i.test(c.name)).map(c=>{c=c.clone();c.tracks=c.tracks.filter(t=>!/\.position$/.test(t.name));return c})}catch(e){}}
+  let g;for(const u of [CFG.url,'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb','https://threejs.org/examples/models/gltf/Soldier.glb','https://cdn.jsdelivr.net/gh/mrdoob/three.js@r150/examples/models/gltf/Soldier.glb','https://raw.githack.com/mrdoob/three.js/r128/examples/models/gltf/Soldier.glb']){try{g=await load(u);break}catch(e){console.log('model fail',u)}}if(!g)throw new Error('no model');let clips=g.animations.slice();if(!clips.some(c=>/walk/i.test(c.name))){try{const s=await load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb');clips=s.animations.filter(c=>!/pose/i.test(c.name)).map(c=>{c=c.clone();c.tracks=c.tracks.filter(t=>!/\.position$/.test(t.name));return c})}catch(e){}}
   for(const k of ['idle','walk','run']){if(CFG[k]){try{const a=await load(CFG[k]);if(a.animations[0]){a.animations[0].name=k;clips.push(a.animations[0])}}catch(e){}}}
   return{src:g.scene,clips:clips};
  })();
@@ -3535,7 +3535,7 @@ try{
   const b=new T.Box3().setFromObject(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
   const b2=new T.Box3().setFromObject(m);m.position.y-=b2.min.y;
   m.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.frustumCulled=false;
-   [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.26,.26,.26);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
+   [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.38,.38,.4);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
   const a={root:root,m:m,mx:null,A:null,W:{i:1,w:0,r:0}};
   if(clips.length){
    const pick=re=>clips.find(c=>re.test(c.name));
@@ -3547,9 +3547,9 @@ try{
  }
  function upd(a,sp,dt){
   if(a.mx)a.mx.update(dt);if(!a.A)return;
-  const tg=sp<.25?[1,0,0]:sp<3.4?[0,1,0]:[0,0,1],k=Math.min(1,dt*8);
+  const w=Math.min(1,sp/1.2),r=Math.max(0,Math.min(1,(sp-2.9)/1.2)),tg=[1-w,w*(1-r),w*r],k=Math.min(1,dt*10);
   ['i','w','r'].forEach((n,j)=>{a.W[n]+=(tg[j]-a.W[n])*k;a.A[n].setEffectiveWeight(a.W[n])});
-  a.A.w.timeScale=Math.max(.6,Math.min(1.7,sp/1.7));a.A.r.timeScale=Math.max(.8,Math.min(1.4,sp/4.2));
+  a.A.w.timeScale=Math.max(.7,Math.min(1.5,sp/1.9));a.A.r.timeScale=Math.max(.85,Math.min(1.35,sp/4.4));
  }
  function torch(){
   const g=new T.Group(),mt=new T.MeshStandardMaterial({color:0x23262b,roughness:.4}),
@@ -3565,7 +3565,7 @@ try{
   const s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),transparent:true,depthTest:false}));s.scale.set(1.4,.35,1);s.position.y=2.15;return s;
  }
  return{ready:ready,actor:actor,upd:upd,torch:torch,label:label};
-})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/models/gltf/Michelle.glb","idle":"","walk":"","run":"","h":1.75});(function gamePatch(RC){
+})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb","idle":"","walk":"","run":"","h":1.75});(function gamePatch(RC){
  const T=THREE;let PL=null,KB=null;const peers=[];
  const hide=g=>g.traverse(o=>{if(o.isMesh)o.visible=false});
  RC.ready.then(r=>{
@@ -3582,7 +3582,7 @@ try{
  const _x=extra;
  extra=function(dt,t){
   _x(dt,t);
-  if(PL){PL.root.rotation.x=P.fall+(P.sprint?.14:0);PL.root.rotation.z=Math.sin(performance.now()/90)*(P.sprint?.03:0);PL.tm.visible=!!P.has;RC.upd(PL,P.vel.length(),dt)}
+  if(PL){PL.root.rotation.x=P.fall+(P.sprint?.2:0)+(window.JJ&&JJ.y>0?-.08:0);PL.root.rotation.z=Math.sin(performance.now()/110)*(P.sprint?.035:0);PL.tm.visible=!!P.has;RC.upd(PL,P.vel.length(),dt)}
   if(KB)RC.upd(KB,0,dt);
   for(let i=peers.length-1;i>=0;i--){
    const r=peers[i],g=r.o.g;if(!g.parent){peers.splice(i,1);continue}
@@ -4091,7 +4091,7 @@ try{
  const GL=new T.GLTFLoader();
  const load=u=>new Promise((ok,no)=>GL.load(abs(u),ok,undefined,no));
  const ready=(async()=>{
-  const g=await load(CFG.url);let clips=g.animations.slice();if(!clips.some(c=>/walk/i.test(c.name))){try{const s=await load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb');clips=s.animations.filter(c=>!/pose/i.test(c.name)).map(c=>{c=c.clone();c.tracks=c.tracks.filter(t=>!/\.position$/.test(t.name));return c})}catch(e){}}
+  let g;for(const u of [CFG.url,'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb','https://threejs.org/examples/models/gltf/Soldier.glb','https://cdn.jsdelivr.net/gh/mrdoob/three.js@r150/examples/models/gltf/Soldier.glb','https://raw.githack.com/mrdoob/three.js/r128/examples/models/gltf/Soldier.glb']){try{g=await load(u);break}catch(e){console.log('model fail',u)}}if(!g)throw new Error('no model');let clips=g.animations.slice();if(!clips.some(c=>/walk/i.test(c.name))){try{const s=await load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb');clips=s.animations.filter(c=>!/pose/i.test(c.name)).map(c=>{c=c.clone();c.tracks=c.tracks.filter(t=>!/\.position$/.test(t.name));return c})}catch(e){}}
   for(const k of ['idle','walk','run']){if(CFG[k]){try{const a=await load(CFG[k]);if(a.animations[0]){a.animations[0].name=k;clips.push(a.animations[0])}}catch(e){}}}
   return{src:g.scene,clips:clips};
  })();
@@ -4101,7 +4101,7 @@ try{
   const b=new T.Box3().setFromObject(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
   const b2=new T.Box3().setFromObject(m);m.position.y-=b2.min.y;
   m.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.frustumCulled=false;
-   [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.26,.26,.26);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
+   [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.38,.38,.4);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
   const a={root:root,m:m,mx:null,A:null,W:{i:1,w:0,r:0}};
   if(clips.length){
    const pick=re=>clips.find(c=>re.test(c.name));
@@ -4113,9 +4113,9 @@ try{
  }
  function upd(a,sp,dt){
   if(a.mx)a.mx.update(dt);if(!a.A)return;
-  const tg=sp<.25?[1,0,0]:sp<3.4?[0,1,0]:[0,0,1],k=Math.min(1,dt*8);
+  const w=Math.min(1,sp/1.2),r=Math.max(0,Math.min(1,(sp-2.9)/1.2)),tg=[1-w,w*(1-r),w*r],k=Math.min(1,dt*10);
   ['i','w','r'].forEach((n,j)=>{a.W[n]+=(tg[j]-a.W[n])*k;a.A[n].setEffectiveWeight(a.W[n])});
-  a.A.w.timeScale=Math.max(.6,Math.min(1.7,sp/1.7));a.A.r.timeScale=Math.max(.8,Math.min(1.4,sp/4.2));
+  a.A.w.timeScale=Math.max(.7,Math.min(1.5,sp/1.9));a.A.r.timeScale=Math.max(.85,Math.min(1.35,sp/4.4));
  }
  function torch(){
   const g=new T.Group(),mt=new T.MeshStandardMaterial({color:0x23262b,roughness:.4}),
@@ -4131,7 +4131,7 @@ try{
   const s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),transparent:true,depthTest:false}));s.scale.set(1.4,.35,1);s.position.y=2.15;return s;
  }
  return{ready:ready,actor:actor,upd:upd,torch:torch,label:label};
-})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/models/gltf/Michelle.glb","idle":"","walk":"","run":"","h":1.75});(function lobbyPatch(RC){
+})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb","idle":"","walk":"","run":"","h":1.75});(function lobbyPatch(RC){
  const T=THREE,list=[];
  window.soldier=function(hue){
   const g=new T.Group();
