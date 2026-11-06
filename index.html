@@ -1441,6 +1441,85 @@ try{
 })();
 
 </script>
+<!--RC-START-->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script>/*REALCHAR-PATCH*/
+(function(){try{const RC=(function core(CFG){
+ const T=THREE;
+ const abs=u=>{try{return new URL(u,(parent!==window?parent.location.href:location.href)).href}catch(e){return u}};
+ const GL=new T.GLTFLoader();
+ const load=u=>new Promise((ok,no)=>GL.load(abs(u),ok,undefined,no));
+ const ready=(async()=>{
+  const g=await load(CFG.url);const clips=g.animations.slice();
+  for(const k of ['idle','walk','run']){if(CFG[k]){try{const a=await load(CFG[k]);if(a.animations[0]){a.animations[0].name=k;clips.push(a.animations[0])}}catch(e){}}}
+  return{src:g.scene,clips:clips};
+ })();
+ ready.catch(e=>console.log('RC model load failed',e));
+ function actor(src,clips,sc){
+  const root=new T.Group(),m=T.SkeletonUtils.clone(src);root.add(m);
+  const b=new T.Box3().setFromObject(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
+  const b2=new T.Box3().setFromObject(m);m.position.y-=b2.min.y;
+  m.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.frustumCulled=false;
+   [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.26,.26,.26);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
+  const a={root:root,m:m,mx:null,A:null,W:{i:1,w:0,r:0}};
+  if(clips.length){
+   const pick=re=>clips.find(c=>re.test(c.name));
+   const idle=pick(/idle|stand|breath/i)||clips[0],walk=pick(/walk/i)||idle,run=pick(/run|sprint|jog/i)||walk;
+   a.mx=new T.AnimationMixer(m);a.A={i:a.mx.clipAction(idle),w:a.mx.clipAction(walk),r:a.mx.clipAction(run)};
+   ['i','w','r'].forEach(n=>{a.A[n].play();a.A[n].setEffectiveWeight(n=='i'?1:0)});
+  }
+  return a;
+ }
+ function upd(a,sp,dt){
+  if(a.mx)a.mx.update(dt);if(!a.A)return;
+  const tg=sp<.25?[1,0,0]:sp<3.4?[0,1,0]:[0,0,1],k=Math.min(1,dt*8);
+  ['i','w','r'].forEach((n,j)=>{a.W[n]+=(tg[j]-a.W[n])*k;a.A[n].setEffectiveWeight(a.W[n])});
+  a.A.w.timeScale=Math.max(.6,Math.min(1.7,sp/1.7));a.A.r.timeScale=Math.max(.8,Math.min(1.4,sp/4.2));
+ }
+ function torch(){
+  const g=new T.Group(),mt=new T.MeshStandardMaterial({color:0x23262b,roughness:.4}),
+   b=new T.Mesh(new T.CylinderGeometry(.025,.03,.24,10),mt),
+   h=new T.Mesh(new T.CylinderGeometry(.045,.03,.06,12),new T.MeshStandardMaterial({color:0x777a80,roughness:.3})),
+   l=new T.Mesh(new T.CircleGeometry(.04,12),new T.MeshBasicMaterial({color:0xfff2c0}));
+  h.position.y=.14;l.rotation.x=-Math.PI/2;l.position.y=.175;g.add(b,h,l);
+  const w=new T.Group();g.rotation.x=Math.PI/2;w.add(g);w.visible=false;return w;
+ }
+ function label(n){
+  const cv=document.createElement('canvas');cv.width=256;cv.height=64;const x=cv.getContext('2d');
+  x.font='700 30px Georgia';x.textAlign='center';x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,8,256,48);x.fillStyle='#d8d2c8';x.fillText(n,128,44);
+  const s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),transparent:true,depthTest:false}));s.scale.set(1.4,.35,1);s.position.y=2.15;return s;
+ }
+ return{ready:ready,actor:actor,upd:upd,torch:torch,label:label};
+})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb","idle":"","walk":"","run":"","h":1.75});(function gamePatch(RC){
+ const T=THREE;let PL=null,KB=null;const peers=[];
+ const hide=g=>g.traverse(o=>{if(o.isMesh)o.visible=false});
+ RC.ready.then(r=>{
+  hide(aarav.s);PL=RC.actor(r.src,r.clips,1);aarav.g.add(PL.root);PL.tm=RC.torch();PL.tm.position.set(-.28,1.08,.3);PL.root.add(PL.tm);
+  hide(kabir.s);KB=RC.actor(r.src,r.clips,1.05);kabir.g.add(KB.root);
+ });
+ HB.peer=function(name){
+  const g=new T.Group(),t=new T.Group(),o={g:g,t:t,tg:new T.Vector3(),yaw:0,seen:0};
+  g.add(RC.label(String(name)));const tm=RC.torch();tm.position.set(-.28,1.08,.3);g.add(tm);
+  const rec={o:o,tm:tm,a:null,lx:null,lz:null,sp:0};peers.push(rec);scene.add(g);
+  RC.ready.then(r=>{rec.a=RC.actor(r.src,r.clips,1);g.add(rec.a.root)});
+  return o;
+ };
+ const _x=extra;
+ extra=function(dt,t){
+  _x(dt,t);
+  if(PL){PL.root.rotation.x=P.fall;PL.tm.visible=!!P.has;RC.upd(PL,P.vel.length(),dt)}
+  if(KB)RC.upd(KB,0,dt);
+  for(let i=peers.length-1;i>=0;i--){
+   const r=peers[i],g=r.o.g;if(!g.parent){peers.splice(i,1);continue}
+   const p=g.position;if(r.lx==null){r.lx=p.x;r.lz=p.z}
+   const s=Math.hypot(p.x-r.lx,p.z-r.lz)/Math.max(dt,.001);r.lx=p.x;r.lz=p.z;r.sp+=(Math.min(s,6)-r.sp)*Math.min(1,dt*8);
+   r.tm.visible=!!r.o.t.visible;if(r.a)RC.upd(r.a,r.sp,dt);
+  }
+ };
+})(RC)}catch(e){console.log("RC patch error",e)}})();
+</script>
+<!--RC-END-->
 </body></html>
 
 </template>
@@ -1734,4 +1813,68 @@ try{
 })();
 
 </script>
+<!--RC-START-->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script>/*REALCHAR-PATCH*/
+(function(){try{const RC=(function core(CFG){
+ const T=THREE;
+ const abs=u=>{try{return new URL(u,(parent!==window?parent.location.href:location.href)).href}catch(e){return u}};
+ const GL=new T.GLTFLoader();
+ const load=u=>new Promise((ok,no)=>GL.load(abs(u),ok,undefined,no));
+ const ready=(async()=>{
+  const g=await load(CFG.url);const clips=g.animations.slice();
+  for(const k of ['idle','walk','run']){if(CFG[k]){try{const a=await load(CFG[k]);if(a.animations[0]){a.animations[0].name=k;clips.push(a.animations[0])}}catch(e){}}}
+  return{src:g.scene,clips:clips};
+ })();
+ ready.catch(e=>console.log('RC model load failed',e));
+ function actor(src,clips,sc){
+  const root=new T.Group(),m=T.SkeletonUtils.clone(src);root.add(m);
+  const b=new T.Box3().setFromObject(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
+  const b2=new T.Box3().setFromObject(m);m.position.y-=b2.min.y;
+  m.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.frustumCulled=false;
+   [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.26,.26,.26);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
+  const a={root:root,m:m,mx:null,A:null,W:{i:1,w:0,r:0}};
+  if(clips.length){
+   const pick=re=>clips.find(c=>re.test(c.name));
+   const idle=pick(/idle|stand|breath/i)||clips[0],walk=pick(/walk/i)||idle,run=pick(/run|sprint|jog/i)||walk;
+   a.mx=new T.AnimationMixer(m);a.A={i:a.mx.clipAction(idle),w:a.mx.clipAction(walk),r:a.mx.clipAction(run)};
+   ['i','w','r'].forEach(n=>{a.A[n].play();a.A[n].setEffectiveWeight(n=='i'?1:0)});
+  }
+  return a;
+ }
+ function upd(a,sp,dt){
+  if(a.mx)a.mx.update(dt);if(!a.A)return;
+  const tg=sp<.25?[1,0,0]:sp<3.4?[0,1,0]:[0,0,1],k=Math.min(1,dt*8);
+  ['i','w','r'].forEach((n,j)=>{a.W[n]+=(tg[j]-a.W[n])*k;a.A[n].setEffectiveWeight(a.W[n])});
+  a.A.w.timeScale=Math.max(.6,Math.min(1.7,sp/1.7));a.A.r.timeScale=Math.max(.8,Math.min(1.4,sp/4.2));
+ }
+ function torch(){
+  const g=new T.Group(),mt=new T.MeshStandardMaterial({color:0x23262b,roughness:.4}),
+   b=new T.Mesh(new T.CylinderGeometry(.025,.03,.24,10),mt),
+   h=new T.Mesh(new T.CylinderGeometry(.045,.03,.06,12),new T.MeshStandardMaterial({color:0x777a80,roughness:.3})),
+   l=new T.Mesh(new T.CircleGeometry(.04,12),new T.MeshBasicMaterial({color:0xfff2c0}));
+  h.position.y=.14;l.rotation.x=-Math.PI/2;l.position.y=.175;g.add(b,h,l);
+  const w=new T.Group();g.rotation.x=Math.PI/2;w.add(g);w.visible=false;return w;
+ }
+ function label(n){
+  const cv=document.createElement('canvas');cv.width=256;cv.height=64;const x=cv.getContext('2d');
+  x.font='700 30px Georgia';x.textAlign='center';x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,8,256,48);x.fillStyle='#d8d2c8';x.fillText(n,128,44);
+  const s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),transparent:true,depthTest:false}));s.scale.set(1.4,.35,1);s.position.y=2.15;return s;
+ }
+ return{ready:ready,actor:actor,upd:upd,torch:torch,label:label};
+})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb","idle":"","walk":"","run":"","h":1.75});(function lobbyPatch(RC){
+ const T=THREE,list=[];
+ window.soldier=function(hue){
+  const g=new T.Group();
+  const base=new T.Mesh(new T.CylinderGeometry(1,1.08,.08,40),new T.MeshStandardMaterial({color:0x141828,roughness:.4}));base.position.y=-.04;g.add(base);
+  const rg=new T.Mesh(new T.RingGeometry(.84,.96,48),new T.MeshBasicMaterial({color:0xa39cff,side:2}));rg.rotation.x=-Math.PI/2;rg.position.y=.01;g.add(rg);
+  RC.ready.then(r=>{const a=RC.actor(r.src,r.clips,1);g.add(a.root);list.push(a)});
+  return{g:g,t:new T.Object3D(),l:new T.Object3D(),r:new T.Object3D()};
+ };
+ const ck=new T.Clock();
+ (function f(){requestAnimationFrame(f);const d=Math.min(ck.getDelta(),.1);for(let i=list.length-1;i>=0;i--){if(!list[i].root.parent){list.splice(i,1);continue}RC.upd(list[i],0,d)}})();
+})(RC)}catch(e){console.log("RC patch error",e)}})();
+</script>
+<!--RC-END-->
 </body></html>
