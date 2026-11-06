@@ -526,7 +526,7 @@ function gotClue(k){if(clues.has(k))return;clues.add(k);refreshObj();toast(clues
 items.forEach(i=>{if(/X-ray/.test(i.t)){const f=i.f;i.f=()=>{f();gotClue('xray')}}if(/nurse diary/.test(i.t)){const f=i.f;i.f=()=>{f();gotClue('diary')}}});
 items.push({x:-6.3,z:-1.5,t:'Tap to read blood note',keep:1,f(){note('<i>“Go where the dead are put to sleep.”</i><br>— scrawled in blood');gotClue('blood')}});
 function pickup(name,x,z,c,y){const m=box(.22,.22,.22,new T.MeshBasicMaterial({color:c}),x,y,z);const l=lamp(x,y+.4,z,c,.35,3);items.push({x,z,t:'Tap to pick up '+name,f(){m.visible=false;l.visible=false;inv.add(name);refreshObj();toast(name+' taken ('+inv.size+'/3)')}})}
-pickup('Trishul Coin',-7.5,36,0xffcc33,.2);pickup('Sacred Ash',-8.4,19,0xcfcfcf,.2);pickup('Hospital Master Key',-12.5,38.5,0x88ccff,.2);
+
 items.splice(items.findIndex(i=>i.t=='Tap to inspect gate'),1);
 items.push({x:0,z:42.6,t:'Tap to use final gate',keep:1,f(){if(fin)return;const need=['Trishul Coin','Sacred Ash','Hospital Master Key'].filter(k=>!inv.has(k));if(need.length)note('The gate is locked.<br>Missing: <b>'+need.join(' · ')+'</b>');else finale()}});
 const S2={knock(){for(let i=0;i<3;i++){snd('sine',90,i*.7,.002,.25,.9,null,null,50);nse(300,1,i*.7,.002,.1,.6,null,null,'lowpass')}},maa(){voice(520,430,1.3,.7,null,null)}};
@@ -1231,7 +1231,7 @@ const sym=[
 ['MUSLIM',g=>{g.fillStyle=gold;g.beginPath();g.arc(120,125,66,0,7);g.fill();g.fillStyle=bg;g.beginPath();g.arc(144,115,56,0,7);g.fill();g.fillStyle=gold;g.beginPath();for(let i=0;i<10;i++){const r=i%2?7:16,a=-1.57+i*.628;g.lineTo(176+Math.cos(a)*r,100+Math.sin(a)*r)}g.fill()}],
 ['SIKH',g=>{g.strokeStyle=g.fillStyle=gold;g.lineWidth=7;g.beginPath();g.arc(128,125,34,0,7);g.stroke();g.beginPath();g.moveTo(128,35);g.lineTo(141,125);g.lineTo(128,215);g.lineTo(115,125);g.closePath();g.fill();g.lineWidth=11;g.beginPath();g.arc(150,150,72,Math.PI*.62,Math.PI*1.08);g.stroke();g.beginPath();g.arc(106,150,72,-Math.PI*.08,Math.PI*.38);g.stroke()}],
 ['CHRISTIAN',g=>{g.fillStyle=gold;g.fillRect(116,50,24,170);g.fillRect(76,100,104,24)}]];
-const xs=[-4.5,-1.5,1.5,4.5];
+const xs=[-4.5,-1.5,1.5,4.5];sym.length=0;
 sym.forEach(([nm,fn],i)=>{const t=tex(256,320,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle='#8a6a30';g.lineWidth=6;g.strokeRect(8,8,w-16,h-16);fn(g);g.fillStyle='#d8c9a0';g.font='bold 28px Georgia';g.textAlign='center';g.fillText(nm,128,290)});
  dWall(MB(0xffffff).clone(),0,0,0,0,0,0);});
 sym.forEach(([nm,fn],i)=>{const t=tex(256,320,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle='#8a6a30';g.lineWidth=6;g.strokeRect(8,8,w-16,h-16);fn(g);g.fillStyle='#d8c9a0';g.font='bold 28px Georgia';g.textAlign='center';g.fillText(nm,128,290)});
@@ -1257,7 +1257,7 @@ function arrive(){ended=1;obj('You are safe.');P.vel.set(0,0,0);el('blk').style.
   tx('ESCAPE THE HOSPITAL','font-size:28px;letter-spacing:5px;color:#ffd98a');tx('Morning has come. You escaped the hospital.','font-size:20px');
   const r=document.createElement('div');r.style.cssText='display:flex;gap:12px;margin-top:12px';
   const b=(t,f)=>{const x=document.createElement('button');x.textContent=t;x.style.cssText='padding:12px 24px;background:rgba(0,0,0,.5);color:#fff;border:1px solid #ffd98a;font:16px Georgia,serif';x.onclick=f;r.appendChild(x)};
-  b('RESTART GAME',()=>location.reload());b('MAIN MENU',()=>{parent!==window?parent.postMessage({t:'exit'},'*'):location.reload()});
+  b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('RESTART GAME',()=>location.reload());b('MAIN MENU',()=>{parent!==window?parent.postMessage({t:'exit'},'*'):location.reload()});
   d.appendChild(r);document.body.appendChild(d);requestAnimationFrame(()=>requestAnimationFrame(()=>d.style.opacity=1))},10500)}
 const _x=extra;
 extra=function(dt,t){_x(dt,t);
@@ -1457,7 +1457,7 @@ try{
  })();
  ready.catch(e=>console.log('RC model load failed',e));
  function actor(src,clips,sc){
-  const root=new T.Group(),m=T.SkeletonUtils.clone(src);root.add(m);
+  const root=new T.Group(),m=T.SkeletonUtils.clone(src);m.rotation.y=Math.PI;root.add(m);
   const b=new T.Box3().setFromObject(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
   const b2=new T.Box3().setFromObject(m);m.position.y-=b2.min.y;
   m.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.frustumCulled=false;
@@ -1520,6 +1520,85 @@ try{
 })(RC)}catch(e){console.log("RC patch error",e)}})();
 </script>
 <!--RC-END-->
+<!--V12-START--><script>/*W13-PATCH-V12*/
+(function(){
+const T=THREE,W2=new Set(),SY={o:0},spin=[];let CL=null,sT=0,inSH=0;
+const MB=c=>new T.MeshBasicMaterial({color:c}),wd=M(0x4a3524,.8),dk=M(0x222222,.5,.7);
+const pv=(w,d,c,x,z,y,r)=>{const m=new T.Mesh(r?new T.CircleGeometry(r,28):new T.PlaneGeometry(w,d),M(c,.9));m.rotation.x=-Math.PI/2;m.position.set(x,y||.02,z);scene.add(m);return m};
+/* ---------- random room helper ---------- */
+const WD=[[10,3,7],[45,3,7],[80,4,7],[115,4,7],[150,5,7],[185,5,7],[220,5,7],[255,5,7],[285,5,10],[320,5,10],[355,5,10],[390,5,10]];
+const rp=ws=>{const w=WD[ws[Math.random()*ws.length|0]],i=Math.random()*w[1]|0,s=Math.random()<.5?-1:1;return[45+w[2]*i+w[2]/2+rnd(-1.2,1.2),w[0]+s*5.4]};
+function item(t,x,z,col,f,keep){const m=box(.24,.24,.24,MB(col),x,.3,z);spin.push(m);items.push({x,z,t,keep:keep||0,f(){if(!keep)m.visible=false;f()}})}
+/* ---------- items spread over floors ---------- */
+[['Trishul Coin',[2,3],0xffcc33],['Sacred Ash',[4,5],0xcfcfcf],['Hospital Master Key',[8,9,10,11],0x88ccff]].forEach(([n,ws,c])=>{const[x,z]=rp(ws);item('Tap to pick up '+n,x,z,c,()=>{inv.add(n);refreshObj();toast(n+' taken ('+inv.size+'/3)')})});
+const key=(n,ws,c)=>{const[x,z]=rp(ws);item('Tap to take '+n,x,z,c,()=>{W2.add(n);toast(n+' taken.\nIt opens a stairwell gate.')})};
+key('Ward Key',[2,3],0x66ddff);key('Rooftop Key',[6,7],0xff9955);
+const nt=(ws,h)=>{const[x,z]=rp(ws);item('Tap to read note',x,z,0xd8cfa8,()=>note(h),1)};
+nt([0,1],'<i>"The numbers hide where the water runs."</i><br>— scrap of paper');
+nt([4,5],'<i>"Her bed was number <b>04</b>. The stairs want the bed, then the ward."</i>');
+nt([4,5],'<i>"Ward <b>13</b>. Say it twice."</i>');
+/* ---------- keypad ---------- */
+function askCode(code,ok){const d=document.createElement('div');d.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:12;background:#0c100e;border:1px solid #3a4a3f;padding:14px;box-shadow:0 0 40px #000';let v='';
+ const s=document.createElement('div');s.style.cssText='font:28px monospace;letter-spacing:10px;text-align:center;color:#6f9;margin-bottom:10px';s.textContent='-'.repeat(code.length);d.appendChild(s);
+ const g=document.createElement('div');g.style.cssText='display:grid;grid-template-columns:repeat(3,58px);gap:8px';d.appendChild(g);
+ '123456789X0\u2713'.split('').forEach(k=>{const b=document.createElement('button');b.textContent=k;b.style.cssText='height:50px;font:20px Georgia,serif;background:#1a221d;color:#9fe;border:1px solid #3a4a3f;touch-action:none';
+  b.onpointerdown=e=>{e.stopPropagation();if(k=='X'){d.remove();return}if(k=='\u2713'){if(v==code){d.remove();ok()}else{v='';s.textContent='ERR';toast('Wrong code.');G.fk=1.5;S.fail()}return}if(v.length<code.length){v+=k;s.textContent=(v+'-'.repeat(code.length)).slice(0,code.length)}};g.appendChild(b)});
+ document.body.appendChild(d)}
+/* ---------- stairwell gates between floors ---------- */
+const GT=[{z:62,t:'code',v:'629'},{z:132,t:'key',v:'Ward Key'},{z:202,t:'code',v:'0413'},{z:270,t:'key',v:'Rooftop Key'}],sm=M(0x55524a,.9);
+function go2(g,dir,fl){if(CL)return;CL={t:0,dir,z0:g.z-dir*3.9,z1:g.z+dir*3.9,fl,g}}
+function up(g,gi){if(CL)return;if(g.open)return go2(g,1,gi+2);
+ if(g.t=='code')askCode(g.v,()=>{g.open=1;S.ok();toast('The lock opens.');go2(g,1,gi+2)});
+ else if(W2.has(g.v)){g.open=1;S.ok();toast('The gate unlocks.');go2(g,1,gi+2)}
+ else note('The stairwell gate is locked.<br>'+(g.t=='key'?'You need the <b>'+g.v+'</b> from this floor.':'It has a <b>'+g.v.length+'-digit</b> lock. Look for numbers and notes on this floor.'))}
+GT.forEach((g,gi)=>{const z=g.z;cols.push([41,45,z-3.2,z+3.2]);
+ for(let i=0;i<5;i++){const h=.22*(i+1);box(4,h,.5,sm,43,h/2,z-3+i*.5);box(4,h,.5,sm,43,h/2,z+3-i*.5)}
+ box(4,1.1,1,sm,43,.55,z);
+ g.bars=new T.Group();for(let k=-1.8;k<=1.81;k+=.45)box(.06,2.1,.06,dk,43+k,2.15,z,g.bars);box(4,.07,.07,dk,43,1.4,z,g.bars);box(4,.07,.07,dk,43,2.9,z,g.bars);scene.add(g.bars);
+ sign('STAIRS \u2191 FLOOR '+(gi+2),41.16,2.5,z-2,Math.PI/2,2.8,.4,'#c9c3a8','rgba(20,20,20,.9)',32);
+ sign('STAIRS \u2193 FLOOR '+(gi+1),41.16,2.5,z+2,Math.PI/2,2.8,.4,'#c9c3a8','rgba(20,20,20,.9)',32);
+ items.push({x:43,z:z-3.9,t:'Tap to climb the stairs',keep:1,f(){up(g,gi)}},{x:43,z:z+3.9,t:'Tap to go down the stairs',keep:1,f(){go2(g,-1,gi+1)}})});
+/* climb / descend animation */
+const _uu=update;update=function(dt,t){cam.position.y-=SY.o;_uu(dt,t);SY.o=0;
+ if(CL){CL.t+=dt;const u=Math.min(1,CL.t/3.4),e=u*u*(3-2*u);P.pos.x=43;P.pos.z=CL.z0+(CL.z1-CL.z0)*e;P.vel.set(0,0,CL.dir*2.6);P.face=CL.dir>0?0:Math.PI;
+  aarav.g.position.set(43,0,P.pos.z);aarav.g.rotation.y=P.face;
+  SY.o=Math.sin(Math.PI*e)*1.1+Math.abs(Math.sin(CL.t*8))*.05*Math.sin(Math.PI*u);
+  sT-=dt;if(sT<=0){sT=.34;nse(260,1,0,.004,.1,.35,null,null,'lowpass');nse(1800,3,.02,.002,.04,.08)}
+  if(u>=1){toast('Floor '+CL.fl);obj('Floor '+CL.fl+' \u00b7 find keys, clues and ritual items');CL=null}}
+ aarav.g.position.y+=SY.o;spot.position.y+=SY.o;cam.position.y+=SY.o};
+/* ---------- outside park ---------- */
+pv(76,64,0x2c5f27,0,118,.006);pv(3.2,64,0x8d8672,0,118,.02);pv(76,3.2,0x8d8672,0,118,.021);pv(0,0,0x9b957f,0,118,.022,5);
+{const fo=new T.Mesh(new T.CylinderGeometry(2.2,2.4,.5,24),M(0x8a8a86,.6));fo.position.set(0,.25,118);scene.add(fo);pv(0,0,0x2a6c8c,0,118,.52,1.9);
+ const c=new T.Mesh(new T.CylinderGeometry(.22,.3,1.6,12),M(0x9a9a94,.6));c.position.set(0,1.1,118);scene.add(c);col(0,118,4.8,4.8);
+ pv(0,0,0x24607a,-20,118,.03,6.5);col(-20,118,13,13);
+ const bench=(x,z)=>{box(.5,.08,1.6,wd,x,.45,z);box(.06,.5,1.6,wd,x+(x>0?.22:-.22),.75,z);col(x,z,.5,1.6)};
+ [100,108,128,136].forEach(z=>{bench(4.2,z);bench(-4.2,z)});
+ [96,108,128,140].forEach(z=>[-2.6,2.6].forEach(x=>{box(.1,3,.1,dk,x,1.5,z);box(.3,.3,.3,MB(0xffe9a0),x,3.1,z)}));
+ const tg=new T.CylinderGeometry(.2,.28,2.6,6),cg=new T.SphereGeometry(1.5,8,6),tm=M(0x4a3320),lm=[M(0x2f7a2f,1),M(0x3d8a35,1),M(0x28652b,1)];
+ for(let i=0;i<34;i++){const x=rnd(-36,36),z=rnd(92,146);if(Math.abs(x)<3.2||Math.abs(z-118)<2.4||Math.hypot(x,z-118)<5.5||(x<-12&&x>-28&&Math.abs(z-118)<8)||(Math.abs(x-22)<5&&Math.abs(z-126)<5))continue;
+  const a=new T.Mesh(tg,tm),b=new T.Mesh(cg,lm[i%3]);a.position.set(x,1.3,z);b.position.set(x,3.4,z);b.scale.y=1.2;scene.add(a,b);col(x,z,.7,.7)}
+ box(4.6,.15,4.6,wd,22,.08,126);[[-2,-2],[2,-2],[-2,2],[2,2]].forEach(([a,b])=>{box(.2,2.6,.2,wd,22+a,1.4,126+b);col(22+a,126+b,.3,.3)});
+ const rf=new T.Mesh(new T.ConeGeometry(3.6,1.3,4),M(0x6a3a2a,.8));rf.position.set(22,3.7,126);rf.rotation.y=Math.PI/4;scene.add(rf);
+ const fc=[0xff6a8a,0xffd23f,0xb08fff];for(let i=0;i<40;i++){const a=rnd(0,6.28),r=rnd(3.2,4.6),m=new T.Mesh(new T.SphereGeometry(.13,6,5),M(fc[i%3],.8));m.position.set(Math.cos(a)*r,.15,118+Math.sin(a)*r);scene.add(m)}
+ box(76,.08,.08,wd,0,.9,150);box(.08,.08,58,wd,38,.9,121);box(.08,.08,58,wd,-38,.9,121);
+ for(let x=-38;x<=38;x+=4)box(.12,1.1,.12,wd,x,.55,150);for(let z=92;z<=150;z+=4){box(.12,1.1,.12,wd,38,.55,z);box(.12,1.1,.12,wd,-38,.55,z)}
+ cols.push([-38,38,149.9,150.1],[37.9,38.1,92,150],[-38.1,-37.9,92,150])}
+/* ---------- safe house: calm safe zone ---------- */
+{pv(0,0,0x8c3a2a,-1.5,83.5,.03,2.4);
+ [[-3,80,0xc9774a],[0,85,0x7aa87a],[3,81,0xd8b04a]].forEach(([x,z,c])=>box(.7,.18,.7,M(c,1),x,.1,z));
+ [-3.5,0,3.5].forEach(x=>{box(.02,.7,.02,dk,x,2.85,82);box(.22,.3,.22,MB(0xffc870),x,2.4,82)});
+ box(.4,2,2.6,wd,-5.6,1,80);col(-5.6,80,.4,2.6);for(let i=0;i<9;i++)box(.2,.3,.08,M([0x8a3a3a,0x3a5a8a,0x4a7a4a][i%3],.8),-5.4,1.15+(i%3)*.5,79+i*.25);
+ sign('SAFE ZONE',0,2.5,86.84,Math.PI,2.6,.4,'#ffd98a','rgba(30,18,6,.9)',40);
+ const hl=scene.children.find(o=>o.isPointLight&&Math.abs(o.position.z-82)<.1&&Math.abs(o.position.y-2.4)<.1);if(hl){hl.intensity=2;hl.color.set(0xffd9a0)}}
+const FP=new Float32Array(90),fg=new T.BufferGeometry();for(let i=0;i<30;i++){FP[i*3]=rnd(-34,34);FP[i*3+1]=rnd(.5,3);FP[i*3+2]=rnd(92,138)}
+fg.setAttribute('position',new T.BufferAttribute(FP,3));const ff=new T.Points(fg,new T.PointsMaterial({color:0xffe9a0,size:.18}));ff.frustumCulled=false;scene.add(ff);
+const _ee=extra;extra=function(dt,t){_ee(dt,t);
+ for(const m of spin){m.rotation.y+=dt;m.position.y=.3+Math.sin(t*2+m.position.x)*.04}
+ for(const g of GT)if(g.open&&g.bars.visible){g.bars.position.y+=dt*1.5;if(g.bars.position.y>=3)g.bars.visible=false}
+ for(let i=0;i<30;i++){FP[i*3+1]=1.7+Math.sin(t*.7+i)*1.1;FP[i*3]+=Math.sin(t*.3+i)*dt*.3}fg.attributes.position.needsUpdate=true;
+ const s=P.pos.z>77&&P.pos.z<87&&Math.abs(P.pos.x)<6;if(s){P.safe=true;if(!inSH)toast('Safe zone.\nWarm light. Nothing follows you here.')}inSH=s};
+})();
+</script><!--V12-END-->
 </body></html>
 
 </template>
@@ -1829,7 +1908,7 @@ try{
  })();
  ready.catch(e=>console.log('RC model load failed',e));
  function actor(src,clips,sc){
-  const root=new T.Group(),m=T.SkeletonUtils.clone(src);root.add(m);
+  const root=new T.Group(),m=T.SkeletonUtils.clone(src);m.rotation.y=Math.PI;root.add(m);
   const b=new T.Box3().setFromObject(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
   const b2=new T.Box3().setFromObject(m);m.position.y-=b2.min.y;
   m.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.frustumCulled=false;
