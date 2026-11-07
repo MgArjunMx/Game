@@ -156,7 +156,7 @@ const off=()=>{t.classList.remove('pr');removeEventListener('pointerup',off);rem
 document.addEventListener('pointerdown',on,{passive:true})})();
 
 </script>
-<style>#squad,.hint{display:none}</style></head><body>
+<style>#squad,.hint{display:none}</style><style>body.ingame #rot{display:none!important}</style></head><body>
 <div class="bg"></div><canvas id="fx"></canvas>
 <svg width="0" height="0" style="position:absolute"><defs>
 <symbol id="i-set" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
@@ -2384,25 +2384,42 @@ q('pzhv').onclick=()=>leave(1);q('pzhc').onclick=()=>leave(0);
 const eb=q('pzeb'),rs=q('pzrs');if(eb)eb.onclick=enter;if(rs)rs.onclick=()=>{L={};LS('pz33h',L);apply();try{toast('HUD reset')}catch(e){}};
 /* while editing: show hidden buttons, protect from ghost */
 const _x=extra;extra=function(dt,t){_x(dt,t);if(!edit)return;G.prot=Math.max(G.prot,3);['bTorch','bMap'].forEach(i=>q(i)&&q(i).style.setProperty('display','block','important'))};
-}catch(e){console.log('pz33 error',e)}})()</script><script>/*PZ-V34*/(function(){try{
-if(window.__pz34)return;window.__pz34=1;
+}catch(e){console.log('pz33 error',e)}})()</script>
+<script>/*PZ-V35*/(function(){try{
+if(window.__pz35)return;window.__pz35=1;
 const T=THREE,LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}},q=id=>document.getElementById(id);
-const D={d:.8,h:1.3,s:.38,f:60,q:'med'},C=Object.assign({},D,LS('pz34c')||{}),sv=()=>LS('pz34c',C);
-/* 1. kill every synthetic oscillator sound (beeps, drones, tones). Uploaded sound files stay. */
-[window.AudioContext,window.webkitAudioContext].forEach(A=>{if(!A||A.prototype.__k)return;const o=A.prototype.createOscillator;A.prototype.createOscillator=function(){const x=o.apply(this,arguments);x.start=x.stop=function(){};return x};A.prototype.__k=1});
-amb=function(){};
-/* 2. door sound always plays from your file */
+const D={d:.9,h:1.25,s:0,f:60,q:'med'},C=Object.assign({},D,{q:(LS('pz34c')||{}).q||'med'},LS('pz35c')||{}),sv=()=>LS('pz35c',C);
+/* 1. kill ALL code-made sound: oscillators and noise buffers. Your uploaded files stay. */
+[window.AudioContext,window.webkitAudioContext].forEach(A=>{if(!A||A.prototype.__k)return;A.prototype.__k=1;
+ const co=A.prototype.createOscillator;A.prototype.createOscillator=function(){const x=co.apply(this,arguments);x.start=x.stop=function(){};return x};
+ const cb=A.prototype.createBufferSource;A.prototype.createBufferSource=function(){const s=cb.apply(this,arguments),st=s.start,sp=s.stop;
+  s.start=function(){if(typeof NB!=='undefined'&&s.buffer===NB){s.__b=1;return}return st.apply(s,arguments)};
+  s.stop=function(){if(s.__b)return;return sp.apply(s,arguments)};return s}});
+amb=function(){if(typeof A!=='undefined'&&A.g)A.g.gain.value=0};
+/* 2. door sound from your file */
 const DB={};
 async function ld(n){if(DB[n]!==undefined||!AC)return;DB[n]=1;const base=parent!==window?parent.location.href:location.href;for(const c of[CFG18[n][0],CFG18[n][0].replace('sounds/','')]){try{const r=await fetch(new URL(c,base).href);if(r.ok){DB[n]=await AC.decodeAudioData(await r.arrayBuffer());return}}catch(e){}}DB[n]=0}
 function play(n,x,z,v){const b=DB[n];if(!b||b===1||!AC)return;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=b;g.gain.value=v;s.connect(g);g.connect(out(x,z));s.start()}
 const nearD=(x,z)=>typeof x=='number'&&DL.some(d=>Math.abs(x-d.g.position.x-.75)<.05&&Math.abs(z-d.g.position.z)<.05);
 ['creak','slam'].forEach(n=>{const o=S[n];if(typeof o!='function')return;S[n]=function(x,z){if(nearD(x,z))return;return o.apply(S,arguments)}});
-/* 3. quality */
+/* 3. old procedural character removed completely (only the real model stays) */
+const hid=[];[aarav,kabir].forEach(c=>c.s.traverse(o=>{if(o.isMesh&&o.visible){o.visible=false;hid.push(o)}}));
+setTimeout(()=>{let sk=0;aarav.g.traverse(o=>{if(o.isSkinnedMesh)sk=1});if(!sk)hid.forEach(o=>o.visible=true)},9000);
+/* 4. dead bodies / skeletons inside walls: hide them */
+function fixBodies(){scene.updateMatrixWorld(true);
+ const wb=walls.map(w=>{const p=w.geometry.parameters,a=p.width*w.scale.x/2,b=p.depth*w.scale.z/2;return[w.position.x-a,w.position.x+a,w.position.z-b,w.position.z+b]});
+ const vis=o=>{let p=o;while(p){if(!p.visible)return 0;p=p.parent}return 1};
+ const bad=g=>{const b=new T.Box3().setFromObject(g);if(b.isEmpty())return 0;const x0=b.min.x+.1,x1=b.max.x-.1,z0=b.min.z+.1,z1=b.max.z-.1;for(const w of wb)if(x1>w[0]&&x0<w[1]&&z1>w[2]&&z0<w[3])return 1;return 0};
+ const L=[];scene.traverse(o=>{if(!o.isGroup)return;
+  if(o.children.length==1&&o.children[0].isGroup&&Math.abs(Math.abs(o.children[0].rotation.x)-1.5708)<.02&&Math.abs(o.children[0].position.y-.17)<.01)L.push([o,1]);
+  else if(o.children.some(c=>c.isMesh&&c.geometry&&c.geometry.type==='TorusGeometry'&&Math.abs(c.geometry.parameters.tube-.009)<.001))L.push([o,0])});
+ L.forEach(([o,c])=>{if(!vis(o)||!bad(o))return;o.visible=false;if(c){const x=o.position.x,z=o.position.z;for(let k=cols.length-1;k>=0;k--){const e=cols[k];if(Math.abs((e[0]+e[1])/2-x)<.05&&Math.abs((e[2]+e[3])/2-z)<.05&&e[1]-e[0]<2.5)cols.splice(k,1)}}})}
+/* 5. quality */
 const P0=T.WebGLRenderer.prototype,QL={low:[.7,2],med:[1.5,4],high:[2,8],ultra:[2.5,16],xtreme:[3,16]};
 function setQ(){const dpr=window.devicePixelRatio||1,L=QL[C.q]||QL.med,r=(C.q=='low'||C.q=='med')?Math.max(C.q=='low'?.7:1,Math.min(dpr,L[0])):L[0];
- P0.setPixelRatio.call(renderer,r);P0.setSize.call(renderer,innerWidth,innerHeight,true);
+ P0.setPixelRatio.call(renderer,r);P0.setSize.call(renderer,innerWidth,innerHeight,true);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();
  const an=Math.min(L[1],renderer.capabilities.getMaxAnisotropy());scene.traverse(o=>{const m=o.material;if(m&&!Array.isArray(m)&&m.map&&m.map.anisotropy!==an){m.map.anisotropy=an;m.map.needsUpdate=true}})}
-/* 4. stable camera + stop idle drift */
+/* 6. stable, centered camera */
 const hd=new T.Vector3(),L=new T.Vector3(),wn=new T.Vector3(),dv=new T.Vector3(),an=new T.Vector3();let has=0,cd=C.d;
 const _u=update;update=function(dt,t){
  const px=P.pos.x,pz=P.pos.z;_u(dt,t);
@@ -2411,7 +2428,7 @@ const _u=update;update=function(dt,t){
  const cp=Math.cos(P.pitch),sy=Math.sin(P.yaw),cy=Math.cos(P.yaw);
  L.set(sy*cp,Math.sin(P.pitch),cy*cp);
  an.set(P.pos.x,aarav.g.position.y+C.h,P.pos.z);
- if(!has){hd.copy(an);has=1}else{hd.lerp(an,1-Math.exp(-24*dt));if(hd.distanceToSquared(an)<1e-6)hd.copy(an)}
+ if(!has){hd.copy(an);has=1}else{hd.lerp(an,1-Math.exp(-40*dt));if(hd.distanceToSquared(an)<1e-6)hd.copy(an)}
  wn.copy(hd).addScaledVector(L,-C.d);wn.x-=cy*C.s;wn.z+=sy*C.s;
  dv.copy(wn).sub(hd);let len=dv.length();dv.normalize();ray.set(hd,dv);ray.far=len;
  const h=ray.intersectObjects(walls)[0];if(h)len=Math.max(.2,h.distance-.2);
@@ -2422,22 +2439,29 @@ const _u=update;update=function(dt,t){
 let qd=0;const _x=extra;extra=function(dt,t){_x(dt,t);
  if(AC&&DB.creak===undefined){ld('creak');ld('slam')}
  for(const d of DL){const w=d.want?1:0;if(d.pw===undefined)d.pw=w;if(w!==d.pw){d.pw=w;play(w?'creak':(d.fast?'slam':'creak'),d.g.position.x+.75,d.g.position.z,.9)}}
- if(!qd){qd=1;setQ()}};
-/* 5. settings: QUALITY + CAMERA tabs */
+ if(!qd){qd=1;setQ();fixBodies();setTimeout(fixBodies,3000)}};
+/* 7. screen rotation */
+const rs=()=>[150,500,1100].forEach(ms=>setTimeout(()=>{setQ();dispatchEvent(new Event('resize'))},ms));
+addEventListener('orientationchange',rs);try{screen.orientation.addEventListener('change',rs)}catch(e){}
+/* 8. HUD editor: big stacked sliders */
+const css=document.createElement('style');
+css.textContent='#pzh{flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;gap:6px 10px!important;width:min(400px,46vw)!important;box-sizing:border-box!important;padding:10px 16px!important;border-radius:20px!important}#pzh b{width:100%!important;min-width:0!important;text-align:center;font-size:12px!important}#pzh span{width:100%!important;font-size:11px!important}#pzh input[type=range]{width:100%!important;height:40px!important}#pzh input[type=range]::-webkit-slider-thumb{width:30px!important;height:30px!important;margin-top:-13px!important}#pzh input[type=range]::-moz-range-thumb{width:30px!important;height:30px!important}#pzh button{flex:1 1 40%!important;padding:12px!important}';
+document.head.appendChild(css);const zs=q('pzhs');if(zs)zs.max=250;
+/* 9. settings: QUALITY + CAMERA tabs */
 const S2=q('pzs');
 if(S2){const tb=S2.querySelector('.tb');const old=tb.querySelector('button[data-p="3"]');if(old)old.style.display='none';
  const oc=q('pzc_d');const p3=oc?oc.parentNode.parentNode:null;
  const mk=(t,html)=>{const b=document.createElement('button');b.textContent=t;tb.appendChild(b);const p=document.createElement('div');p.style.display='none';p.innerHTML=html;S2.appendChild(p);return[b,p]};
- const [bq,pq]=mk('QUALITY','<label>Graphics quality<select id="z34q"><option value="low">Low (fast)</option><option value="med">Medium (sharp)</option><option value="high">High (HD)</option><option value="ultra">Ultra HD</option><option value="xtreme">Extreme HD (heavy)</option></select></label><div class="pzd">Medium = default. Extreme phone ko garam/slow kar sakta hai.</div>');
- const [bc,pc]=mk('CAMERA','<label>Distance (kam = paas, zyada = door)<input type="range" id="z34d" min="15" max="600"></label><label>Height<input type="range" id="z34h" min="50" max="250"></label><label>Shoulder left/right<input type="range" id="z34s" min="-80" max="80"></label><label>Zoom / FOV (kam = zoom in)<input type="range" id="z34f" min="35" max="95"></label><button class="pzg" id="z34r">RESET CAMERA</button>');
- const fill=()=>{q('z34q').value=C.q;q('z34d').value=C.d*100;q('z34h').value=C.h*100;q('z34s').value=C.s*100;q('z34f').value=C.f};fill();
- q('z34q').onchange=e=>{C.q=e.target.value;sv();setQ()};
- q('z34d').oninput=e=>{C.d=e.target.value/100;sv()};q('z34h').oninput=e=>{C.h=e.target.value/100;sv()};q('z34s').oninput=e=>{C.s=e.target.value/100;sv()};q('z34f').oninput=e=>{C.f=+e.target.value;sv()};
- q('z34r').onclick=()=>{Object.assign(C,{d:D.d,h:D.h,s:D.s,f:D.f});sv();fill()};
+ const [bq,pq]=mk('QUALITY','<label>Graphics quality<select id="z35q"><option value="low">Low (fast)</option><option value="med">Medium (sharp)</option><option value="high">High (HD)</option><option value="ultra">Ultra HD</option><option value="xtreme">Extreme HD (heavy)</option></select></label><div class="pzd">Medium = default. Extreme phone ko slow ya garam kar sakta hai.</div>');
+ const [bc,pc]=mk('CAMERA','<label>Distance (kam = paas, zyada = door)<input type="range" id="z35d" min="15" max="600"></label><label>Height<input type="range" id="z35h" min="50" max="250"></label><label>Shoulder left/right (0 = center)<input type="range" id="z35s" min="-80" max="80"></label><label>Zoom / FOV (kam = zoom in)<input type="range" id="z35f" min="35" max="95"></label><button class="pzg" id="z35r">RESET CAMERA</button>');
+ const fill=()=>{q('z35q').value=C.q;q('z35d').value=C.d*100;q('z35h').value=C.h*100;q('z35s').value=C.s*100;q('z35f').value=C.f};fill();
+ q('z35q').onchange=e=>{C.q=e.target.value;sv();setQ()};
+ q('z35d').oninput=e=>{C.d=e.target.value/100;sv()};q('z35h').oninput=e=>{C.h=e.target.value/100;sv()};q('z35s').oninput=e=>{C.s=e.target.value/100;sv()};q('z35f').oninput=e=>{C.f=+e.target.value;sv()};
+ q('z35r').onclick=()=>{Object.assign(C,{d:D.d,h:D.h,s:D.s,f:D.f});sv();fill()};
  const show=(b,p)=>{q('p1').style.display=q('p2').style.display='none';if(p3)p3.style.display='none';pq.style.display=pc.style.display='none';p.style.display='';tb.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))};
  bq.onclick=()=>show(bq,pq);bc.onclick=()=>show(bc,pc);
  tb.querySelectorAll('button').forEach(b=>{if(b!==bq&&b!==bc)b.addEventListener('click',()=>{pq.style.display=pc.style.display='none'})})}
-}catch(e){console.log('pz34 error',e)}})()</script>
+}catch(e){console.log('pz35 error',e)}})()</script>
 </body></html>
 
 </template>
@@ -2472,7 +2496,7 @@ $('#guest').onclick=async e=>{fs();fresh=1;e.target.disabled=true;const {data,er
  if(error)return $('#er0').textContent='Guest login failed: '+error.message+' (turn on Anonymous sign-ins in Supabase > Authentication > Sign In / Providers)';
  me=data.user;afterAuth()};
 let fresh=0;
-async function fs(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen({navigationUI:'hide'})}catch(e){}try{await screen.orientation.lock('landscape')}catch(e){}}
+async function fs(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen({navigationUI:'hide'})}catch(e){}try{screen.orientation.unlock&&screen.orientation.unlock()}catch(e){}}
 async function afterAuth(){const {data}=await sb.from('profiles').select('*').eq('id',me.id).maybeSingle();if(data){prof=data;if(fresh)enterLobby();else{$('#wbn').textContent='Welcome back, '+prof.name;show('wb')}}else show('name')}
 $('#wbb').onclick=()=>{fs();enterLobby()};
 $('#next').onclick=async()=>{fs();const n=$('#nm').value.trim(),u=$('#un').value.trim().toLowerCase(),er=$('#er1');er.textContent='';
