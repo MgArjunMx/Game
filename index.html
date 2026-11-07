@@ -1844,6 +1844,39 @@ const _u=update;update=function(dt,t){_u(dt,t);if(SKp>0){cam.position.x+=R(-1,1)
 const _e=extra;extra=function(dt,t){_e(dt,t);try{fx(dt,t);doors(dt)}catch(e){}};
 })();
 </script>
+<script>/*PZ-PATCH-V20*/
+(function PZPATCH2(){
+const T=THREE;
+/* flicker: depth precision + coplanar surfaces */
+try{cam.near=.3;cam.updateProjectionMatrix();const seen=new Set();scene.traverse(o=>{const m=o.material;if(!o.isMesh||!m||Array.isArray(m)||seen.has(m)||!m.isMeshStandardMaterial||m.transparent)return;seen.add(m);m.polygonOffset=true;m.polygonOffsetFactor=1;m.polygonOffsetUnits=1})}catch(e){}
+/* closer camera (about 1m behind the head) */
+const raw=new T.Vector3(),hd=new T.Vector3(),dv=new T.Vector3();let has=0;
+const _u=update;update=function(dt,t){if(has)cam.position.copy(raw);_u(dt,t);raw.copy(cam.position);has=1;
+hd.set(P.pos.x,aarav.g.position.y+1.6,P.pos.z);dv.copy(cam.position).sub(hd);let len=dv.length()*.58;dv.normalize();
+ray.set(hd,dv);ray.far=len;const h=ray.intersectObjects(walls)[0];if(h)len=Math.max(.25,h.distance-.2);
+cam.position.copy(hd).addScaledVector(dv,len);
+const cp=Math.cos(P.pitch);cam.lookAt(cam.position.x+Math.sin(P.yaw)*cp,cam.position.y+Math.sin(P.pitch),cam.position.z+Math.cos(P.yaw)*cp)};
+/* start notice */
+const nb=document.createElement('div');nb.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;background:rgba(0,0,0,.8);border:1px solid #9b1c1c;padding:16px 22px;color:#e6dfd0;font:16px/1.7 Georgia,serif;max-width:86%;opacity:0;transition:opacity .8s;pointer-events:none';
+nb.innerHTML='<b style="letter-spacing:3px;color:#c33">HOW TO ESCAPE</b><br>1. Take the torch and the map, then open the Ward door (code is on the notice board).<br>2. Find 3 ritual items and 4 torn pages. Read every note: they hold the codes.<br>3. Open the Final Gate and run to the Safe House outside.<br><span style="opacity:.7;font-size:13px">Light the torch when the ghost comes. The chalk circle room is safe. NOTES button = your journal.</span>';
+document.body.appendChild(nb);let shown=0;
+/* journal */
+const NJ=[];const _n=note;note=function(h){if(!NJ.includes(h)&&!/locked|Missing/.test(h))NJ.push(h);_n(h)};
+const bn=document.createElement('button');bn.textContent='NOTES';el('btns').appendChild(bn);
+const jo=document.createElement('div');jo.style.cssText='position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center';
+const jb=document.createElement('div');jb.style.cssText='width:min(88%,520px);max-height:86%;overflow:auto;background:#d8c9a0;color:#2a1a0a;padding:16px;font:15px/1.5 Georgia,serif';jo.appendChild(jb);document.body.appendChild(jo);jo.onpointerdown=()=>jo.style.display='none';
+bn.onpointerdown=e=>{e.stopPropagation();jb.innerHTML='<b>JOURNAL</b> (tap to close)<hr>'+(NJ.length?NJ.map(x=>'<p>'+x+'</p>').join('<hr>'):'<i>Nothing yet. Read notes and papers around you.</i>')+'<hr><b>Items:</b> '+([...inv].join(', ')||'none');jo.style.display='flex'};
+/* clearer, fair puzzle hints */
+const nt=(x,z,h)=>items.push({x,z,t:'Tap to read note',keep:1,f(){note(h)}});
+nt(3,-1.2,'<i>Children&#39;s Ward sealed on the 17th day of the 8th month.</i><br>Door code = day + month.');
+nt(43,55.5,'<b>Stairwell gate</b><br>3-digit lock. The numbers are written where the water runs: check a bathroom wall.');
+nt(43,125.5,'This gate needs the <b>Ward Key</b>. Search rooms on the second floor and the basement.');
+nt(43,195.5,'4-digit lock: <b>her bed number</b>, then <b>her ward number</b>. Two notes on the OPD and Maternity floors tell you.');
+nt(43,263.5,'This gate needs the <b>Rooftop Key</b>. Search the Psychiatric wing and the Old Mortuary.');
+setInterval(()=>{if(doorOpen&&!fin)el('obj').textContent=inv.size<3?'Ritual items '+inv.size+'/3 · check NOTES for clues':'All items found · open the Final Gate (4-digit code on torn pages)'},1500);
+const _e=extra;extra=function(dt,t){_e(dt,t);if(started&&!shown){shown=1;setTimeout(()=>{nb.style.opacity=1;setTimeout(()=>nb.style.opacity=0,11000)},3400)}};
+})();
+</script>
 </body></html>
 
 </template>
