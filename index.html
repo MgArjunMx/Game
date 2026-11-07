@@ -3212,6 +3212,60 @@ const _x=extra;extra=function(dt,t){_x(dt,t);try{
  if(cut&&!window.__pzPower&&!window.__pzRestored)rd.style.opacity=.55+.3*Math.sin(t*3);else rd.style.opacity=0}catch(e){}};
 }catch(e){console.log('PZ-V71 error',e)}})();
 </script>
+<script>/*PZ-ELEV-PATCH*/(function(){try{
+if(window.__pzElev)return;window.__pzElev=1;
+const HH=3.4,GZ=[62,132,202,270,302.5,337.5,372.5],ZL=[27.5,97.5,167.5,237.5,291,326,361,396],NM=['G','1','2','3','4','5','6','7'],X=42.15;
+const bandOf=z=>{let b=0;for(const g of GZ)if(z>g)b++;return b};
+/* ---- text: remove clutter, stop overlaps ---- */
+const st=document.createElement('style');
+st.textContent='#lvh{display:none!important}.lvbn{top:12%!important}[style*="top: 24%"]{top:46%!important}[style*="top: 30%"]{top:54%!important}'
++'#lfm{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}#lfm .c{background:#10151a;border:1px solid #3a4a5f;border-radius:14px;padding:14px;color:#d8d2c8;font:15px Georgia,serif;text-align:center;min-width:230px}#lfm .g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}#lfm button{padding:12px 0;border-radius:10px;border:1px solid #3a4a5f;background:#1a222b;color:#d8d2c8;font:700 16px Georgia,serif;touch-action:manipulation}#lfm button.cur{border-color:#ffd070;color:#ffd070}#lfm button.lk{opacity:.4}'
++'#lfi{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:12;pointer-events:none;font:700 40px monospace;color:#ffd98a;text-shadow:0 0 14px #000;display:none}';
+document.head.appendChild(st);
+let n0=0;const iv0=setInterval(()=>{[...document.body.children].forEach(e=>{if(/POWERED BY/.test(e.textContent)&&!e.children.length)e.remove()});if(++n0>40)clearInterval(iv0)},500);
+/* ---- layout: each floor gets some bigger (merged) rooms ---- */
+const rmWall=(x,zc,d)=>{for(let i=walls.length-1;i>=0;i--){const w=walls[i],p=w.geometry&&w.geometry.parameters;if(!p||p.width>.5||p.depth<d-.5)continue;
+ if(Math.abs(w.position.x-x)>.15||Math.abs(w.position.z-zc)>.15)continue;
+ const cx=w.position.x,cz=w.position.z;w.parent&&w.parent.remove(w);walls.splice(i,1);
+ for(let k=cols.length-1;k>=0;k--){const c=cols[k];if(Math.abs((c[0]+c[1])/2-cx)<.05&&Math.abs((c[2]+c[3])/2-cz)<.05&&Math.abs(c[1]-c[0]-p.width)<.06)cols.splice(k,1)}return}};
+WG.forEach((w,i)=>{const n=w.n,rw=w.rw||7,d=w.d||8;if(n<3)return;
+ [-1,1].forEach((s,si)=>{if((i+si)%3==2)return;const k=1+((i*2+si*2+1)%(n-1));rmWall(w.ox+k*rw,w.cz+s*(2+d/2),d)})});
+/* ---- basic lift ---- */
+const sm=M(0x4a4e52,.5,.5),fm=M(0x2a2a2c,.8),dm=M(0x8a9094,.4,.8),bm=new T.MeshBasicMaterial({color:0xffcf70}),L=[];
+let maxB=0,RIDE=null;
+const ui=document.createElement('div');ui.id='lfm';ui.innerHTML='<div class="c"><div>LIFT</div><div class="g"></div><button id="lfx" style="width:100%">CLOSE</button></div>';document.body.appendChild(ui);
+ui.addEventListener('pointerdown',e=>e.stopPropagation());ui.querySelector('#lfx').onclick=()=>ui.style.display='none';
+const ind=document.createElement('div');ind.id='lfi';document.body.appendChild(ind);
+function openUI(b){if(RIDE)return;joy.x=joy.y=0;const g=ui.querySelector('.g');g.innerHTML='';
+ NM.forEach((n,i)=>{const bt=document.createElement('button');bt.textContent=i>maxB?n+'\uD83D\uDD12':n;if(i==b)bt.className='cur';else if(i>maxB)bt.className='lk';
+  bt.onclick=()=>{if(i>maxB)return toast('Floor locked. Unlock it with the stairs first.',2200);if(i==b)return toast('You are here.',1200);ui.style.display='none';RIDE={f:b,to:i,t0:0,dur:1.3+.7*Math.abs(i-b),go:0,sw:0,u:0};};g.appendChild(bt)});
+ ui.style.display='flex'}
+ZL.forEach((Z,b)=>{const g=new T.Group();g.position.y=b*HH;scene.add(g);
+ box(2,3,.1,sm,X,1.5,Z-1.1,g);box(2,3,.1,sm,X,1.5,Z+1.1,g);box(2.1,.08,2.3,sm,X,2.95,Z,g);box(2,.03,2.2,fm,X,.03,Z,g);
+ box(.05,.7,.35,dm,41.25,1.3,Z-.75,g);for(let i=0;i<4;i++)box(.04,.06,.06,bm,41.3,1.5-i*.15,Z-.75,g);
+ box(.3,.12,.05,bm,43.1,2.7,Z,g);
+ const dl=box(.06,2.6,1.1,dm,43.12,1.3,Z-.55,g),dr=box(.06,2.6,1.1,dm,43.12,1.3,Z+.55,g),c=[43.05,43.2,Z-1.1,Z+1.1];
+ cols.push([X-1.05,X+1.05,Z-1.15,Z-1.05],[X-1.05,X+1.05,Z+1.05,Z+1.15],c);L.push({b,Z,dl,dr,o:0,c});
+ items.push({x:44.1,z:Z,t:'Tap to use the lift',keep:1,f(){openUI(b)}})});
+const _u=update;update=function(dt,t){if(RIDE){joy.x=joy.y=0}_u(dt,t);
+ if(RIDE){const R=RIDE,Z=R.sw?ZL[R.to]:ZL[R.f],k=Math.min(1,dt*4);P.vel.set(0,0,0);
+  P.pos.x+=(X-P.pos.x)*k;P.pos.z+=(Z-P.pos.z)*k;aarav.g.position.x=P.pos.x;aarav.g.position.z=P.pos.z;
+  const dy=Math.atan2(Math.sin(Math.PI/2-P.yaw),Math.cos(Math.PI/2-P.yaw));P.yaw+=dy*k;
+  if(R.go&&R.u<1){cam.position.x+=rnd(-.012,.012);cam.position.y+=rnd(-.015,.015)}}};
+const _x=extra;extra=function(dt,t){_x(dt,t);try{
+ const px=P.pos.x,pz=P.pos.z;if(px>40.5){const b=bandOf(pz);if(b>maxB)maxB=b}
+ if(ui.style.display=='flex'||RIDE)G.prot=Math.max(G.prot,2);
+ const R=RIDE;
+ if(R){R.t0+=dt;if(R.t0>.9&&!R.go){R.go=1;ind.style.display='block';el('blk').style.opacity=1}
+  if(R.go){const u=Math.min(1,(R.t0-.9)/R.dur);R.u=u;const fl=Math.round(R.f+(R.to-R.f)*u);ind.textContent=(R.to>R.f?'\u25B2 ':'\u25BC ')+NM[fl];
+   if(u>.55&&!R.sw){R.sw=1;P.pos.set(X,0,ZL[R.to]);aarav.g.position.set(X,aarav.g.position.y,ZL[R.to])}
+   if(u>.8&&!G.dead)el('blk').style.opacity=0;
+   if(u>=1){RIDE=null;ind.style.display='none';toast('Floor '+NM[R.to],1800)}}}
+ for(const l of L){const tg=RIDE?(l.b==RIDE.to&&RIDE.sw&&RIDE.u>=.85?1:0):(px>40.5&&Math.abs(pz-l.Z)<3.4?1:0);
+  l.o+=(tg-l.o)*Math.min(1,dt*3);l.dl.position.z=l.Z-.55-l.o*.9;l.dr.position.z=l.Z+.55+l.o*.9;
+  const op=l.o>.5;l.c[0]=op?1e6:43.05;l.c[1]=op?1e6+1:43.2}
+}catch(e){}};
+}catch(e){console.log('PZ-ELEV error',e)}})();</script>
 </body></html>
 
 </template>
