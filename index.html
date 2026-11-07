@@ -1877,6 +1877,102 @@ setInterval(()=>{if(doorOpen&&!fin)el('obj').textContent=inv.size<3?'Ritual item
 const _e=extra;extra=function(dt,t){_e(dt,t);if(started&&!shown){shown=1;setTimeout(()=>{nb.style.opacity=1;setTimeout(()=>nb.style.opacity=0,11000)},3400)}};
 })();
 </script>
+<script>/*PZ-PATCH-V21*/
+(function PZPATCH3(){
+const T=THREE,R=(a,b)=>a+Math.random()*(b-a),now=()=>performance.now()/1000;
+let BYP=0,nextOk=now()+R(60,100),lastN='',L={},runT=0,omen=0,pd=0,pst2=0,hz=R(4,7),dead=[],ldT=0;const FO2=[];
+const css=document.createElement('style');css.textContent='#pzf{display:none!important}#pzt{position:fixed;left:0;right:0;bottom:11%;text-align:center;z-index:11;pointer-events:none;opacity:0;transition:opacity .6s;font:italic 24px Georgia,serif;letter-spacing:4px;color:#ffeab8;text-shadow:0 0 14px #ffb030,0 0 34px #b66a00}#pzr{position:fixed;inset:0;z-index:12;pointer-events:none;opacity:0;background:radial-gradient(circle,rgba(255,40,20,.55),rgba(0,0,0,.9))}';document.head.appendChild(css);
+const pt=document.createElement('div');pt.id='pzt';document.body.appendChild(pt);const rd=document.createElement('div');rd.id='pzr';document.body.appendChild(rd);
+/* no ghost face / eyes ever */
+try{scene.children.filter(o=>o.isGroup&&o.children.length==2&&o.children[0].material&&o.children[0].material.color&&o.children[0].material.color.getHex()==0xff2a1a).forEach(g=>Object.defineProperty(g,'visible',{get(){return false},set(){}}))}catch(e){}
+/* scare budget: rare, never the same twice in a row */
+const dp=(x,z)=>typeof x=='number'&&DL.some(d=>Math.abs(x-d.g.position.x-.75)<.03&&Math.abs(z-d.g.position.z)<.03);
+const CD={cry:240,whisper:120,scratch:90,glass:150,knock:100,creak:60,slam:80};
+Object.keys(CD).forEach(n=>{const o=S[n];if(typeof o!='function')return;S[n]=function(x,z){const t=now();if(!BYP&&G.st==0&&!G.dead&&!fin){if((n=='creak'||n=='slam')&&dp(x,z))return o.apply(S,arguments);if(t<nextOk||n==lastN||t-(L[n]||0)<CD[n])return;nextOk=t+R(28,75)}L[n]=t;lastN=n;return o.apply(S,arguments)}});
+let dOK=now()+R(50,90);
+DL.forEach(d=>{let k=d.k||0;Object.defineProperty(d,'k',{get(){return k},set(v){if(v&&!k){const t=now();if(t<dOK||G.dead)return;dOK=t+R(55,130)}k=v}})});
+/* ghost: rare, gives a sign first, running helps early but not once it is close */
+const _g=ghostUpdate;ghostUpdate=function(dt){
+if(!G.dead&&G.on){
+if(G.st==0){if(G.t<10&&!omen&&started){omen=1;G.fk=1.8;BYP=1;try{S.creak()}catch(e){}BYP=0;setTimeout(()=>{BYP=1;try{S.whisper()}catch(e){}BYP=0},1600)}if(G.t>=12)omen=0;return _g(dt*.35)}
+omen=0;
+if(G.st==1||G.st==2){if(P.vel.length()>3.6){runT+=dt;if(runT>3){runT=0;setSt(0);G.bo=0;G.t=R(130,210);toast('It lost you.');return}return _g(dt*.4)}runT=Math.max(0,runT-dt)}}
+return _g(dt)};
+/* ghost leaves traces, never a face */
+const fall=(x,z,gl)=>{const m=new T.Mesh(gl?new T.CylinderGeometry(.04,.05,.22,8):new T.BoxGeometry(.3,.03,.2),M(gl?0x6a9aa8:0x8a9094,.4,.6));m.position.set(x,2.9,z);scene.add(m);FO2.push({m,v:0,x,z,gl,d:0});if(FO2.length>6)scene.remove(FO2.shift().m)};
+const kill=n=>{const c=tubes.filter(k=>!k.dead&&Math.hypot(k.m.position.x-P.pos.x,k.m.position.z-P.pos.z)<10).slice(0,n);c.forEach(k=>{k.dead=true;dead.push(k)});ldT=0};
+const slamNear=n=>{const fx=Math.sin(P.yaw),fz=Math.cos(P.yaw);DL.filter(d=>{if(d.ev||d.want)return 0;const dx=d.g.position.x+.75-P.pos.x,dz=d.g.position.z-P.pos.z,D=Math.hypot(dx,dz);return D>2&&D<12&&(dx*fx+dz*fz)/D<.3}).slice(0,n).forEach(d=>d.ev={t:R(.3,1.5),sl:1,p:0})};
+const near=()=>[P.pos.x+R(-3,3),P.pos.z+R(-3,3)];
+/* mantra: clean text, soft embers, no cubes */
+try{const _t=toast;toast=function(t,ms){if(/What hides/.test(String(t)))return;_t(t,ms)}}catch(e){}
+try{[...document.body.children].forEach(e=>{if(e.style&&e.style.color==='rgb(255, 227, 160)')e.style.display='none'})}catch(e){}
+const LN=['What hides in the dark,','be driven out by the light.','What follows behind me,','turn back and be gone.'];
+function mText(){LN.forEach((l,i)=>setTimeout(()=>{pt.style.opacity=0;setTimeout(()=>{pt.textContent=l;pt.style.opacity=1},500)},i*1700));setTimeout(()=>pt.style.opacity=0,LN.length*1700+900)}
+function embers(){const c=document.createElement('canvas');c.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none';c.width=innerWidth/2|0;c.height=innerHeight/2|0;document.body.appendChild(c);const g=c.getContext('2d'),W=c.width,H=c.height,pp=[];for(let i=0;i<70;i++)pp.push({x:W/2+R(-W*.35,W*.35),y:H*R(.6,1.1),r:R(2,7),v:R(.25,1),p:R(0,6),a:R(.4,.9)});const t0=performance.now();(function f(){const t=(performance.now()-t0)/1000;if(t>6.5){c.remove();return}g.clearRect(0,0,W,H);g.globalCompositeOperation='lighter';const fade=t<.6?t/.6:t>5.2?Math.max(0,(6.5-t)/1.3):1;for(const q of pp){q.y-=q.v*1.1;q.p+=.03;const x=q.x+Math.sin(q.p)*10,a=q.a*fade*(.6+.4*Math.sin(q.p*2)),gr=g.createRadialGradient(x,q.y,0,x,q.y,q.r*2.2);gr.addColorStop(0,'rgba(255,240,190,'+a+')');gr.addColorStop(.4,'rgba(255,190,80,'+a*.5+')');gr.addColorStop(1,'rgba(255,150,40,0)');g.fillStyle=gr;g.beginPath();g.arc(x,q.y,q.r*2.2,0,7);g.fill();if(q.y<-10){q.y=H+10;q.x=W/2+R(-W*.35,W*.35)}}requestAnimationFrame(f)})()}
+const _m=mantra;mantra=function(){const w=mantraUsed;_m.apply(this,arguments);if(!w&&mantraUsed){setTimeout(()=>scene.children.filter(o=>o.isPoints&&o.material&&o.material.color&&o.material.color.getHex()==0xffe08a).forEach(o=>scene.remove(o)),30);mText();embers()}};
+const _e=extra;extra=function(dt,t){_e(dt,t);try{
+if(G.dead==1&&!pd){rd.style.transition='none';rd.style.opacity=1;setTimeout(()=>{rd.style.transition='opacity 1.2s';rd.style.opacity=0},80)}pd=G.dead;
+if(G.st!==pst2){pst2=G.st;if(G.st==2){kill(1);const a=near();fall(a[0],a[1],true)}if(G.st==3){kill(2);const a=near();fall(a[0],a[1],false);slamNear(2)}}
+if(G.st>=2&&!G.dead){hz-=dt;if(hz<=0){hz=R(3,6);const a=near();fall(a[0],a[1],Math.random()<.6)}}
+for(const o of FO2){if(o.d)continue;o.v+=9*dt;o.m.position.y-=o.v*dt;o.m.rotation.x+=dt*4;if(o.m.position.y<=.05){o.m.position.y=.05;o.d=1;try{o.gl?S.glass(o.x,o.z):S.slam(o.x,o.z)}catch(e){}}}
+if(G.st==0&&dead.length){ldT+=dt;if(ldT>25){dead.forEach(k=>k.dead=false);dead=[]}}
+}catch(e){}};
+})();
+</script>
+<script>/*PZ-PATCH-V22*/
+(function PZPATCH4(){
+const T=THREE,R=(a,b)=>a+Math.random()*(b-a);let B=100;const frag=[0,0,0,0],spin=[],bp=[];
+const css=document.createElement('style');css.textContent='#pzi{position:fixed;inset:0;z-index:40;background:#050506;display:none;align-items:center;justify-content:center;text-align:center;padding:22px;color:#d8d2c8;font:17px/1.6 Georgia,serif;overflow:auto}#pzi div{max-width:620px}#pzi h2{color:#b01818;letter-spacing:5px;margin:0 0 12px;font-size:22px}#pzi button,#pzn2 button{margin-top:16px;padding:12px 34px;background:transparent;color:inherit;border:1px solid #9b1c1c;font:17px Georgia,serif}#pzn2{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center}#pzn2 div{width:min(86%,460px);max-height:84%;overflow:auto;background:#d8c9a0;color:#2a1a0a;padding:18px;font:17px/1.5 Georgia,serif;text-align:center;box-shadow:0 0 40px #000}';document.head.appendChild(css);
+const vb=document.createElement('div');vb.textContent='PATCH V22';vb.style.cssText='position:fixed;left:8px;bottom:4px;z-index:50;font:11px monospace;color:#777';document.body.appendChild(vb);setTimeout(()=>vb.remove(),7000);
+try{[...document.body.children].forEach(e=>{if(/HOW TO ESCAPE/.test(e.innerHTML||''))e.style.display='none'})}catch(e){}
+/* story + rules screens: stay until NEXT / START */
+const iv=document.createElement('div');iv.id='pzi';document.body.appendChild(iv);
+const PG=[['MISSION','<p>St. Mary&#39;s Hospital was sealed after a night of unexplained deaths. Patients and staff died one after another, and no one ever explained why.</p><p>An emergency call came in. Our special task force was sent inside.</p><p>Inside, we found things we could not explain. Our team outside radioed: <i>&quot;Get out of there. As fast as you can.&quot;</i> Then the call went dead.</p><p><b>Your task: survive, solve the hospital&#39;s locks and escape alive.</b></p>'],['RULES','<p>Something invisible walks these halls. You will never see it, only what it does. It warns you first: flickering lights, whispers, a cold silence, a heartbeat.</p><p>Your torch makes it back away, but the battery is short. Run early and it may lose you. Once it is close, running will not save you.</p><p>The chalk circle room is safe. The Raksha Mantra works once. You have 3 lives.</p><p>Doors open only when you tap them. Search every floor. Codes, keys and parts are hidden everywhere. Nothing is handed to you.</p>']];
+function intro(i){const p=PG[i];iv.innerHTML='<div><h2>'+p[0]+'</h2>'+p[1]+'<button>'+(i<PG.length-1?'NEXT':'START')+'</button></div>';iv.style.display='flex';iv.querySelector('button').onclick=()=>{if(i<PG.length-1)intro(i+1);else iv.style.display='none'}}
+/* notes stay until CLOSE */
+const nv=document.createElement('div');nv.id='pzn2';nv.innerHTML='<div><span></span><br><button>CLOSE</button></div>';document.body.appendChild(nv);nv.querySelector('button').onclick=()=>nv.style.display='none';
+const _n=note;note=function(h){_n(h);el('note').style.display='none';nv.querySelector('span').innerHTML=h;nv.style.display='flex'};
+/* keypad: cancel button, no auto close */
+const kp=el('kp');try{const cb=document.createElement('button');cb.textContent='CANCEL';cb.style.cssText='grid-column:1/4;margin-top:6px;height:44px;background:#1a221d;color:#d99;border:1px solid #3a4a3f;font:16px Georgia,serif';cb.onpointerdown=e=>{e.stopPropagation();kp.style.display='none'};el('kg').appendChild(cb)}catch(e){}
+/* remove answer-giving hint notes */
+for(let k=items.length-1;k>=0;k--){const i=items[k];if(i.t=='Tap to read note'&&[[3,-1.2],[43,55.5],[43,125.5],[43,195.5],[43,263.5]].some(q=>Math.abs(i.x-q[0])<.01&&Math.abs(i.z-q[1])<.01))items.splice(k,1)}
+/* east wing: remove the fake door panels and stairs that blocked nothing */
+try{const rm=[];scene.traverse(o=>{if(!o.isMesh||!o.geometry)return;const p=o.geometry.parameters,x=o.position.x,z=o.position.z;if(o.geometry.type=='BoxGeometry'){if((Math.abs(x-8.82)<.05&&Math.abs(p.width-.06)<.01&&p.depth>1.4&&p.depth<1.6)||(Math.abs(x-1.82)<.05&&Math.abs(z-25.5)<.1&&Math.abs(p.width-.06)<.01)||(Math.abs(p.width-.4)<.01&&Math.abs(p.depth-1.4)<.01&&z>32&&z<34&&x>6.9&&x<9))rm.push(o)}else if(o.geometry.type=='PlaneGeometry'&&Math.abs(x-8.84)<.02&&Math.abs(o.position.y-2.4)<.02&&(Math.abs(z-33)<.05||Math.abs(z-41)<.05))rm.push(o)});rm.forEach(o=>o.parent&&o.parent.remove(o))}catch(e){}
+/* fewer bodies, none inside walls */
+try{scene.updateMatrixWorld(true);const cs=[];scene.traverse(o=>{if(o.isGroup&&o.children.length==1&&o.children[0].isGroup&&Math.abs(Math.abs(o.children[0].rotation.x)-1.5708)<.02&&Math.abs(o.children[0].position.y-.17)<.01)cs.push(o)});
+const wb=walls.map(w=>{const p=w.geometry.parameters,a=p.width*w.scale.x/2,b=p.depth*w.scale.z/2;return[w.position.x-a,w.position.x+a,w.position.z-b,w.position.z+b]});
+cs.forEach(o=>{let vis=1,p=o;while(p){if(!p.visible)vis=0;p=p.parent}if(!vis)return;const x=o.position.x,z=o.position.z,s=Math.abs(Math.sin(o.rotation.y)),c=Math.abs(Math.cos(o.rotation.y)),hx=.9*s+.45*c,hz=.9*c+.45*s;let bad=0;for(const b of wb)if(x+hx>b[0]&&x-hx<b[1]&&z+hz>b[2]&&z-hz<b[3]){bad=1;break}
+if(bad||Math.random()>.28){o.visible=false;for(let k=cols.length-1;k>=0;k--){const c2=cols[k],w=c2[1]-c2[0];if(Math.abs((c2[0]+c2[1])/2-x)<.02&&Math.abs((c2[2]+c2[3])/2-z)<.02&&w>.5&&w<2.5)cols.splice(k,1)}}})}catch(e){}
+/* natural blood: no straight lines */
+function bt(){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');const blob=(x,y,r,a)=>{const gr=g.createRadialGradient(x,y,r*.1,x,y,r);gr.addColorStop(0,'rgba(78,4,6,'+a+')');gr.addColorStop(.7,'rgba(50,2,4,'+a*.9+')');gr.addColorStop(1,'rgba(30,1,2,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,7);g.fill()};
+for(let i=0;i<22;i++){const a=R(0,6.28),d=R(0,38);blob(128+Math.cos(a)*d,128+Math.sin(a)*d,R(18,38),.9)}
+for(let k=0;k<3;k++){let a=R(0,6.28),px=128,py=128;const n=R(5,9)|0;for(let i=0;i<n;i++){a+=R(-.7,.7);px+=Math.cos(a)*R(8,16);py+=Math.sin(a)*R(8,16);blob(px,py,R(7,15)*(1-i/n)+3,.9)}}
+for(let i=0;i<50;i++){const a=R(0,6.28),d=R(55,118);blob(128+Math.cos(a)*d,128+Math.sin(a)*d,R(1.5,5),.9)}
+const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;return t}
+try{bloodM.forEach(m=>{m.map=bt();m.needsUpdate=true});scene.traverse(o=>{const p=o.geometry&&o.geometry.parameters;if(o.isMesh&&p&&p.width==.07&&p.height==1&&o.material&&o.material.color&&o.material.color.getHex()==0x4a0507)o.visible=false})}catch(e){}
+/* machines: X-ray, monitors that beep */
+const mt=(c,r,m)=>M(c,r||.5,m==null?.5:m),gm=new T.MeshStandardMaterial({color:0x103a1a,emissive:0x22ff66,emissiveIntensity:.8});
+function mon(x,z,g,flat){box(.05,1.2,.05,mt(0x888888),x,.6,z,g);box(.5,.34,.16,mt(0x222222),x,1.3,z,g);box(.4,.24,.02,gm,x,1.3,z+.09,g);cols.push([x-.25,x+.25,z-.2,z+.2]);bp.push({x,z,t:R(0,1),flat})}
+function xray(x,z,g){box(1,.8,2.2,mt(0xb8bcc0,.4,.3),x,.4,z,g);box(.18,2.5,.18,mt(0x999999),x+1,1.25,z,g);box(1.6,.18,.3,mt(0x999999),x+.3,2.4,z,g);box(.6,.5,.5,mt(0x555555),x-.3,2.1,z,g);box(.7,1,.4,mt(0x333333),x+1.8,.5,z+.8,g);box(.5,.3,.02,gm,x+1.8,1.2,z+.62,g);cols.push([x-.6,x+2.1,z-1.2,z+1.2])}
+try{mon(4.2,-4.8,scene);mon(6.8,17.5,scene);xray(-14.8,33.5,scene);
+MLAB.forEach(a=>{const name=a[0],cx=a[1],zc=a[2];if(!/ICU|Dialysis|Observation|Neonatal|Operation|Radiology|Pathology|Blood Bank|Isolation|Trauma|Labour|Cardiac/.test(name))return;const wi=WG.findIndex(w=>cx>w.ox&&cx<w.ox+w.n*(w.rw||7)&&Math.abs(zc-w.cz)<(w.d||8)+5);if(wi<0)return;const w=WG[wi],g=WGR[wi],rw=w.rw||7,d=w.d||8,dir=zc>w.cz?1:-1,x0=cx-rw/2,zf=w.cz+dir*2,Q=(u,v)=>[x0+u,zf+dir*v];
+if(/Radiology|Pathology|Blood Bank/.test(name)){const q=Q(rw*.55,d*.62);xray(q[0],q[1],g)}else{const q=Q(rw-.9,d-1.1);mon(q[0],q[1],g,/ICU/.test(name)&&Math.random()<.3)}})}catch(e){console.log('mach',e)}
+function beep(b){if(!AC||!mst||G.dead)return;const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain(),L=b.flat?1.2:.1,v=b.flat?.07:.14;o.frequency.value=b.flat?1000:880;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.01);g.gain.setValueAtTime(v,t+L);g.gain.exponentialRampToValueAtTime(.0001,t+L+.05);o.connect(g);g.connect(out(b.x,b.z));o.start(t);o.stop(t+L+.1)}
+/* pickups: batteries and stair fuses on every floor */
+const WD=[[10,3,7],[45,3,7],[80,4,7],[115,4,7],[150,5,7],[185,5,7],[220,5,7],[255,5,7]],rp=w=>{const q=WD[w],i=Math.random()*q[1]|0,s=Math.random()<.5?-1:1;return[45+q[2]*i+q[2]/2+R(-1.2,1.2),q[0]+s*5.4]};
+function pk(name,x,z,col,f){const m=new T.Mesh(new T.CylinderGeometry(.06,.06,.2,10),new T.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:.7,roughness:.4}));m.position.set(x,.35,z);m.rotation.z=1.5;scene.add(m);spin.push(m);items.push({x,z,t:'Tap to pick up '+name,f(){m.visible=false;f()}})}
+[0,2,4,6].forEach(w=>{const q=rp(w);pk('Battery',q[0],q[1],0x66ff66,()=>{B=Math.min(100,B+55);toast('Battery +')})});pk('Battery',-5.5,38.5,0x66ff66,()=>{B=Math.min(100,B+55);toast('Battery +')});
+for(let gi=0;gi<4;gi++)for(let k=0;k<2;k++){const q=rp(gi*2+k);pk('Fuse',q[0],q[1],0xffaa33,()=>{frag[gi]++;toast('Fuse '+frag[gi]+'/2')})}
+items.filter(i=>i.t=='Tap to climb the stairs').forEach((i,gi)=>{const f=i.f;i.f=function(){if(frag[gi]<2){note('<b>Stair panel</b><br>No power. Fuses installed: '+frag[gi]+'/2');return}f()}});
+/* smaller character feels like the rooms are bigger; short battery */
+try{aarav.g.scale.setScalar(.88)}catch(e){}
+const _u=update;update=function(dt,t){if(kp.style.display=='block'){joy.x=joy.y=0;try{setRun(0)}catch(e){}}
+_u(dt,t);if(P.has){if(P.on)B-=dt*100/90;else if(P.safe)B=Math.min(100,B+dt*6);if(B<=0){B=0;P.on=false}P.bat=B}cam.position.y=Math.max(.35,cam.position.y-.2)};
+let shown=0;const _e=extra;extra=function(dt,t){_e(dt,t);try{if(started&&!shown){shown=1;intro(0)}
+for(const m of spin){m.rotation.y+=dt;m.position.y=.35+Math.sin(t*2+m.position.x)*.04}
+bp.map(b=>({b,D:Math.hypot(b.x-P.pos.x,b.z-P.pos.z)})).filter(o=>o.D<14).sort((a,c)=>a.D-c.D).slice(0,3).forEach(o=>{o.b.t-=dt;if(o.b.t<=0){o.b.t=o.b.flat?1.4:R(.95,1.1);beep(o.b)}})}catch(e){}};
+})();
+</script>
 </body></html>
 
 </template>
