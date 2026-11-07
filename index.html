@@ -2310,7 +2310,81 @@ if(S){const tb=S.querySelector('.tb'),b=document.createElement('button');b.textC
  q('pzc_q').onchange=e=>{C.q=e.target.value;sv();setQ()};
  q('pzc_r').onclick=()=>{Object.assign(C,{d:1.05,h:1.4,s:.32,q:'high'});sv();fill();setQ()};
  q('pzc_v').onclick=()=>{sv();try{toast('Camera saved')}catch(e){}}}
-}catch(e){console.log('pz32 error',e)}})()</script></body></html>
+}catch(e){console.log('pz32 error',e)}})()</script><script>/*PZ-V33-GAME*/(function G33(){try{
+if(window.__pz33)return;window.__pz33=1;
+const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}},q=id=>document.getElementById(id);
+const S=q('pzs');
+/* ---------- premium look ---------- */
+const rg=s=>'#pzs input[type=range]'+s+',#pzh input[type=range]'+s;
+const css=document.createElement('style');
+css.textContent='@keyframes pzin{from{opacity:0;transform:translateY(-50%) translateX(36px) scale(.96)}}'
++'#pzs{width:min(340px,86vw);padding:16px;border:0;border-radius:24px;background:rgba(20,23,34,.82);-webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5);box-shadow:inset 0 0 0 1px rgba(163,156,255,.28),inset 0 1px 0 rgba(255,255,255,.1),0 24px 50px -24px #a39cff;font:400 13px Inter,system-ui,sans-serif;color:#eceef6;animation:pzin .48s cubic-bezier(.2,.9,.2,1.04)}'
++'#pzs .h b{display:flex;align-items:center;gap:10px;font:700 17px Inter,system-ui,sans-serif}#pzs .h b:before{content:"";width:6px;height:6px;border-radius:50%;background:#a39cff;box-shadow:0 0 10px #a39cff}'
++'#pzs .h button{width:36px;height:36px;padding:0;border-radius:50%;background:rgba(255,255,255,.08);border:0;color:#eceef6}'
++'#pzs .tb{display:flex;gap:4px;padding:4px;margin:12px 0;border-radius:999px;background:rgba(255,255,255,.06)}'
++'#pzs .tb button{flex:1;border:0;border-radius:999px;background:transparent;color:#8a8fa6;padding:9px 4px;font:700 10px ui-monospace,Menlo,monospace;letter-spacing:.1em;transition:.24s}'
++'#pzs .tb button.on{background:linear-gradient(135deg,#8f88ff,#6a62f0);color:#fff;box-shadow:0 8px 18px -8px #6a62f0}'
++'#pzs label{display:block;margin:14px 0 4px;font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:#8a8fa6}'
++rg('')+'{-webkit-appearance:none;appearance:none;height:30px;background:transparent;margin:0;width:100%}'
++rg('::-webkit-slider-runnable-track')+'{height:4px;border-radius:2px;background:linear-gradient(90deg,#5ec2b7,#a39cff)}'
++rg('::-webkit-slider-thumb')+'{-webkit-appearance:none;width:22px;height:22px;margin-top:-9px;border-radius:50%;background:#fff;box-shadow:0 0 0 5px rgba(163,156,255,.28),0 4px 10px rgba(0,0,0,.4)}'
++rg('::-moz-range-track')+'{height:4px;border-radius:2px;background:linear-gradient(90deg,#5ec2b7,#a39cff)}'
++rg('::-moz-range-thumb')+'{width:22px;height:22px;border:0;border-radius:50%;background:#fff}'
++'#pzs select{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:10px 12px;color:#eceef6;font:600 13px Inter,system-ui}'
++'#pzs .pzp,#pzs .pzg,#pzh .pzp,#pzh .pzg{display:block;width:100%;margin-top:10px;padding:13px;border:0;border-radius:999px;font:700 11px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#fff;background:linear-gradient(135deg,#8f88ff,#6a62f0);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 12px 26px -12px #6a62f0;touch-action:manipulation}'
++'#pzs .pzg,#pzh .pzg{background:rgba(255,255,255,.08);box-shadow:none;color:#eceef6}'
++'#pzs .pzt{font:700 15px Inter,system-ui,sans-serif;margin-bottom:6px}#pzs .pzd{color:#8a8fa6;line-height:1.5}'
++'#ge,#vb button{background:rgba(20,23,34,.7);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 8px 18px -8px #6a62f0}#vb button.off{background:rgba(229,103,95,.4)}'
++'#vp .r{background:rgba(20,23,34,.7);font:600 10px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase}'
++'#pzh{position:fixed;left:50%;top:calc(8px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;display:none;gap:12px;align-items:center;padding:8px 14px;border-radius:22px;background:rgba(20,23,34,.88);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:inset 0 0 0 1px rgba(163,156,255,.3),0 14px 30px -14px #a39cff;color:#eceef6;font:600 9px ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase}'
++'#pzh b{min-width:74px;color:#a39cff;font-size:10px}#pzh span{display:flex;flex-direction:column;gap:0;width:110px;color:#8a8fa6}#pzh input:disabled{opacity:.35}#pzh button{width:auto;margin:0;padding:10px 14px}'
++'body.pzedit [data-pzh]{touch-action:none!important}';
+document.head.appendChild(css);
+/* ---------- layout engine ---------- */
+const ED=[['joy','Joystick',120,120],['bSpr','Run',72,72],['bInt','Tap',60,60],['bTorch','Torch',60,60],['bMap','Map',60,60],['bMan','Open',60,60],['bCro','Jump',60,60],['pzNotes','Notes',60,60],['vp','Voice',130,100],['ge','Settings',32,32]];
+const nb=[...document.querySelectorAll('#btns button')].find(b=>!b.id);if(nb)nb.id='pzNotes';
+const hc=document.createElement('style');hc.textContent='#btns{display:contents!important;transform:none!important}';document.head.appendChild(hc);
+let L=LS('pz33h')||{};
+const Wd=()=>innerWidth,Ht=()=>innerHeight;
+const defs=()=>{const W=Wd(),H=Ht(),a=W-145,b=W-76,r0=H-218,r1=H-149,r2=H-80;return{joy:[24,H-144],bSpr:[156,H-100],bInt:[a,r0],bTorch:[b,r0],bMap:[a,r1],bMan:[b,r1],bCro:[a,r2],pzNotes:[b,r2],vp:[12,46],ge:[W-44,46]}};
+function gi(id){const a=ED.find(x=>x[0]==id),e=q(id),c=L[id],d=defs()[id],s=c?c.s:1,w=(e&&e.offsetWidth)||a[2],h=(e&&e.offsetHeight)||a[3],x=c&&c.x!=null?c.x*Wd():d[0],y=c&&c.x!=null?c.y*Ht():d[1];return{a,e,s,w,h,cx:x+w/2,cy:y+h/2}}
+const rc=id=>{const g=gi(id),sw=g.w*g.s/2,sh=g.h*g.s/2;return[g.cx-sw,g.cy-sh,g.cx+sw,g.cy+sh]};
+function ensure(id){if(!L[id]||L[id].x==null){const g=gi(id),c=L[id]||{s:1,o:1};c.x=(g.cx-g.w/2)/Wd();c.y=(g.cy-g.h/2)/Ht();L[id]=c}return L[id]}
+function put(id,cx,cy){const c=ensure(id),g=gi(id),sw=g.w*g.s/2,sh=g.h*g.s/2;cx=Math.max(sw,Math.min(Wd()-sw,cx));cy=Math.max(sh,Math.min(Ht()-sh,cy));c.x=(cx-g.w/2)/Wd();c.y=(cy-g.h/2)/Ht()}
+const ovl=(a,b,g)=>a[0]<b[2]+g&&a[2]>b[0]-g&&a[1]<b[3]+g&&a[3]>b[1]-g;
+const others=id=>ED.filter(a=>a[0]!==id&&q(a[0])).map(a=>rc(a[0]));
+function fit(id){for(let i=0;i<14;i++){const m=rc(id),h=others(id).find(o=>ovl(m,o,4));if(!h)return true;
+ const g=gi(id),d=[h[2]+4-m[0],m[2]-(h[0]-4),h[3]+4-m[1],m[3]-(h[1]-4)],k=d.indexOf(Math.min(...d));
+ put(id,g.cx+(k==0?d[0]:k==1?-d[1]:0),g.cy+(k==2?d[2]:k==3?-d[3]:0))}
+ return !others(id).some(o=>ovl(rc(id),o,4))}
+function apply(){const W=Wd(),H=Ht(),D=defs();ED.forEach(([id])=>{const e=q(id);if(!e)return;const c=L[id],p=c&&c.x!=null?[c.x*W,c.y*H]:D[id],sp=(k,v)=>e.style.setProperty(k,v,'important');
+ sp('position','fixed');sp('left',p[0]+'px');sp('top',p[1]+'px');sp('right','auto');sp('bottom','auto');sp('margin','0');sp('transform','scale('+(c?c.s:1)+')');sp('transform-origin','center');sp('opacity',c?c.o:1);e.dataset.pzh=id})}
+apply();addEventListener('resize',apply);
+/* ---------- settings: new CUSTOM HUD tab ---------- */
+if(S){const t1=S.querySelector('.tb button[data-p="1"]');if(t1)t1.textContent='CUSTOM HUD';
+ const p1=q('p1');if(p1)p1.innerHTML='<div class="pzt">Custom HUD</div><div class="pzd">Apne buttons haath se kahin bhi rakho. Edit dabane par ye panel chhup jaata hai. Kuch bhi overlap nahi hoga.</div><button class="pzp" id="pzeb">EDIT LAYOUT</button><button class="pzg" id="pzrs">RESET ALL</button>'}
+/* ---------- editor ---------- */
+const bar=document.createElement('div');bar.id='pzh';
+bar.innerHTML='<b id="pzhn">TAP A BUTTON</b><span>Visibility<input type="range" id="pzho" min="15" max="100" disabled></span><span>Size<input type="range" id="pzhs" min="50" max="200" disabled></span><button class="pzg" id="pzhc">CANCEL</button><button class="pzp" id="pzhv">SAVE</button>';
+document.body.appendChild(bar);
+let edit=0,sel=null,drag=null,snap='{}';const nm=q('pzhn'),ov=q('pzho'),sz=q('pzhs');
+function mark(){ED.forEach(([id])=>{const e=q(id);if(!e)return;if(!edit){e.style.removeProperty('outline');e.style.removeProperty('outline-offset');e.style.removeProperty('pointer-events');return}
+ const bad=others(id).some(o=>ovl(rc(id),o,0)),on=id==sel;e.style.setProperty('outline',(on?'2px solid ':'2px dashed ')+(bad?'#e5675f':on?'#a39cff':'rgba(255,255,255,.5)'),'important');e.style.setProperty('outline-offset','3px','important');e.style.setProperty('pointer-events','auto','important')})}
+function select(id){sel=id;if(id){const c=ensure(id);nm.textContent=ED.find(a=>a[0]==id)[1];ov.disabled=sz.disabled=false;ov.value=c.o*100;sz.value=c.s*100}else{nm.textContent='TAP A BUTTON';ov.disabled=sz.disabled=true}mark()}
+function enter(){edit=1;snap=JSON.stringify(L);S&&(S.style.display='none');bar.style.display='flex';document.body.classList.add('pzedit');select(null)}
+function leave(save){if(save)LS('pz33h',L);else L=JSON.parse(snap);edit=0;sel=null;bar.style.display='none';document.body.classList.remove('pzedit');['bTorch','bMap'].forEach(i=>q(i)&&q(i).style.removeProperty('display'));apply();mark();if(S)S.style.display='block';if(save)try{toast('HUD saved')}catch(e){}}
+document.addEventListener('pointerdown',e=>{if(!edit||e.target.closest('#pzh'))return;e.stopPropagation();e.preventDefault();const t=e.target.closest('[data-pzh]');if(!t){select(null);return}select(t.dataset.pzh);const g=gi(sel),c=L[sel];drag={x:e.clientX,y:e.clientY,cx:g.cx,cy:g.cy,px:c.x,py:c.y}},true);
+addEventListener('pointermove',e=>{if(!drag)return;e.preventDefault();put(sel,drag.cx+e.clientX-drag.x,drag.cy+e.clientY-drag.y);apply();mark()},true);
+const up=()=>{if(!drag)return;const d=drag;drag=null;if(!fit(sel)){const c=L[sel];c.x=d.px;c.y=d.py;try{toast('Jagah bhari hai')}catch(e){}}apply();mark()};
+addEventListener('pointerup',up,true);addEventListener('pointercancel',up,true);
+document.addEventListener('click',e=>{if(edit&&!e.target.closest('#pzh')){e.stopPropagation();e.preventDefault()}},true);
+ov.oninput=()=>{if(!sel)return;ensure(sel).o=ov.value/100;apply()};
+sz.oninput=()=>{if(!sel)return;const c=ensure(sel),g=gi(sel),old=c.s,cx=g.cx,cy=g.cy;c.s=sz.value/100;put(sel,cx,cy);if(!fit(sel)){c.s=old;put(sel,cx,cy);sz.value=old*100}apply();mark()};
+q('pzhv').onclick=()=>leave(1);q('pzhc').onclick=()=>leave(0);
+const eb=q('pzeb'),rs=q('pzrs');if(eb)eb.onclick=enter;if(rs)rs.onclick=()=>{L={};LS('pz33h',L);apply();try{toast('HUD reset')}catch(e){}};
+/* while editing: show hidden buttons, protect from ghost */
+const _x=extra;extra=function(dt,t){_x(dt,t);if(!edit)return;G.prot=Math.max(G.prot,3);['bTorch','bMap'].forEach(i=>q(i)&&q(i).style.setProperty('display','block','important'))};
+}catch(e){console.log('pz33 error',e)}})()</script></body></html>
 
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
