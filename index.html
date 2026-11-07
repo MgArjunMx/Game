@@ -2384,7 +2384,61 @@ q('pzhv').onclick=()=>leave(1);q('pzhc').onclick=()=>leave(0);
 const eb=q('pzeb'),rs=q('pzrs');if(eb)eb.onclick=enter;if(rs)rs.onclick=()=>{L={};LS('pz33h',L);apply();try{toast('HUD reset')}catch(e){}};
 /* while editing: show hidden buttons, protect from ghost */
 const _x=extra;extra=function(dt,t){_x(dt,t);if(!edit)return;G.prot=Math.max(G.prot,3);['bTorch','bMap'].forEach(i=>q(i)&&q(i).style.setProperty('display','block','important'))};
-}catch(e){console.log('pz33 error',e)}})()</script></body></html>
+}catch(e){console.log('pz33 error',e)}})()</script><script>/*PZ-V34*/(function(){try{
+if(window.__pz34)return;window.__pz34=1;
+const T=THREE,LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}},q=id=>document.getElementById(id);
+const D={d:.8,h:1.3,s:.38,f:60,q:'med'},C=Object.assign({},D,LS('pz34c')||{}),sv=()=>LS('pz34c',C);
+/* 1. kill every synthetic oscillator sound (beeps, drones, tones). Uploaded sound files stay. */
+[window.AudioContext,window.webkitAudioContext].forEach(A=>{if(!A||A.prototype.__k)return;const o=A.prototype.createOscillator;A.prototype.createOscillator=function(){const x=o.apply(this,arguments);x.start=x.stop=function(){};return x};A.prototype.__k=1});
+amb=function(){};
+/* 2. door sound always plays from your file */
+const DB={};
+async function ld(n){if(DB[n]!==undefined||!AC)return;DB[n]=1;const base=parent!==window?parent.location.href:location.href;for(const c of[CFG18[n][0],CFG18[n][0].replace('sounds/','')]){try{const r=await fetch(new URL(c,base).href);if(r.ok){DB[n]=await AC.decodeAudioData(await r.arrayBuffer());return}}catch(e){}}DB[n]=0}
+function play(n,x,z,v){const b=DB[n];if(!b||b===1||!AC)return;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=b;g.gain.value=v;s.connect(g);g.connect(out(x,z));s.start()}
+const nearD=(x,z)=>typeof x=='number'&&DL.some(d=>Math.abs(x-d.g.position.x-.75)<.05&&Math.abs(z-d.g.position.z)<.05);
+['creak','slam'].forEach(n=>{const o=S[n];if(typeof o!='function')return;S[n]=function(x,z){if(nearD(x,z))return;return o.apply(S,arguments)}});
+/* 3. quality */
+const P0=T.WebGLRenderer.prototype,QL={low:[.7,2],med:[1.5,4],high:[2,8],ultra:[2.5,16],xtreme:[3,16]};
+function setQ(){const dpr=window.devicePixelRatio||1,L=QL[C.q]||QL.med,r=(C.q=='low'||C.q=='med')?Math.max(C.q=='low'?.7:1,Math.min(dpr,L[0])):L[0];
+ P0.setPixelRatio.call(renderer,r);P0.setSize.call(renderer,innerWidth,innerHeight,true);
+ const an=Math.min(L[1],renderer.capabilities.getMaxAnisotropy());scene.traverse(o=>{const m=o.material;if(m&&!Array.isArray(m)&&m.map&&m.map.anisotropy!==an){m.map.anisotropy=an;m.map.needsUpdate=true}})}
+/* 4. stable camera + stop idle drift */
+const hd=new T.Vector3(),L=new T.Vector3(),wn=new T.Vector3(),dv=new T.Vector3(),an=new T.Vector3();let has=0,cd=C.d;
+const _u=update;update=function(dt,t){
+ const px=P.pos.x,pz=P.pos.z;_u(dt,t);
+ const idle=!(keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight)&&Math.abs(joy.x)+Math.abs(joy.y)<.02;
+ if(idle&&!G.dead&&P.vel.length()<.1){P.vel.set(0,0,0);P.pos.x=px;P.pos.z=pz;aarav.g.position.x=px;aarav.g.position.z=pz}
+ const cp=Math.cos(P.pitch),sy=Math.sin(P.yaw),cy=Math.cos(P.yaw);
+ L.set(sy*cp,Math.sin(P.pitch),cy*cp);
+ an.set(P.pos.x,aarav.g.position.y+C.h,P.pos.z);
+ if(!has){hd.copy(an);has=1}else{hd.lerp(an,1-Math.exp(-24*dt));if(hd.distanceToSquared(an)<1e-6)hd.copy(an)}
+ wn.copy(hd).addScaledVector(L,-C.d);wn.x-=cy*C.s;wn.z+=sy*C.s;
+ dv.copy(wn).sub(hd);let len=dv.length();dv.normalize();ray.set(hd,dv);ray.far=len;
+ const h=ray.intersectObjects(walls)[0];if(h)len=Math.max(.2,h.distance-.2);
+ if(len<cd)cd=len;else cd+=(len-cd)*Math.min(1,dt*5);
+ cam.position.copy(hd).addScaledVector(dv,cd);cam.position.y=Math.max(.25,Math.min(3,cam.position.y));
+ cam.lookAt(cam.position.x+L.x,cam.position.y+L.y,cam.position.z+L.z);
+ cam.fov+=((P.sprint?C.f+4:C.f)-cam.fov)*(1-Math.exp(-6*dt));cam.updateProjectionMatrix()};
+let qd=0;const _x=extra;extra=function(dt,t){_x(dt,t);
+ if(AC&&DB.creak===undefined){ld('creak');ld('slam')}
+ for(const d of DL){const w=d.want?1:0;if(d.pw===undefined)d.pw=w;if(w!==d.pw){d.pw=w;play(w?'creak':(d.fast?'slam':'creak'),d.g.position.x+.75,d.g.position.z,.9)}}
+ if(!qd){qd=1;setQ()}};
+/* 5. settings: QUALITY + CAMERA tabs */
+const S2=q('pzs');
+if(S2){const tb=S2.querySelector('.tb');const old=tb.querySelector('button[data-p="3"]');if(old)old.style.display='none';
+ const oc=q('pzc_d');const p3=oc?oc.parentNode.parentNode:null;
+ const mk=(t,html)=>{const b=document.createElement('button');b.textContent=t;tb.appendChild(b);const p=document.createElement('div');p.style.display='none';p.innerHTML=html;S2.appendChild(p);return[b,p]};
+ const [bq,pq]=mk('QUALITY','<label>Graphics quality<select id="z34q"><option value="low">Low (fast)</option><option value="med">Medium (sharp)</option><option value="high">High (HD)</option><option value="ultra">Ultra HD</option><option value="xtreme">Extreme HD (heavy)</option></select></label><div class="pzd">Medium = default. Extreme phone ko garam/slow kar sakta hai.</div>');
+ const [bc,pc]=mk('CAMERA','<label>Distance (kam = paas, zyada = door)<input type="range" id="z34d" min="15" max="600"></label><label>Height<input type="range" id="z34h" min="50" max="250"></label><label>Shoulder left/right<input type="range" id="z34s" min="-80" max="80"></label><label>Zoom / FOV (kam = zoom in)<input type="range" id="z34f" min="35" max="95"></label><button class="pzg" id="z34r">RESET CAMERA</button>');
+ const fill=()=>{q('z34q').value=C.q;q('z34d').value=C.d*100;q('z34h').value=C.h*100;q('z34s').value=C.s*100;q('z34f').value=C.f};fill();
+ q('z34q').onchange=e=>{C.q=e.target.value;sv();setQ()};
+ q('z34d').oninput=e=>{C.d=e.target.value/100;sv()};q('z34h').oninput=e=>{C.h=e.target.value/100;sv()};q('z34s').oninput=e=>{C.s=e.target.value/100;sv()};q('z34f').oninput=e=>{C.f=+e.target.value;sv()};
+ q('z34r').onclick=()=>{Object.assign(C,{d:D.d,h:D.h,s:D.s,f:D.f});sv();fill()};
+ const show=(b,p)=>{q('p1').style.display=q('p2').style.display='none';if(p3)p3.style.display='none';pq.style.display=pc.style.display='none';p.style.display='';tb.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))};
+ bq.onclick=()=>show(bq,pq);bc.onclick=()=>show(bc,pc);
+ tb.querySelectorAll('button').forEach(b=>{if(b!==bq&&b!==bc)b.addEventListener('click',()=>{pq.style.display=pc.style.display='none'})})}
+}catch(e){console.log('pz34 error',e)}})()</script>
+</body></html>
 
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
