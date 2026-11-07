@@ -2623,6 +2623,98 @@ let first=0;const _x=extra;extra=function(dt,t){_x(dt,t);
  if(!first){first=1;try{doorClean();writing();mkRuns();meds()}catch(e){console.log('pz37',e)}setTimeout(()=>{try{doorClean();writing()}catch(e){}},3500)}
  try{bloodTick(dt);charSmooth(dt)}catch(e){}};
 }catch(e){console.log('pz37 error',e)}})()</script>
+<script>
+/*PZ-V38*/(function(){try{
+if(window.__pz38)return;window.__pz38=1;
+const T=THREE,R=(a,b)=>a+Math.random()*(b-a),q=id=>document.getElementById(id);
+const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const t0=performance.now();let FS=LS('pz38f')!==false;
+/* css */
+const css=document.createElement('style');
+css.textContent='.z38m{position:fixed;inset:0;z-index:66;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;animation:z38f .25s}@keyframes z38f{from{opacity:0}}@keyframes z38p{from{transform:scale(.92) translateY(10px);opacity:0}}@keyframes z38s{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}'
++'.z38c{width:min(86%,380px);max-height:90%;overflow:auto;background:rgba(14,18,16,.96);border:1px solid #3a4a3f;border-radius:16px;padding:16px;text-align:center;color:#d8d2c8;font:15px/1.5 Georgia,serif;box-shadow:0 0 40px #000;animation:z38p .3s cubic-bezier(.2,.9,.3,1.2)}.bad .z38c{animation:z38s .3s}'
++'.z38c p{margin:6px 0 12px;opacity:.8}.z38c button{padding:12px 16px;margin:4px;border-radius:12px;border:1px solid #3a4a3f;background:#1a221d;color:#d8d2c8;font:700 14px Georgia,serif;touch-action:manipulation;transition:transform .15s}.z38c button:active{transform:scale(.93)}'
++'.z38d{display:flex;gap:8px;justify-content:center;margin:6px 0}.z38d i{width:14px;height:14px;border-radius:50%;background:#2a2f2c}.z38d i.on{background:#ffd070;box-shadow:0 0 10px #ffb030}'
++'.z38s{display:grid;grid-template-columns:1fr 1fr;gap:4px}.z38t2{display:flex;gap:14px;align-items:center;justify-content:center;margin:8px 0}.z38t2>div{display:flex;flex-direction:column;align-items:center}.z38t2 span{font:700 36px monospace;color:#6f9;margin:4px 0}.z38t2 em{font:700 32px monospace;color:#6f9}'
++'#note,#pzn2>div,#kp{animation:z38p .3s ease-out}#prompt{transition:opacity .2s}#btns button,#bSpr{transition:transform .15s,background .2s}'
++'label.z38t{display:flex!important;justify-content:space-between;align-items:center}.z38t input{display:none}.z38t i{width:46px;height:26px;border-radius:13px;background:rgba(255,255,255,.12);position:relative;transition:.25s;display:block}.z38t i:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.25s}.z38t input:checked+i{background:linear-gradient(135deg,#8f88ff,#6a62f0)}.z38t input:checked+i:after{left:23px}';
+document.head.appendChild(css);
+/* 1. old procedural character: gone */
+try{aarav.s.visible=false;kabir.s.visible=false}catch(e){}
+/* 2. realistic footsteps (old tak-tak muted) */
+{const A=window.AudioContext||window.webkitAudioContext,cb=A.prototype.createBufferSource;
+A.prototype.createBufferSource=function(){const s=cb.apply(this,arguments),st=s.start;s.start=function(){const b=s.buffer;if(b&&b.numberOfChannels==1&&b.length===((b.sampleRate*.1)|0))return;return st.apply(s,arguments)};return s}}
+let FB=null,dist=.7,side=1;
+function mkB(){const sr=AC.sampleRate,o=[];for(let v=0;v<4;v++){const n=sr*.17|0,b=AC.createBuffer(1,n,sr),d=b.getChannelData(0);let lp=0,l2=0;
+ for(let i=0;i<n;i++){const t=i/sr;lp+=((Math.random()*2-1)-lp)*(.45-v*.04);l2+=(lp-l2)*.3;
+  d[i]=lp*Math.exp(-t*95)*.9+Math.sin(6.2832*(68+v*8)*t)*Math.exp(-t*38)*.7+l2*Math.exp(-Math.pow((t-.06)/.035,2))*.35}
+ o.push(b)}return o}
+function step(run){if(!AC||!mst)return;FB=FB||mkB();const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();
+ s.buffer=FB[Math.random()*FB.length|0];s.playbackRate.value=R(.9,1.1);f.type='lowpass';f.frequency.value=run?3200:2200;g.gain.value=(run?.34:.22)*R(.85,1.1);
+ s.connect(f);f.connect(g);let o=g;if(AC.createStereoPanner){const p=AC.createStereoPanner();p.pan.value=side*.12;g.connect(p);o=p}side=-side;o.connect(mst);s.start()}
+/* settings toggle */
+{const p2=q('p2')||q('pzs');if(p2){const l=document.createElement('label');l.className='z38t';l.innerHTML='Footstep sound<span><input type="checkbox" id="z38f"><i></i></span>';p2.appendChild(l);const c=q('z38f');c.checked=FS;c.onchange=()=>{FS=c.checked;LS('pz38f',FS)}}}
+/* 3. powered by */
+{const d=document.createElement('div');d.textContent='POWERED BY SURAJ KUMAR';d.style.cssText='position:fixed;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));text-align:center;z-index:95;pointer-events:none;font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.24em;color:#d8d2c8;text-shadow:0 0 10px #000;opacity:0;transition:opacity 1.2s';document.body.appendChild(d);setTimeout(()=>d.style.opacity=.85,300);setTimeout(()=>d.style.opacity=0,9000);setTimeout(()=>d.remove(),11000)}
+/* 4. clocks */
+const clocks=[],fans=[];
+const faceM=M(0xe8e4d4,.6),rimM=M(0x2a2622,.5,.4),hdM=M(0x151515,.5);
+function mkClock(x,y,z,ry,sc,par,live){const g=new T.Group();g.position.set(x,y,z);g.rotation.y=ry;g.scale.setScalar(sc||1);
+ const f=new T.Mesh(new T.CylinderGeometry(.3,.3,.03,24),faceM);f.rotation.x=Math.PI/2;g.add(f);
+ const r=new T.Mesh(new T.TorusGeometry(.3,.025,6,24),rimM);r.position.z=.01;g.add(r);
+ const mh=(l,w)=>{const p=new T.Group();p.position.z=.03;const b=new T.Mesh(new T.BoxGeometry(w,l,.012),hdM);b.position.y=l/2-.02;p.add(b);g.add(p);return p};
+ const hh=mh(.17,.028),mm=mh(.25,.02);
+ for(let i=0;i<4;i++){const a=i*1.5708,t=new T.Mesh(new T.BoxGeometry(.02,.05,.01),rimM);t.position.set(Math.sin(a)*.25,Math.cos(a)*.25,.02);t.rotation.z=-a;g.add(t)}
+ hh.rotation.z=-R(0,6.28);mm.rotation.z=-R(0,6.28);(par||scene).add(g);const c={g,hh,mm,x,z,live:live!==false};clocks.push(c);return c}
+function setTime(c,h,m){c.mm.rotation.z=-m/60*6.2832;c.hh.rotation.z=-((h%12)+m/60)/12*6.2832}
+/* 5. room details */
+const vm=M(0x15171a,.6,.5),vs=M(0x3a3e44,.5,.6),bn=M(0x3a3d40,.6,.4),TT=['EVACUATION PLAN','PATIENT CHART','STAFF ROTA'];
+const chM=TT.map((t,i)=>decalM(tex(256,320,(g,w,h)=>{g.fillStyle='#cfc7a8';g.fillRect(0,0,w,h);g.fillStyle='#4a0a0a';g.font='bold 22px Georgia';g.textAlign='center';g.fillText(t,128,40);g.strokeStyle='rgba(60,40,20,.7)';g.lineWidth=2;for(let k=0;k<7;k++){g.beginPath();g.moveTo(30,80+k*30);g.lineTo(226-R(0,60),80+k*30);g.stroke()}g.fillStyle='rgba(110,8,8,.6)';g.beginPath();g.arc(R(60,200),R(100,260),R(10,22),0,7);g.fill()})));
+function details(){MLAB.forEach(([nm,cx,zc])=>{const wi=WG.findIndex(w=>cx>w.ox&&cx<w.ox+w.n*(w.rw||7)&&Math.abs(zc-w.cz)<(w.d||8)+5);if(wi<0)return;
+ const w=WG[wi],g=WGR[wi],rw=w.rw||7,d=w.d||8,dir=zc>w.cz?1:-1,x0=cx-rw/2,zf=w.cz+dir*2,zb=zf+dir*d,ry=dir<0?0:Math.PI;
+ mkClock(x0+R(1.6,rw-1.6),2.4,zb-dir*.19,ry,1,g,Math.random()<.75);
+ const vx=cx+R(-1,1),vz=zf+dir*d*.4;box(.9,.05,.9,vm,vx,3.17,vz,g);for(let k=-1;k<=1;k++)box(.8,.02,.04,vs,vx,3.14,vz+k*.25,g);
+ const fg=new T.Group();fg.position.set(vx,3.11,vz);box(.7,.01,.06,vs,0,0,0,fg);box(.06,.01,.7,vs,0,0,0,fg);g.add(fg);fans.push({g:fg,x:vx,z:vz});
+ {const bx=x0+.5,bz=zb-dir*.5,o=new T.Mesh(new T.CylinderGeometry(.17,.14,.4,12),bn);o.position.set(bx,.2,bz);g.add(o);cols.push([bx-.18,bx+.18,bz-.18,bz+.18])}
+ g.add(dWall(chM[Math.random()*3|0],x0+R(1.2,rw-1.2),1.6,zb-dir*.17,.7,.88,ry))})}
+/* 6. puzzles */
+function modal(h){const o=document.createElement('div');o.className='z38m';o.innerHTML='<div class="z38c">'+h+'</div>';document.body.appendChild(o);joy.x=joy.y=0;o.addEventListener('pointerdown',e=>e.stopPropagation());return o}
+function seq(title,hint,opts,ans,ok){const o=modal('<b>'+title+'</b><p>'+hint+'</p><div class="z38d"></div><div class="z38s"></div><button class="z38x">CLOSE</button>');const row=o.querySelector('.z38s'),dots=o.querySelector('.z38d');let k=[];
+ const paint=()=>dots.innerHTML=ans.map((_,i)=>'<i class="'+(i<k.length?'on':'')+'"></i>').join('');paint();
+ opts.forEach(([n,c,tc])=>{const b=document.createElement('button');b.style.background=c;b.style.color=tc||'#fff';b.textContent=n;b.onclick=()=>{k.push(n);paint();if(k.length==ans.length){if(k.every((v,i)=>v===ans[i])){o.remove();ok()}else{k=[];G.fk=1.4;toast('Wrong order. The lights flicker.',1800);o.classList.add('bad');setTimeout(()=>{o.classList.remove('bad');paint()},400)}}};row.appendChild(b)});
+ o.querySelector('.z38x').onclick=()=>o.remove()}
+function clockUI(ok){let h=12,m=0;const o=modal('<b>STOPPED CLOCK</b><p>Set the time the clock stopped at.</p><div class="z38t2"><div><button data-a="h1">+</button><span id="z38h">12</span><button data-a="h2">-</button></div><em>:</em><div><button data-a="m1">+</button><span id="z38m">00</span><button data-a="m2">-</button></div></div><button class="z38o">SET TIME</button><button class="z38x">CLOSE</button>');
+ const up=()=>{o.querySelector('#z38h').textContent=h;o.querySelector('#z38m').textContent=String(m).padStart(2,'0')};
+ o.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a;if(a=='h1')h=h%12+1;if(a=='h2')h=(h+10)%12+1;if(a=='m1')m=(m+5)%60;if(a=='m2')m=(m+55)%60;up()});
+ o.querySelector('.z38o').onclick=()=>{if(h==3&&m==40){o.remove();ok()}else{G.fk=1.2;toast('Nothing happens. The clock is still dead.',1800);o.classList.add('bad');setTimeout(()=>o.classList.remove('bad'),400)}};
+ o.querySelector('.z38x').onclick=()=>o.remove()}
+const done={a:0,b:0,c:0};
+/* A: clock in nurse station */
+const ck=mkClock(8.8,1.9,15,-Math.PI/2,1.4,scene,false);setTime(ck,9,15);
+items.push({x:7.7,z:15,t:'Tap to set the stopped clock',keep:1,f(){if(done.a)return toast('The clock ticks again.',1500);clockUI(()=>{done.a=1;ck.live=true;setTime(ck,3,40);G.lives=Math.min(3,G.lives+1);toast('A drawer pops open. A charm inside: +1 life.',3000)})}});
+items.push({x:-5.8,z:31.5,t:'Tap to read night-shift log',keep:1,f(){note('<b>NIGHT SHIFT LOG</b><br><i>Last entry: "The lights went out at twenty minutes to four. After that, no more entries."</i>')}});
+/* B: wiring panel in west wing */
+{const P0=new T.Group();P0.position.set(-18.78,1.5,32);scene.add(P0);box(.1,.9,.7,M(0x2a2d2a,.6,.4),0,0,0,P0);
+ [[0xff3333,-.24],[0x3377ff,-.08],[0xffdd33,.08],[0x33dd66,.24]].forEach(([c,z])=>{const b=new T.Mesh(new T.BoxGeometry(.06,.1,.1),new T.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.6}));b.position.set(.07,0,z);P0.add(b)})}
+items.push({x:-18.1,z:32,t:'Tap to use wiring panel',keep:1,f(){if(done.b)return toast('The ward is quiet.',1500);seq('WIRING PANEL','Reconnect the wires in the right order.',[['RED','#a02020'],['BLUE','#2050b0'],['YELLOW','#c9a020','#111'],['GREEN','#208040']],['BLUE','RED','YELLOW','GREEN'],()=>{done.b=1;G.t=Math.max(G.t,240);G.prot=Math.max(G.prot,20);toast('Power rerouted. The halls fall silent.',3000)})}});
+items.push({x:-12.3,z:17.5,t:'Tap to read electrician note',keep:1,f(){note('<b>ELECTRICIAN NOTE</b><br><i>"To wake the dead ward, feed the wires as the old diagram says: blue, red, yellow, green. Never green first."</i>')}});
+/* C: medicine cabinet in nurse station */
+{box(.5,1.6,.9,M(0x8a9094,.4,.6),8.55,.8,18.4);box(.04,1.2,.7,M(0x9fd0d8,.3,.1),8.28,.9,18.4);cols.push([8.25,8.85,17.9,18.9])}
+items.push({x:7.6,z:18.4,t:'Tap to open medicine cabinet',keep:1,f(){if(done.c)return toast('The cabinet is empty.',1500);seq('MEDICINE CABINET','Choose the pills in the right order.',[['WHITE','#e8e4d8','#111'],['BLUE','#2050b0'],['RED','#a02020'],['GREEN','#208040']],['WHITE','BLUE','RED'],()=>{done.c=1;mantraUsed=0;toast('A prayer scroll was hidden here. The Raksha Mantra is ready.',3500)})}});
+items.push({x:4,z:18.8,t:'Tap to read prescription pad',keep:1,f(){note('<b>PRESCRIPTION</b><br><i>"White first, then blue, then red. She always took them in this order."</i>')}});
+/* loop */
+let first=0,ct=0,gl=0;const _x=extra;
+extra=function(dt,t){_x(dt,t);try{
+ if(!first){first=1;details()}
+ ct-=dt;if(ct<=0){ct=.5;gl=0;aarav.g.traverse(o=>{if(o.isSkinnedMesh)gl=1})}
+ const fb=!gl&&performance.now()-t0>14000;aarav.s.visible=fb;kabir.s.visible=fb;
+ const sp=Math.hypot(P.vel.x,P.vel.z);
+ if(started&&AC&&FS&&!G.dead&&sp>.6&&!(window.JJ&&JJ.y>0)){dist+=sp*dt;if(dist>=(P.sprint?1.25:1)){dist=0;step(P.sprint)}}else if(sp<.3)dist=.7;
+ for(const c of clocks){if(!c.live||Math.abs(c.x-P.pos.x)>25||Math.abs(c.z-P.pos.z)>25)continue;c.mm.rotation.z-=dt*.25;c.hh.rotation.z-=dt*.021}
+ for(const f of fans){if(Math.abs(f.x-P.pos.x)<22&&Math.abs(f.z-P.pos.z)<22)f.g.rotation.y+=dt*3}
+}catch(e){}};
+}catch(e){console.log('pz38 error',e)}})();
+</script>
 </body></html>
 
 </template>
@@ -3017,4 +3109,8 @@ const _mk=mk;mk=function(k){const p=_mk(k);p._t=Date.now();return p};
 const _os=onSig;onSig=async function(m){const p=pc[m.from];if(m.s&&m.s.type=='offer'&&p&&(p.signalingState=='closed'||p.connectionState=='failed')){try{p.close()}catch(e){}delete pc[m.from]}return _os(m)};
 setInterval(()=>{if(!ch)return;Object.keys(members).forEach(k=>{if(k==me.id||!(me.id>k))return;const p=pc[k],bad=!p||['failed','closed','disconnected'].includes(p.connectionState)||(p.connectionState!='connected'&&Date.now()-p._t>9000);
  if(bad){if(p){p._b=(p._b||0)+1;if(p._b<2&&p.connectionState=='disconnected')return;try{p.close()}catch(e){}delete pc[k]}call(k)}})},4000);
-}catch(e){console.log('pz30 lobby error',e)}})()</script></body></html>
+}catch(e){console.log('pz30 lobby error',e)}})()</script><style>
+#loading:after{content:"POWERED BY SURAJ KUMAR";position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);left:0;right:0;text-align:center;font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.24em;color:#8a8fa6;animation:pzpb 1.4s both}
+@keyframes pzpb{from{opacity:0;transform:translateY(8px)}}
+</style>
+</body></html>
