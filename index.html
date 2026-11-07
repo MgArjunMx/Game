@@ -2385,6 +2385,7 @@ const eb=q('pzeb'),rs=q('pzrs');if(eb)eb.onclick=enter;if(rs)rs.onclick=()=>{L={
 /* while editing: show hidden buttons, protect from ghost */
 const _x=extra;extra=function(dt,t){_x(dt,t);if(!edit)return;G.prot=Math.max(G.prot,3);['bTorch','bMap'].forEach(i=>q(i)&&q(i).style.setProperty('display','block','important'))};
 }catch(e){console.log('pz33 error',e)}})()</script>
+
 <script>/*PZ-V35*/(function(){try{
 if(window.__pz35)return;window.__pz35=1;
 const T=THREE,LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}},q=id=>document.getElementById(id);
@@ -2462,6 +2463,63 @@ if(S2){const tb=S2.querySelector('.tb');const old=tb.querySelector('button[data-
  bq.onclick=()=>show(bq,pq);bc.onclick=()=>show(bc,pc);
  tb.querySelectorAll('button').forEach(b=>{if(b!==bq&&b!==bc)b.addEventListener('click',()=>{pq.style.display=pc.style.display='none'})})}
 }catch(e){console.log('pz35 error',e)}})()</script>
+<script>/*PZ-V36*/(function(){try{
+if(window.__pz36)return;window.__pz36=1;
+const T=THREE,LS=(k,v)=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){}},q=id=>document.getElementById(id);
+/* 1. ghost screen: no grain/blur, just darker */
+const css=document.createElement('style');
+css.textContent='#pzn{display:none!important}#pzv{background:radial-gradient(ellipse at center,transparent 36%,rgba(0,0,0,.93) 100%)!important}#vig{background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.9) 100%)!important}#stm{display:none!important}';
+document.head.appendChild(css);
+const ov=[...document.body.children].find(e=>e.style&&String(e.style.background).indexOf('rgba(120, 0, 0')>-1);
+if(ov)ov.style.background='radial-gradient(ellipse at center,transparent 38%,rgba(0,0,0,.6) 100%)';
+/* 2. round tiny particles instead of squares */
+const ct=document.createElement('canvas');ct.width=ct.height=64;const cg=ct.getContext('2d'),gr=cg.createRadialGradient(32,32,0,32,32,32);
+gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.55,'rgba(255,255,255,.85)');gr.addColorStop(1,'rgba(255,255,255,0)');cg.fillStyle=gr;cg.fillRect(0,0,64,64);
+const dot=new T.CanvasTexture(ct),PM=T.PointsMaterial;
+T.PointsMaterial=function(o){o=Object.assign({},o);if(o.color===0xffe9a0&&o.size)o.size*=.45;const m=new PM(o);m.map=dot;m.alphaTest=.02;m.transparent=true;return m};
+T.PointsMaterial.prototype=PM.prototype;
+scene.traverse(o=>{if(o.isPoints&&o.material&&!Array.isArray(o.material)){o.material.map=dot;o.material.alphaTest=.02;o.material.transparent=true;o.material.needsUpdate=true}});
+/* 3. remove transparent hanging sheets and curtains */
+const bc=[0xbab6a8,0x8fa8a0];
+scene.traverse(o=>{const m=o.material;if(o.isMesh&&m&&!Array.isArray(m)&&m.transparent&&m.color&&bc.indexOf(m.color.getHex())>-1)o.visible=false});
+/* 4. everything solid: chairs and props get collision */
+function solids(){scene.updateMatrixWorld(true);
+ const skip=o=>{let p=o;while(p){if(p===aarav.g||p===kabir.g)return 1;p=p.parent}return 0};
+ const vis=o=>{let p=o;while(p){if(!p.visible&&WGR.indexOf(p)<0)return 0;p=p.parent}return 1};
+ const covered=(x,z)=>cols.some(c=>x>c[0]-.02&&x<c[1]+.02&&z>c[2]-.02&&z<c[3]+.02);
+ const add=b=>{const x0=b.min.x+.03,x1=b.max.x-.03,z0=b.min.z+.03,z1=b.max.z-.03;if(x1-x0>.08&&z1-z0>.08&&!covered((x0+x1)/2,(z0+z1)/2))cols.push([x0,x1,z0,z1])};
+ scene.traverse(o=>{
+  if(o.isGroup&&o.children.length==6){const c0=o.children[0];if(c0.isMesh&&c0.geometry&&c0.geometry.type=='BoxGeometry'&&Math.abs(c0.geometry.parameters.width-.45)<.001&&Math.abs(c0.geometry.parameters.height-.05)<.001){add(new T.Box3().setFromObject(o));return}}
+  if(!o.isMesh||o.isSkinnedMesh||!o.visible)return;const m=o.material,g=o.geometry;
+  if(!m||Array.isArray(m)||m.transparent||!g||(g.type!=='BoxGeometry'&&g.type!=='CylinderGeometry'))return;
+  const b=new T.Box3().setFromObject(o),h=b.max.y-b.min.y,w=b.max.x-b.min.x,d=b.max.z-b.min.z;
+  if(h<.35||b.min.y>.5||w>3.6||d>3.6||skip(o)||!vis(o))return;add(b)})}
+/* 5. floor flicker: give every overlapping floor its own tiny height, order decals */
+function levelFloors(){const L=[];let k=1;
+ scene.traverse(o=>{if(!o.isMesh||!o.geometry)return;const g=o.geometry,m=o.material;if(!m||Array.isArray(m))return;const t=g.type;if(t!=='PlaneGeometry'&&t!=='CircleGeometry')return;
+  if(Math.abs(Math.abs(o.rotation.x)-1.5708)>.01)return;const up=o.rotation.x<0,y=o.position.y;
+  if(m.transparent){if(up&&y<.05)o.renderOrder=k++;return}
+  if(up?(y>.05||y<-.06):(Math.abs(y-3.2)>.06))return;
+  let hw,hd;if(t==='PlaneGeometry'){hw=g.parameters.width*o.scale.x/2;hd=g.parameters.height*o.scale.y/2}else{hw=hd=g.parameters.radius*o.scale.x}
+  L.push({o,up,x0:o.position.x-hw,x1:o.position.x+hw,z0:o.position.z-hd,z1:o.position.z+hd,a:hw*hd,lv:0})});
+ L.sort((a,b)=>b.a-a.a);
+ L.forEach((a,i)=>{let lv=0;for(let j=0;j<i;j++){const b=L[j];if(b.up===a.up&&a.x0<b.x1&&a.x1>b.x0&&a.z0<b.z1&&a.z1>b.z0)lv=Math.max(lv,b.lv+1)}a.lv=lv;a.o.position.y=a.up?lv*.0016:3.2-lv*.0016})}
+/* 6. pool lights fade in instead of popping (floor lighting flicker) */
+const pool=[];scene.children.forEach(o=>{if(o.isPointLight&&o.visible&&o.distance===14&&o.color.getHex()===0xffffff)pool.push({l:o,p:o.position.clone(),r:1})});
+/* 7. soft running footstep (your old 'tak tak', quiet) */
+let fb=null,fs=0;
+function mkStep(){const sr=AC.sampleRate,n=sr*.1|0,b=AC.createBuffer(1,n,sr),d=b.getChannelData(0);let lp=0;for(let i=0;i<n;i++){const t=i/sr;lp+=((Math.random()*2-1)-lp)*.35;d[i]=lp*Math.exp(-t*60)*.8+Math.sin(6.2832*1500*t)*Math.exp(-t*90)*.5}return b}
+function step(v){if(!AC||!mst)return;fb=fb||mkStep();const s=AC.createBufferSource(),g=AC.createGain();s.buffer=fb;s.playbackRate.value=.9+Math.random()*.25;g.gain.value=v;s.connect(g);g.connect(mst);s.start()}
+/* 8. RUN button above the joystick (unless you saved your own layout) */
+function runPos(){const b=q('bSpr'),j=q('joy');if(!b||!j||document.body.classList.contains('pzedit'))return;
+ const sv=LS('pz33h');if(sv&&sv.bSpr&&sv.bSpr.x!=null)return;const r=j.getBoundingClientRect();if(!r.width)return;
+ b.style.setProperty('left',(r.left+r.width/2-b.offsetWidth/2)+'px','important');b.style.setProperty('top',(r.top-b.offsetHeight-10)+'px','important')}
+let first=0,rt=0;const _x=extra;extra=function(dt,t){_x(dt,t);
+ if(!first){first=1;try{solids();levelFloors()}catch(e){console.log('pz36',e)}setTimeout(()=>{try{solids()}catch(e){}},3500)}
+ for(const p of pool){if(p.l.position.distanceToSquared(p.p)>.01){p.p.copy(p.l.position);p.r=0}p.r=Math.min(1,p.r+dt*2.5);p.l.intensity*=p.r}
+ if(started&&AC&&P.sprint&&P.vel.length()>2&&!G.dead){fs-=dt;if(fs<=0){fs=.27;step(.05)}}else fs=0;
+ rt-=dt;if(rt<=0){rt=.3;runPos()}};
+}catch(e){console.log('pz36 error',e)}})()</script>
 </body></html>
 
 </template>
