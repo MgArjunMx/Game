@@ -1231,7 +1231,7 @@ const sym=[
 ['MUSLIM',g=>{g.fillStyle=gold;g.beginPath();g.arc(120,125,66,0,7);g.fill();g.fillStyle=bg;g.beginPath();g.arc(144,115,56,0,7);g.fill();g.fillStyle=gold;g.beginPath();for(let i=0;i<10;i++){const r=i%2?7:16,a=-1.57+i*.628;g.lineTo(176+Math.cos(a)*r,100+Math.sin(a)*r)}g.fill()}],
 ['SIKH',g=>{g.strokeStyle=g.fillStyle=gold;g.lineWidth=7;g.beginPath();g.arc(128,125,34,0,7);g.stroke();g.beginPath();g.moveTo(128,35);g.lineTo(141,125);g.lineTo(128,215);g.lineTo(115,125);g.closePath();g.fill();g.lineWidth=11;g.beginPath();g.arc(150,150,72,Math.PI*.62,Math.PI*1.08);g.stroke();g.beginPath();g.arc(106,150,72,-Math.PI*.08,Math.PI*.38);g.stroke()}],
 ['CHRISTIAN',g=>{g.fillStyle=gold;g.fillRect(116,50,24,170);g.fillRect(76,100,104,24)}]];
-const xs=[-4.5,-1.5,1.5,4.5];sym.length=0;sym.length=0;sym.length=0;
+const xs=[-4.5,-1.5,1.5,4.5];sym.length=0;sym.length=0;sym.length=0;sym.length=0;
 sym.forEach(([nm,fn],i)=>{const t=tex(256,320,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle='#8a6a30';g.lineWidth=6;g.strokeRect(8,8,w-16,h-16);fn(g);g.fillStyle='#d8c9a0';g.font='bold 28px Georgia';g.textAlign='center';g.fillText(nm,128,290)});
  dWall(MB(0xffffff).clone(),0,0,0,0,0,0);});
 sym.forEach(([nm,fn],i)=>{const t=tex(256,320,(g,w,h)=>{g.fillStyle=bg;g.fillRect(0,0,w,h);g.strokeStyle='#8a6a30';g.lineWidth=6;g.strokeRect(8,8,w-16,h-16);fn(g);g.fillStyle='#d8c9a0';g.font='bold 28px Georgia';g.textAlign='center';g.fillText(nm,128,290)});
@@ -1257,7 +1257,7 @@ function arrive(){ended=1;obj('You are safe.');P.vel.set(0,0,0);el('blk').style.
   tx('ESCAPE THE HOSPITAL','font-size:28px;letter-spacing:5px;color:#ffd98a');tx('Morning has come. You escaped the hospital.','font-size:20px');
   const r=document.createElement('div');r.style.cssText='display:flex;gap:12px;margin-top:12px';
   const b=(t,f)=>{const x=document.createElement('button');x.textContent=t;x.style.cssText='padding:12px 24px;background:rgba(0,0,0,.5);color:#fff;border:1px solid #ffd98a;font:16px Georgia,serif';x.onclick=f;r.appendChild(x)};
-  b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('RESTART GAME',()=>location.reload());b('MAIN MENU',()=>{parent!==window?parent.postMessage({t:'exit'},'*'):location.reload()});
+  b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('KEEP EXPLORING',()=>{d.style.opacity=0;d.style.pointerEvents='none';setTimeout(()=>d.remove(),2100)});b('RESTART GAME',()=>location.reload());b('MAIN MENU',()=>{parent!==window?parent.postMessage({t:'exit'},'*'):location.reload()});
   d.appendChild(r);document.body.appendChild(d);requestAnimationFrame(()=>requestAnimationFrame(()=>d.style.opacity=1))},10500)}
 const _x=extra;
 extra=function(dt,t){_x(dt,t);
@@ -1529,6 +1529,12 @@ try{
 
 
 
+
+
+
+
+
+
 <!--V12-START--><script>/*W13-PATCH-V12*/
 (function(){
 const T=THREE,W2=new Set(),SY={o:0},spin=[];let CL=null,sT=0,inSH=0;
@@ -1639,21 +1645,6 @@ S2.knock=function(){[0,1.3,2.8].forEach(tt=>thump(null,null,tt,1))};
 let kt=R(25,45);const _e=extra;extra=function(dt,t){_e(dt,t);if(!started||G.dead||fin||!AC)return;kt-=dt;if(kt<=0){kt=R(30,60);const a=R(0,6.28),d=R(6,14);S.knock(P.pos.x+Math.sin(a)*d,P.pos.z+Math.cos(a)*d,2+(Math.random()*3|0))}};
 })();
 </script><!--V16-END-->
-<!--V13-START--><script>/*W13-PATCH-V13*/const CFG13={"snd":"sounds/","u":{}};
-(function(){
-const U=CFG13.u||{};if(!CFG13.snd&&!Object.keys(U).length)return;
-const base=(()=>{try{return new URL(CFG13.snd,parent!==window?parent.location.href:location.href).href}catch(e){return CFG13.snd}})();
-const MAP={knock:'knock',cry:'cry',scream:'scream',scratch:'scratch',glass:'glass',whisper:'whisper',creak:'creak',slam:'slam',step:'step',breath:'breath',clatter:'glass',bump:'slam',wheel:'wheel',trolley:'wheel',phone:'phone',mbox:'musicbox',beat:'heartbeat',black:'blackout'};
-const B={},names=[...new Set(Object.values(MAP).concat(['ambience']))];let st=0;
-async function load(){for(const n in U)for(const u of U[n]){try{const r=await fetch(u);if(!r.ok)continue;(B[n]=B[n]||[]).push(await AC.decodeAudioData(await r.arrayBuffer()))}catch(e){}}
-if(CFG13.snd)for(const n of names)for(const i of['','2','3']){try{const r=await fetch(base+n+i+'.mp3');if(!r.ok)continue;(B[n]=B[n]||[]).push(await AC.decodeAudioData(await r.arrayBuffer()))}catch(e){}}
- if(B.ambience){const s=AC.createBufferSource(),g=AC.createGain();s.buffer=B.ambience[0];s.loop=true;g.gain.value=.5;s.connect(g);g.connect(mst);s.start()}}
-const iv=setInterval(()=>{if(AC&&!st){st=1;clearInterval(iv);load()}},500);
-const vol={step:.6,heartbeat:.8,breath:.7};
-Object.keys(MAP).forEach(k=>{const o=S[k],n=MAP[k];if(typeof o!='function')return;
- S[k]=function(x,z){const a=B[n];if(a&&AC){const s=AC.createBufferSource(),g=AC.createGain();s.buffer=a[Math.random()*a.length|0];g.gain.value=vol[n]||1;s.connect(g);const sp=!/scream|heartbeat|blackout/.test(n);g.connect(sp?out(typeof x=='number'?x:G.x,typeof z=='number'?z:G.z):mst);s.start();return}return o.apply(S,arguments)}});
-})();
-</script><!--V13-END-->
 <!--V14-START--><script>/*W13-PATCH-V14*/
 (function(){
 const T=THREE;let CALM=1,mt=rnd(25,40),FORCE=0,SK=0,dread=0,dgT=rnd(12,20),dr=rnd(10,16),eyeT=rnd(14,24),gf=0,gt=0,gp=[],dst=null,glow=null;const rings=[],pts=[],cl=[];
@@ -1754,6 +1745,35 @@ let i=0;scene.traverse(o=>{if(o.isMesh&&o.geometry&&o.geometry.type=='PlaneGeome
 const _e=extra;extra=function(dt,t){_e(dt,t);for(const k of tubes){if(!k.dead){k.on=1;k.t=Math.max(k.t,1)}}};
 })();
 </script><!--V17-END-->
+<!--V18-START--><script>/*W13-PATCH-V18*/const CFG18={"slam":["sounds/freesound_community-wood-door-slam-46791.mp3"],"creak":["sounds/dragon-studio-opening-door-450444.mp3"],"glass":["sounds/dragon-studio-glass-breaking-386153.mp3"],"knock":["sounds/universfield-door-knock-291150.mp3"],"whisper":["sounds/misfit_melomaniac-hello-whisper-533246.mp3"],"scratch":["sounds/freesound_community-scratching-on-box-40160.mp3"],"scream":["sounds/dragon-studio-woman-screaming-sfx-screaming-sound-effect-320169.mp3"],"cry":["sounds/neo_panda_25-creepy-woman-cry-407580.mp3"],"heartbeat":["sounds/freesound_community-heart-beat-6797.mp3"]};
+(function(){
+const U=CFG18,B={},last={};let SH=0,hbT=0;
+const base=()=>parent!==window?parent.location.href:location.href;
+async function fe(u){for(const c of[u,u.startsWith('sounds/')?u.slice(7):u]){try{const r=await fetch(new URL(c,base()).href);if(r.ok)return await AC.decodeAudioData(await r.arrayBuffer())}catch(e){}}return null}
+async function load(){for(const n in U)for(const u of U[n]){const b=await fe(u);if(b)(B[n]=B[n]||[]).push(b)}if(!Object.keys(B).length)toast('Sound files not found. Check the file names in the repo.')}
+const iv=setInterval(()=>{if(AC){clearInterval(iv);load()}},500);
+function play(n,x,z,v){const a=B[n];if(!a||!AC)return 0;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=a[Math.random()*a.length|0];s.playbackRate.value=1+(Math.random()-.5)*.08;g.gain.value=v;s.connect(g);g.connect(typeof x=='number'?out(x,z):mst);s.start();return 1}
+function pl(n,cd,x,z,v){const t=performance.now()/1000;if(last[n]&&t-last[n]<cd)return;if(play(n,x,z,v))last[n]=t}
+/* mute every old synthetic sound, keep only quiet footsteps */
+const _n=nse;snd=function(){};voice=function(){};nse=function(f,q,t0,a,d,v,x,z,ty){if(f==260&&q==1&&x==null)_n(f,q,t0,a,d,v*.4,x,z,ty)};
+Object.keys(S).forEach(k=>{if(typeof S[k]=='function')S[k]=function(){}});Object.keys(S2).forEach(k=>{if(typeof S2[k]=='function')S2[k]=function(){}});
+const nm=(x,d)=>typeof x=='number'?x:d;
+Object.assign(S,{
+ cry(){pl('cry',12,G.x,G.z,.9)},
+ scream(){SH=1;pl('scream',4,null,null,1)},
+ scratch(){pl('scratch',6,G.x,G.z,.9)},
+ glass(x,z){SH=Math.max(SH,.3);pl('glass',4,nm(x,G.x),nm(z,G.z),.9)},
+ whisper(){pl('whisper',10,P.pos.x+rnd(-1.5,1.5),P.pos.z+rnd(-1.5,1.5),.8)},
+ creak(x,z){pl('creak',2.5,nm(x,G.x),nm(z,G.z),.8)},
+ slam(x,z){const X=nm(x,G.x),Z=nm(z,G.z);SH=Math.max(SH,Math.min(1,7/(Math.hypot(X-P.pos.x,Z-P.pos.z)+1)));pl('slam',1,X,Z,1)},
+ knock(x,z){pl('knock',4,nm(x,G.x),nm(z,G.z),.9)},
+ beat(){const a=B.heartbeat;if(!a||!AC)return;const t=AC.currentTime;if(t<hbT)return;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=a[0];g.gain.value=.8;s.connect(g);g.connect(mst);s.start();hbT=t+a[0].duration-.2}
+});
+S2.knock=function(){pl('knock',1,null,null,1)};
+let pf=0;amb=function(dt){if(!AC)return;if(A.g)A.g.gain.value=0;if(P.vel.length()>.4&&!G.dead&&started){pf-=dt;if(pf<=0){pf=P.sprint?.3:.52;const v=(P.sprint?.34:.17)*.45;_n(2600,2,0,.002,.04,v);_n(260,1,0,.003,.09,v*1.6,null,null,'lowpass')}}};
+const _u=update;update=function(dt,t){_u(dt,t);if(SH>0){cam.position.x+=rnd(-1,1)*SH*.07;cam.position.y+=rnd(-1,1)*SH*.05;SH=Math.max(0,SH-dt*1.6)}};
+})();
+</script><!--V18-END-->
 </body></html>
 
 </template>
