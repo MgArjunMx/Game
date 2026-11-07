@@ -209,7 +209,7 @@ document.addEventListener('pointerdown',on,{passive:true})})();
 <div style="display:flex;gap:8px"><button class="btn sb" id="ij">JOIN</button><button class="btn g sb" data-x>LATER</button></div></div></div>
 
 <template id="w13">
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<!DOCTYPE html><html lang="en"><head><script>(function(){try{var P=parent.PZ;if(!P||P.solo)return;var s=String(P.party)+new Date().toDateString(),h=2166136261,i;for(i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}var a=h>>>0;window.__rr=Math.random;Math.random=function(){a=(a+0x6D2B79F5)|0;var t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296}}catch(e){}})();</script><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ESCAPE THE HOSPITAL</title>
 <style>
@@ -2647,10 +2647,10 @@ A.prototype.createBufferSource=function(){const s=cb.apply(this,arguments),st=s.
 let FB=null,dist=.7,side=1;
 function mkB(){const sr=AC.sampleRate,o=[];for(let v=0;v<4;v++){const n=sr*.17|0,b=AC.createBuffer(1,n,sr),d=b.getChannelData(0);let lp=0,l2=0;
  for(let i=0;i<n;i++){const t=i/sr;lp+=((Math.random()*2-1)-lp)*(.45-v*.04);l2+=(lp-l2)*.3;
-  d[i]=lp*Math.exp(-t*95)*.9+Math.sin(6.2832*(68+v*8)*t)*Math.exp(-t*38)*.7+l2*Math.exp(-Math.pow((t-.06)/.035,2))*.35}
+  d[i]=lp*Math.exp(-t*200)*1.1+Math.sin(6.2832*(1500+v*180)*t)*Math.exp(-t*130)*.5+Math.sin(6.2832*(95+v*8)*t)*Math.exp(-t*65)*.4+l2*Math.exp(-Math.pow((t-.05)/.018,2))*.25}
  o.push(b)}return o}
 function step(run){if(!AC||!mst)return;FB=FB||mkB();const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();
- s.buffer=FB[Math.random()*FB.length|0];s.playbackRate.value=R(.9,1.1);f.type='lowpass';f.frequency.value=run?3200:2200;g.gain.value=(run?.34:.22)*R(.85,1.1);
+ s.buffer=FB[Math.random()*FB.length|0];s.playbackRate.value=R(.9,1.1);f.type='lowpass';f.frequency.value=run?5600:4200;g.gain.value=(run?.4:.3)*R(.85,1.1);
  s.connect(f);f.connect(g);let o=g;if(AC.createStereoPanner){const p=AC.createStereoPanner();p.pan.value=side*.12;g.connect(p);o=p}side=-side;o.connect(mst);s.start()}
 /* settings toggle */
 {const p2=q('p2')||q('pzs');if(p2){const l=document.createElement('label');l.className='z38t';l.innerHTML='Footstep sound<span><input type="checkbox" id="z38f"><i></i></span>';p2.appendChild(l);const c=q('z38f');c.checked=FS;c.onchange=()=>{FS=c.checked;LS('pz38f',FS)}}}
@@ -2709,11 +2709,80 @@ extra=function(dt,t){_x(dt,t);try{
  ct-=dt;if(ct<=0){ct=.5;gl=0;aarav.g.traverse(o=>{if(o.isSkinnedMesh)gl=1})}
  const fb=!gl&&performance.now()-t0>14000;aarav.s.visible=fb;kabir.s.visible=fb;
  const sp=Math.hypot(P.vel.x,P.vel.z);
- if(started&&AC&&FS&&!G.dead&&sp>.6&&!(window.JJ&&JJ.y>0)){dist+=sp*dt;if(dist>=(P.sprint?1.25:1)){dist=0;step(P.sprint)}}else if(sp<.3)dist=.7;
+ if(started&&AC&&FS&&!G.dead&&sp>.6&&!(window.JJ&&JJ.y>0)){dist+=sp*dt;if(dist>=(P.sprint?.95:.72)){dist=0;step(P.sprint)}}else if(sp<.3)dist=.7;
  for(const c of clocks){if(!c.live||Math.abs(c.x-P.pos.x)>25||Math.abs(c.z-P.pos.z)>25)continue;c.mm.rotation.z-=dt*.25;c.hh.rotation.z-=dt*.021}
  for(const f of fans){if(Math.abs(f.x-P.pos.x)<22&&Math.abs(f.z-P.pos.z)<22)f.g.rotation.y+=dt*3}
 }catch(e){}};
 }catch(e){console.log('pz38 error',e)}})();
+</script>
+<script>
+/*PZ-V40G*/(function(){try{
+if(window.__pz40g)return;window.__pz40g=1;
+const T=THREE,PAL=[0xff6b6b,0x6bb0ff,0x6bff9a,0xffd45e],nh=s=>[...String(s)].reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7)%4;
+function tint(g,i){let n=0,found=0;const iv=setInterval(()=>{n++;g.traverse(m=>{if(!m.isSkinnedMesh||m.userData.tn)return;m.userData.tn=1;found++;const f=x=>{x=x.clone();if(x.color)x.color.multiply(new T.Color(PAL[i]));return x};m.material=Array.isArray(m.material)?m.material.map(f):f(m.material)});if((found&&n>2)||n>150)clearInterval(iv)},400)}
+const _p=HB.peer;HB.peer=function(name){const o=_p(name);tint(o.g,nh(name));return o};
+try{tint(aarav.g,nh(parent.prof.name))}catch(e){}
+}catch(e){console.log('pz40g',e)}})();
+</script>
+<script>
+/*PZ-V50G*/(function(){try{
+if(window.__pz50)return;window.__pz50=1;
+if(window.__rr)Math.random=window.__rr;
+const T=THREE,R=(a,b)=>a+Math.random()*(b-a),q=id=>document.getElementById(id);
+const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const C=Object.assign({sens:1,inv:0,br:1,dif:1,fps:0},LS('pz50')||{}),sv=()=>LS('pz50',C);
+/* own character colour (fix: uses parent.PZ) */
+{const PAL=[0xff6b6b,0x6bb0ff,0x6bff9a,0xffd45e];try{const nm=parent.PZ.prof.name,i=[...String(nm)].reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7)%4;let n=0,f=0;const iv=setInterval(()=>{n++;aarav.g.traverse(m=>{if(!m.isSkinnedMesh||m.userData.tn)return;m.userData.tn=1;f++;const g=x=>{x=x.clone();if(x.color)x.color.multiply(new T.Color(PAL[i]));return x};m.material=Array.isArray(m.material)?m.material.map(g):g(m.material)});if((f&&n>2)||n>150)clearInterval(iv)},400)}catch(e){}}
+/* lives + checkpoint respawn (keeps your items) */
+let chk={x:P.pos.x,z:P.pos.z},ck=0;
+dead2=function(){G.lives--;
+ if(G.lives<=0){G.dead=2;P.vel.set(0,0,0);const d=q('ethd');if(d)d.style.display='flex';return}
+ P.pos.set(chk.x,0,chk.z);P.vel.set(0,0,0);P.on=false;G.dead=0;G.tm=0;G.bo=0;setSt(0);G.t=R(120,170);G.prot=8;G.x=chk.x;G.z=chk.z+40;
+ q('blk').style.opacity=0;toast('You wake up shaken. Lives left: '+G.lives,3000)};
+/* look sensitivity / invert, difficulty */
+let ly=P.yaw,lp=P.pitch;const _u=update;
+update=function(dt,t){const dy=P.yaw-ly,dp=P.pitch-lp;if(dy||dp){P.yaw=ly+dy*C.sens;P.pitch=Math.max(-.6,Math.min(.8,lp+dp*C.sens*(C.inv?-1:1)))}_u(dt,t);ly=P.yaw;lp=P.pitch};
+const _g=ghostUpdate;ghostUpdate=function(dt){return _g(dt*C.dif)};
+const cvs=renderer.domElement,bright=()=>cvs.style.filter=C.br==1?'':'brightness('+C.br+')';bright();
+/* wake lock */
+addEventListener('pointerdown',()=>{try{navigator.wakeLock&&navigator.wakeLock.request('screen')}catch(e){}},{once:true});
+/* fps */
+const fe=document.createElement('div');fe.style.cssText='position:fixed;left:50%;top:calc(4px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:30;font:600 11px ui-monospace,monospace;color:#9fe;pointer-events:none;display:none';document.body.appendChild(fe);
+/* hint */
+function hint(){let h;const need=['Trishul Coin','Sacred Ash','Hospital Master Key'].filter(k=>!inv.has(k));
+ if(!P.has)h='Find the torch on the bedside table in the first ward room.';
+ else if(!P.map)h='Take the hospital map lying near the dead man by the beds.';
+ else if(!doorOpen)h='The Ward door needs 4 digits. Read the notice board: day first, then month of the sealing date.';
+ else if(need.length)h='Still missing: '+need.join(', ')+'. They are hidden in rooms on the upper floors. Stairs need fuses (2 per floor) and a code or key.';
+ else if(!fin)h='All items found. The Final Gate needs a 4-digit code written on 4 torn pages around the floors. Then run to the Safe House outside.';
+ else h='Walk out of the gate and cross the road to the Safe House.';
+ const o=document.createElement('div');o.className='z38m';o.style.zIndex=80;o.innerHTML='<div class="z38c"><b>HINT</b><p>'+h+'</p><button>OK</button></div>';o.onpointerdown=e=>{e.stopPropagation();if(e.target===o||e.target.tagName=='BUTTON')o.remove()};document.body.appendChild(o)}
+/* settings tab */
+{const S=q('pzs');if(S){const tb=S.querySelector('.tb'),b=document.createElement('button');b.textContent='GAME';tb.appendChild(b);
+ const p=document.createElement('div');p.style.display='none';
+ p.innerHTML='<label>Look sensitivity<input type="range" id="z50s" min="30" max="250"></label><label class="z38t">Invert Y<span><input type="checkbox" id="z50i"><i></i></span></label><label>Brightness<input type="range" id="z50b" min="70" max="200"></label><label>Ghost difficulty<select id="z50d"><option value="0.7">Easy</option><option value="1">Normal</option><option value="1.35">Hard</option></select></label><label class="z38t">Show FPS<span><input type="checkbox" id="z50f"><i></i></span></label><button class="pzg" id="z50h">HINT</button>';
+ S.appendChild(p);
+ b.onclick=()=>{[...S.children].forEach(c=>{if(!c.classList.contains('h')&&!c.classList.contains('tb'))c.style.display='none'});p.style.display='';tb.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))};
+ tb.querySelectorAll('button').forEach(x=>{if(x!==b)x.addEventListener('click',()=>p.style.display='none')});
+ q('z50s').value=C.sens*100;q('z50i').checked=!!C.inv;q('z50b').value=C.br*100;q('z50d').value=String(C.dif);q('z50f').checked=!!C.fps;
+ q('z50s').oninput=e=>{C.sens=e.target.value/100;sv()};q('z50i').onchange=e=>{C.inv=e.target.checked?1:0;sv()};
+ q('z50b').oninput=e=>{C.br=e.target.value/100;sv();bright()};q('z50d').onchange=e=>{C.dif=+e.target.value;sv()};
+ q('z50f').onchange=e=>{C.fps=e.target.checked?1:0;sv()};q('z50h').onclick=hint}}
+/* co-op: shared pickups and doors */
+let REM=0,uid=0;const seen=new Set(),me=Math.random().toString(36).slice(2,8);
+function emit(e){if(parent===window)return;e.u=me+(uid++);const s=()=>parent.postMessage({t:'pos',d:{x:+P.pos.x.toFixed(2),z:+P.pos.z.toFixed(2),y:+P.yaw.toFixed(2),on:P.on?1:0,ev:[e]}},'*');s();setTimeout(s,900)}
+items.forEach(it=>{if(it.w50)return;if(/door/.test(it.t)||!it.keep){it.w50=1;const f=it.f;it.f=function(){f.apply(this,arguments);if(!REM)emit({k:'it',x:it.x,z:it.z})}}});
+addEventListener('message',e=>{if(e.source!==parent)return;const m=e.data||{};if(m.t!=='peer'||!m.p||!m.p.ev)return;
+ m.p.ev.forEach(v=>{if(seen.has(v.u))return;seen.add(v.u);if(v.k!=='it')return;
+  const it=items.find(i=>i.w50&&Math.abs(i.x-v.x)<.02&&Math.abs(i.z-v.z)<.02);if(!it)return;
+  REM=1;try{it.f()}catch(x){}REM=0;if(!it.keep){const k=items.indexOf(it);if(k>=0)items.splice(k,1)}})});
+/* loop */
+let fa=0,fn=0;const _x=extra;
+extra=function(dt,t){_x(dt,t);try{
+ if(G.st==0&&!G.dead&&started){ck-=dt;if(ck<=0){ck=4;chk={x:P.pos.x,z:P.pos.z}}}
+ if(C.fps){fa+=dt;fn++;if(fa>.5){fe.textContent=Math.round(fn/fa)+' FPS';fa=0;fn=0}fe.style.display='block'}else fe.style.display='none'
+}catch(e){}};
+}catch(e){console.log('pz50g',e)}})();
 </script>
 </body></html>
 
@@ -3113,4 +3182,44 @@ setInterval(()=>{if(!ch)return;Object.keys(members).forEach(k=>{if(k==me.id||!(m
 #loading:after{content:"POWERED BY SURAJ KUMAR";position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);left:0;right:0;text-align:center;font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.24em;color:#8a8fa6;animation:pzpb 1.4s both}
 @keyframes pzpb{from{opacity:0;transform:translateY(8px)}}
 </style>
+<script>
+/*PZ-V40*/(function(){try{
+if(window.__pz40)return;window.__pz40=1;
+const T=THREE,MAXP=4,PAL=[0xff6b6b,0x6bb0ff,0x6bff9a,0xffd45e],nh=s=>[...String(s)].reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7)%4;
+function tint(g,i){let n=0,found=0;const iv=setInterval(()=>{n++;g.traverse(m=>{if(!m.isSkinnedMesh||m.userData.tn)return;m.userData.tn=1;found++;const f=x=>{x=x.clone();if(x.color)x.color.multiply(new T.Color(PAL[i]));return x};m.material=Array.isArray(m.material)?m.material.map(f):f(m.material)});if((found&&n>2)||n>150)clearInterval(iv)},400)}
+function pop(g){const t0=performance.now();g.scale.setScalar(.01);(function f(){const u=Math.min(1,(performance.now()-t0)/550),c=1.70158,e=1+(c+1)*Math.pow(u-1,3)+c*Math.pow(u-1,2);g.scale.setScalar(Math.max(.01,e));if(u<1)requestAnimationFrame(f)})()}
+/* squad counter inside friends sheet */
+{const d=document.createElement('div');d.className='sub';d.id='sq40';$('#fl').before(d)}
+/* request bell button */
+{const b=document.createElement('button');b.className='ib';b.id='breq';b.setAttribute('aria-label','Friend requests');b.innerHTML='<span style="font-size:20px">&#128276;</span><em id="bq40" hidden></em>';b.style.background='linear-gradient(145deg,rgba(233,185,73,.45),rgba(233,185,73,.1))';$('#bfr').after(b);
+ b.onclick=()=>{sr=[];renderFr();$('#shF').classList.add('on');setTimeout(()=>{const r=[...$$('#fl .sub')].find(x=>x.textContent=='Requests');r&&r.scrollIntoView({block:'start'})},60)}}
+/* friends: online first + bell badge */
+const _rf=renderFr;renderFr=function(){fr.sort((a,b)=>(online.has(b.id)-online.has(a.id)));_rf();const e=$('#bq40');if(e){e.hidden=!rq.length;e.textContent=rq.length}};
+/* toast on new request */
+const _lf=loadFriends;let last=-1;
+loadFriends=async function(){await _lf();if(last<0&&rq.length)toast('You have '+rq.length+' friend request(s)');else if(last>=0&&rq.length>last)toast('New friend request from @'+rq[rq.length-1].username);last=rq.length};
+/* squad max 4 */
+const _rs=renderSquad;renderSquad=function(){const n=Object.keys(members).length;
+ if(party!==me.id&&n>MAXP){toast('Squad is full (4/4). Starting your own squad.');joinParty(me.id);return}
+ _rs();const s=$('#sq40');if(s)s.textContent='Squad '+n+'/'+MAXP};
+$('#fl').addEventListener('click',e=>{const t=e.target.closest('button');if(t&&t.dataset.inv&&Object.keys(members).length>=MAXP){e.stopPropagation();toast('Squad is full (4/4).')}},true);
+/* search: matches anywhere in username or name */
+$('#qb').onclick=async()=>{const q=$('#q').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');if(!q)return;
+ const {data}=await sb.from('profiles').select('id,name,username').or('username.ilike.*'+q+'*,name.ilike.*'+q+'*').neq('id',me.id).limit(12);
+ const ex=new Set([...fr,...rq].map(p=>p.id));sr=(data||[]).filter(p=>!ex.has(p.id));if(!sr.length)toast('No player found');renderFr()};
+/* each squad member gets a different color + pop-in */
+const _s3=sync3d;sync3d=function(ids){_s3(ids);try{for(const k in chars){const c=chars[k];if(c.t40)continue;c.t40=1;const m=(members[k]&&members[k][0])||{n:prof.name};tint(c.g,nh(m.n));pop(c.g)}}catch(e){}};
+}catch(e){console.log('pz40 error',e)}})();
+</script>
+<script>
+/*PZ-V50*/(function(){try{
+if(window.__pz50h)return;window.__pz50h=1;
+Object.defineProperty(window,'PZ',{get(){return{party,prof,me,solo:Object.keys(members).length<=1}}});
+console.warn("No TURN configured");
+const _mk=mk;mk=function(k){const p=_mk(k);p.addEventListener('connectionstatechange',()=>{if(p.connectionState=='connected')toast('Voice connected');else if(p.connectionState=='failed')toast('Voice link failed. Retrying...')});return p};
+const xpv=()=>(+localStorage.pzxp||0);
+const showXp=()=>{const m=xpv(),l=document.querySelector('.lv'),x=document.querySelector('.xp i');if(l)l.textContent='LV '+(1+Math.floor(m/600));if(x)x.style.width=((m%600)/6)+'%'};
+setInterval(()=>{if(G.on)localStorage.pzxp=xpv()+30;showXp()},30000);showXp();
+}catch(e){console.log('pz50 error',e)}})();
+</script>
 </body></html>
