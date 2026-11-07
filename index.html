@@ -3075,6 +3075,91 @@ if(fin&&!done&&P.pos.z>78.5&&P.pos.z<86&&Math.abs(P.pos.x)<5.4){done=1;parent.po
 hud();
 }catch(e){console.log('PZ-LEVELS error',e)}})();
 </script>
+<script>
+/*PZ-V70*/(function PATCH(){try{
+if(window.__pz70)return;window.__pz70=1;
+const T=THREE,HH=3.4,GZ=[62,132,202,270,302.5,337.5,372.5],NB=GZ.length+1,rr=(a,b)=>a+Math.random()*(b-a);
+const band=z=>{let b=0;for(const g of GZ)if(z>g)b++;return b};
+const eAt=(x,z)=>{if(x<39)return 0;if(x>45.3)return band(z)*HH;
+ for(let i=0;i<GZ.length;i++){const g=GZ[i];if(z<g-4)return i*HH;if(z<g+4)return i*HH+(Math.floor((z-g+4)/8*12)+1)*HH/12}
+ return GZ.length*HH};
+const nearGate=(x,z,m)=>x>40.5&&x<45.5&&GZ.some(g=>Math.abs(z-g)<m);
+/* 1. nothing written above doors */
+scene.traverse(o=>{if(!o.isMesh||!o.geometry||o.geometry.type!=='PlaneGeometry')return;const p=o.geometry.parameters;
+ if((p.height>=.39&&p.height<=.46&&o.position.y>2.75)||(Math.abs(o.position.x-41.16)<.01&&GZ.some(g=>Math.abs(o.position.z-g)<2.3)))o.visible=false});
+/* 2. remove old low stairs, old hall floors, old stair blocks */
+const kill=[];scene.traverse(o=>{if(!o.isMesh||!o.geometry)return;const g=o.geometry,p=g.parameters||{},x=o.position.x,z=o.position.z;
+ if(g.type==='BoxGeometry'&&Math.abs(x-43)<.01&&p.width===4&&(p.depth===.5||p.depth===1)&&GZ.some(q=>Math.abs(z-q)<3.2))kill.push(o);
+ else if(g.type==='BoxGeometry'&&p.depth===131)kill.push(o);
+ else if(g.type==='PlaneGeometry'&&p.width===4.3&&p.height>100)kill.push(o)});
+kill.forEach(o=>o.parent&&o.parent.remove(o));
+scene.children.forEach(o=>{if(o.isGroup&&o.children.length>5){const c=o.children[0],p=c.geometry&&c.geometry.parameters;if(p&&p.height===2.1&&p.width===.06)o.visible=false}});
+for(let i=cols.length-1;i>=0;i--){const c=cols[i];if(Math.abs(c[0]-41)<.01&&Math.abs(c[1]-45)<.01&&Math.abs(c[3]-c[2]-6.4)<.05)cols.splice(i,1)}
+/* 3. split long hall walls around the stair zones */
+for(const w of walls.slice()){
+ if(w.parent!==scene||!w.geometry)continue;const p=w.geometry.parameters,x=w.position.x,dl=p.depth*w.scale.z;
+ if(!(Math.abs(x-41)<.2||Math.abs(x-45)<.2)||dl<9)continue;
+ const z0=w.position.z-dl/2,z1=w.position.z+dl/2,zs=GZ.filter(g=>z0<g+4&&z1>g-4);if(!zs.length)continue;
+ scene.remove(w);walls.splice(walls.indexOf(w),1);
+ for(let i=cols.length-1;i>=0;i--){const c=cols[i];if(Math.abs(c[2]-z0)<.02&&Math.abs(c[3]-z1)<.02&&Math.abs((c[0]+c[1])/2-x)<.2)cols.splice(i,1)}
+ let cur=z0+.15;zs.forEach(g=>{if(g-4-cur>.3)seg(x,cur,x,g-4);cur=Math.max(cur,g+4)});
+ if(z1-.15-cur>.3)seg(x,cur,x,z1-.15)}
+/* 4. lift every floor to its own height */
+const BG=[];for(let b=0;b<NB;b++){const g=new T.Group();g.position.y=b*HH;scene.add(g);BG.push(g)}
+scene.children.slice().forEach(o=>{
+ const wi=WGR.indexOf(o);if(wi>=0){o.position.y=band(WG[wi].cz)*HH;return}
+ if(BG.includes(o)||o.isLight||o.isPoints||o===aarav.g||o===kabir.g)return;
+ if(o.position.x<40.5)return;
+ if(o.isMesh&&nearGate(o.position.x,o.position.z,4.6)){o.visible=false;return}
+ const b=band(o.position.z);if(b)BG[b].add(o)});
+/* 5. new hall floors, tall stairs, side walls, locks */
+const fm=(w,h)=>{const m=floorM.clone();m.map=floorM.map.clone();m.map.repeat.set(w/4,h/4);m.map.needsUpdate=true;return m};
+const cm=M(0x2a2c2a,1),sm=M(0x55524a,.9),LK=[],th=Math.atan2(HH,8),SL=Math.hypot(8,HH);
+for(let b=0;b<NB;b++){const a=b?GZ[b-1]+4:-.5,e=b<GZ.length?GZ[b]-4:403,L=e-a,zc=(a+e)/2,y=b*HH;
+ const f=new T.Mesh(new T.PlaneGeometry(4.3,L),fm(4.3,L));f.rotation.x=-Math.PI/2;f.position.set(43,y,zc);f.receiveShadow=true;
+ const c=new T.Mesh(new T.PlaneGeometry(4.3,L),cm);c.rotation.x=Math.PI/2;c.position.set(43,y+3.2,zc);scene.add(f,c)}
+GZ.forEach((g,i)=>{const y=i*HH;
+ for(let s=0;s<12;s++){const h=(s+1)*HH/12;box(3.7,h,8/12+.01,sm,43,y+h/2,g-4+(s+.5)*8/12)}
+ const sc=new T.Mesh(new T.PlaneGeometry(4.3,SL),new T.MeshStandardMaterial({color:0x2a2c2a,roughness:1,side:2}));sc.rotation.x=Math.PI/2-th;sc.position.set(43,y+3.2+HH/2,g);scene.add(sc);
+ [41,45].forEach(x=>{const w=box(.3,HH+3.2,8.4,wallM,x,y+(HH+3.2)/2,g);walls.push(w);cols.push([x-.15,x+.15,g-4.2,g+4.2])});
+ if(i<4){const bz=g-4.6,gr=new T.Mesh(new T.BoxGeometry(3.7,2.8,.12),new T.MeshStandardMaterial({color:0x151515,roughness:.5,metalness:.8,transparent:true,opacity:.6}));gr.position.set(43,y+1.4,bz);scene.add(gr);
+  const bc=[41.15,44.85,bz-.15,bz+.15];cols.push(bc);LK.push({g,gr,bc,on:1})}});
+/* 6. doors stay open once opened */
+DL.forEach(d=>Object.defineProperty(d,'fc',{get:()=>0,set(){},configurable:true}));
+/* 7. a different corridor design on every floor */
+const wm=M(0x4a4e48,.85),cr=M(0x5a4a30,.9);
+WG.forEach((w,i)=>{const G2=WGR[i];if(!G2)return;const rw=w.rw||7,L=w.n*rw,ox=w.ox,cz=w.cz,v=(i*7+2)%5,n0=scene.children.length;
+ if(v==0)for(let k=1;k<w.n;k++){const x=ox+k*rw;k%2?seg(x,cz-2,x,cz+.5):seg(x,cz+2,x,cz-.5)}
+ else if(v==1)for(let k=1;k<w.n;k++){const x=ox+k*rw,z=cz+(k%2?.95:-.95);box(.6,3.2,.6,wm,x,1.6,z);col(x,z,.6,.6)}
+ else if(v==2)for(let j=0;rw*(2*j+3)<=L;j++)seg(ox+rw*(2*j+1)+.8,cz,ox+rw*(2*j+3)-.8,cz);
+ else if(v==3)for(let k=1;k<w.n;k++){const x=ox+k*rw,z=cz+(k%2?-1:1)*1.15;box(.9,1.3,1.5,cr,x,.65,z);col(x,z,.9,1.5)}
+ else for(let x=ox+rw*.8;x<ox+L-rw*.5;x+=rw*1.4){box(2.6,1,1,cr,x,.5,cz);col(x,cz,2.6,1)}
+ scene.children.slice(n0).forEach(o=>G2.add(o))});
+/* 8. smooth feel: joystick curve + easing */
+jm=function(e){const r=jy.getBoundingClientRect(),s=(r.width||120)/120,dx=(e.clientX-r.left-r.width/2)/s,dy=(e.clientY-r.top-r.height/2)/s,d=Math.min(50,Math.hypot(dx,dy)),a=Math.atan2(dy,dx);
+ kn.style.left=36+Math.cos(a)*d+'px';kn.style.top=36+Math.sin(a)*d+'px';
+ const k=Math.pow(Math.max(0,(d/50-.07)/.93),1.25);joy.x=Math.cos(a)*k;joy.y=-Math.sin(a)*k};
+/* 9. fast camera ray: only nearby walls, and ray follows floor height */
+let ey=0,nw=walls,nt=0;
+const _io=T.Raycaster.prototype.intersectObjects.bind(ray);
+ray.intersectObjects=function(objs,rec,out){const o=ray.ray.origin;o.y+=ey;try{return _io(objs===walls?nw:objs,rec,out)}finally{o.y-=ey}};
+const _zs=zl.position.set.bind(zl.position);zl.position.set=function(x,y,z){return _zs(x,y+ey,z)};
+/* friends stand on the right floor */
+const PE=[];{const _p=HB.peer;HB.peer=function(){const o=_p.apply(this,arguments);PE.push(o);o.tg.set=function(x,y,z){return T.Vector3.prototype.set.call(this,x,eAt(x,z),z)};return o}}
+/* update: joystick easing + floor height */
+const _u=update;let sx=0,sy=0;
+update=function(dt,t){
+ const rx=joy.x,ry=joy.y,k=1-Math.exp(-20*dt);sx+=(rx-sx)*k;sy+=(ry-sy)*k;if(!rx&&!ry&&Math.abs(sx)+Math.abs(sy)<.04)sx=sy=0;
+ joy.x=sx;joy.y=sy;_u(dt,t);if(joy.x===sx)joy.x=rx;if(joy.y===sy)joy.y=ry;
+ const ty=eAt(P.pos.x,P.pos.z);ey+=(ty-ey)*(1-Math.exp(-15*dt));if(Math.abs(ty-ey)<.002)ey=ty;
+ const d=ey-(aarav.g.position.y-(window.JJ?JJ.y:0));aarav.g.position.y+=d;cam.position.y+=d;spot.position.y+=d;spot.target.position.y+=d};
+const _x=extra;
+extra=function(dt,t){_x(dt,t);try{
+ nt-=dt;if(nt<=0){nt=.2;const px=P.pos.x,pz=P.pos.z;nw=walls.filter(w=>{const p=w.geometry.parameters;return Math.hypot(px-w.position.x,pz-w.position.z)<18+Math.max(p.width||0,p.depth||0)/2})}
+ for(const k of LK)if(k.on&&Math.abs(P.pos.x-43)<1e-6&&Math.abs(P.vel.x)<1e-6&&Math.abs(Math.abs(P.vel.z)-2.6)<.02&&Math.abs(P.pos.z-k.g)<4.3){k.on=0;const i=cols.indexOf(k.bc);if(i>=0)cols.splice(i,1);k.gr.visible=false}
+ for(let i=PE.length-1;i>=0;i--)if(!PE[i].g.parent)PE.splice(i,1)}catch(e){}};
+}catch(e){console.log('PZ-V70 error',e)}})();
+</script>
 </body></html>
 
 </template>
