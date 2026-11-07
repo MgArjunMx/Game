@@ -1973,6 +1973,46 @@ for(const m of spin){m.rotation.y+=dt;m.position.y=.35+Math.sin(t*2+m.position.x
 bp.map(b=>({b,D:Math.hypot(b.x-P.pos.x,b.z-P.pos.z)})).filter(o=>o.D<14).sort((a,c)=>a.D-c.D).slice(0,3).forEach(o=>{o.b.t-=dt;if(o.b.t<=0){o.b.t=o.b.flat?1.4:R(.95,1.1);beep(o.b)}})}catch(e){}};
 })();
 </script>
+<script>(function(){/*ETH-PATCH-V23*/
+try{
+if(window.__eth)return;window.__eth=1;
+const SS=window.sessionStorage;let SK=false;try{SK=SS.getItem('eth_skip')==='1';SS.removeItem('eth_skip')}catch(e){}
+let gt=0,run=0,kicked=0,shown=0,PLY=0,hum=null,ov=null;
+const css=document.createElement('style');
+css.textContent='#pzi,#pzn2+#pzi{display:none!important}#ethi{position:fixed;inset:0;z-index:60;background:#030304;display:none;align-items:center;justify-content:center;text-align:center;padding:22px;color:#d8d2c8;font:19px/1.7 Georgia,serif;animation:ethf 5s infinite}@keyframes ethf{0%,100%{box-shadow:inset 0 0 160px rgba(120,150,170,.18)}41%{box-shadow:inset 0 0 160px rgba(120,150,170,.18)}43%{box-shadow:inset 0 0 40px rgba(0,0,0,.9)}46%{box-shadow:inset 0 0 160px rgba(120,150,170,.3)}48%{box-shadow:inset 0 0 20px #000}}#ethi .b{max-width:560px}#ethi small{opacity:.5;letter-spacing:3px}#ethi h2{color:#b01818;letter-spacing:5px;margin:0 0 10px;font-size:22px}#ethi li{text-align:left;margin:6px 0}#ethi .r{display:flex;gap:12px;justify-content:center;margin-top:20px}#ethi button,#ethd button{padding:12px 28px;background:transparent;color:#d8d2c8;border:1px solid #9b1c1c;font:17px Georgia,serif}#ethd{position:fixed;inset:0;z-index:70;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px;color:#c9c3a8;font-family:Georgia,serif}';
+document.head.appendChild(css);
+const o=document.createElement('div');o.id='ethi';document.body.appendChild(o);
+function page(h,btns){o.innerHTML='<div class="b">'+h+'<div class="r">'+btns.map((b,i)=>'<button data-i="'+i+'">'+b[0]+'</button>').join('')+'</div></div>';o.style.display='flex';o.querySelectorAll('button').forEach(b=>b.onclick=()=>btns[b.dataset.i][1]())}
+const P4=['You were part of a special response team sent inside the hospital after reports of missing staff and strange disturbances.','As you entered, you found blood on the floors, broken equipment, abandoned rooms and people who never made it out.','Then your team calls you from outside. The signal is weak. They tell you to get out as fast as possible.','Something is inside the hospital with you. Find the exit. Escape before it finds you.'];
+const O1=['Explore the hospital.','Find clues, keys, map pieces and puzzle items.','Solve puzzles to unlock new floors and areas.','Avoid the entity roaming the hospital.'],O2=['Find the hospital exit.','Use the stairwells to move between floors.','Open the Final Gate and escape through the main exit.','Reach the safe house outside and survive until morning.'];
+const li=a=>'<ul style="padding-left:20px">'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+function stopHum(){try{hum&&hum.stop()}catch(e){}hum=null}
+function intro(i){if(i==0&&AC&&mst&&!hum){try{const x=AC.createOscillator(),g=AC.createGain();x.frequency.value=52;g.gain.value=.03;x.connect(g);g.connect(mst);x.start();hum=x}catch(e){}}
+page('<small>'+(i+1)+' / 4</small><p>'+P4[i]+'</p>',[['SKIP',obj1],[i<3?'NEXT':'START MISSION',i<3?()=>intro(i+1):obj1]])}
+function obj1(){page('<h2>OBJECTIVE</h2>'+li(O1),[['NEXT',obj2]])}
+function obj2(){page('<h2>OBJECTIVE</h2>'+li(O2),[['START',()=>{o.style.display='none';stopHum();run=1}]])}
+/* HUD objective always visible */
+const ob=el('obj');new MutationObserver(()=>{const t=ob.textContent;if(!/^OBJECTIVE:/.test(t))ob.textContent='OBJECTIVE: '+t.toUpperCase()}).observe(ob,{childList:true,characterData:true,subtree:true});ob.textContent=ob.textContent;
+/* sound timeline: nothing scary until its time (seconds of play) */
+const UN={whisper:150,creak:195,slam:195,knock:215,cry:235,breath:255,scratch:255,glass:270,beat:250};
+Object.keys(UN).forEach(n=>{const f=S[n];if(typeof f!=='function')return;S[n]=function(){if(!PLY&&!(G.st>0||fin||G.dead)&&gt<UN[n])return;return f.apply(S,arguments)}});
+DL.forEach(d=>{if(!d.it)return;const f=d.it.f;d.it.f=function(){PLY=1;try{f()}finally{PLY=0}}});
+const _t=toast;toast=function(t,ms){if(/silence breaks/i.test(String(t))&&gt<240)return;_t(t,ms)};
+/* ghost: no attack before about 4.5 minutes */
+const _g=ghostUpdate;ghostUpdate=function(dt){if(G.dead)return _g(dt);if(!run||gt<250){G.t=Math.max(G.t,30);_g(dt);G.st=0;G.bo=0;return}if(!kicked){kicked=1;G.t=Math.min(G.t,5)}_g(dt)};
+/* death: always restart from beginning, no intro */
+const dd=document.createElement('div');dd.id='ethd';dd.innerHTML='<div style="font-size:32px;letter-spacing:5px;color:#b01818">YOU WERE FOUND.</div><div style="font-size:20px">THE HOSPITAL DOES NOT LET GO.</div><button>RESTART FROM BEGINNING</button>';document.body.appendChild(dd);
+dd.querySelector('button').onclick=()=>{try{SS.setItem('eth_skip','1')}catch(e){}location.reload()};
+dead2=function(){G.dead=2;P.vel.set(0,0,0);dd.style.display='flex'};
+/* ending text, remove duplicate buttons */
+new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(!n.querySelectorAll)return;n.querySelectorAll('div').forEach(e=>{if(e.textContent==='Morning has come. You escaped the hospital.')e.textContent='Morning came. You escaped the hospital.'});n.querySelectorAll('button').forEach(b=>{if(b.textContent==='KEEP EXPLORING')b.remove()})}))).observe(document.body,{childList:true});
+/* clock + early red vignette off */
+const _x=extra;extra=function(dt,t){_x(dt,t);if(run&&!G.dead&&!fin)gt+=dt;
+if(!ov)ov=[...document.body.children].find(e=>e.style&&String(e.style.background).indexOf('rgba(120, 0, 0')>-1);if(ov)ov.style.display=gt<240?'none':'';
+if(started&&!shown){shown=1;if(SK)run=1;else intro(0)}};
+if(SK&&parent===window)setTimeout(()=>{try{el('go').click()}catch(e){}},300);
+}catch(e){console.log('ETH patch error',e)}
+})()</script>
 </body></html>
 
 </template>
