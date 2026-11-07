@@ -2386,6 +2386,8 @@ const eb=q('pzeb'),rs=q('pzrs');if(eb)eb.onclick=enter;if(rs)rs.onclick=()=>{L={
 const _x=extra;extra=function(dt,t){_x(dt,t);if(!edit)return;G.prot=Math.max(G.prot,3);['bTorch','bMap'].forEach(i=>q(i)&&q(i).style.setProperty('display','block','important'))};
 }catch(e){console.log('pz33 error',e)}})()</script>
 
+
+
 <script>/*PZ-V35*/(function(){try{
 if(window.__pz35)return;window.__pz35=1;
 const T=THREE,LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}},q=id=>document.getElementById(id);
@@ -2520,6 +2522,107 @@ let first=0,rt=0;const _x=extra;extra=function(dt,t){_x(dt,t);
  if(started&&AC&&P.sprint&&P.vel.length()>2&&!G.dead){fs-=dt;if(fs<=0){fs=.27;step(.05)}}else fs=0;
  rt-=dt;if(rt<=0){rt=.3;runPos()}};
 }catch(e){console.log('pz36 error',e)}})()</script>
+<script>/*PZ-V37*/(function(){try{
+if(window.__pz37)return;window.__pz37=1;
+const T=THREE,R=(a,b)=>a+Math.random()*(b-a);
+/* 1. no marks on doors */
+function doorClean(){const dd=DL.map(d=>[d.g.position.x+.75,d.g.position.z]);
+ scene.traverse(o=>{if(!o.isMesh||!o.visible||!o.geometry||o.geometry.type!=='PlaneGeometry')return;const m=o.material;if(!m||Array.isArray(m)||!m.transparent)return;
+  if(Math.abs(o.rotation.x)>.01||Math.abs(Math.sin(o.rotation.y))>.2)return;const x=o.position.x,z=o.position.z,y=o.position.y;if(y>2.6||y<.05)return;
+  for(const p of dd)if(Math.abs(x-p[0])<1.25&&Math.abs(z-p[1])<.4){o.visible=false;return}})}
+/* 2. handwritten wall text */
+const TXT=['SHE IS STILL HERE','DO NOT LISTEN','NOBODY LEFT','HELP US','IT HEARS YOU',"DON'T LEAVE ME",'SHE WATCHES','NO WAY OUT','MY NAME IS MEERA','THEY ALL HANGED','RUN','HELP ME',"DON'T LOOK",'MEERA','SHE SEES YOU','NOT ALONE','OPEN THE DOOR','GO BACK','THEY NEVER LEFT','LISTEN','DO NOT SLEEP','SHE CRIES AT NIGHT','NO ONE CAME','WHY ME','13'];
+function hw(txt){const W=512,H=128,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+ const fam='"Segoe Print","Bradley Hand","Marker Felt","Chalkboard SE","Comic Sans MS",cursive',fs=Math.min(58,470/(txt.length*.62));g.font='700 '+fs+'px '+fam;
+ const ws=[...txt].map(ch=>g.measureText(ch).width),tot=ws.reduce((a,b)=>a+b,0)+txt.length*3,sl=R(-.05,.05);let x=(W-tot)/2;
+ [...txt].forEach((ch,i)=>{const w=ws[i],y=H*.5+(x-W/2)*sl;
+  if(ch!==' '){g.save();g.translate(x+w/2,y+R(-4,4));g.rotate(R(-.2,.2)+sl);const sz=R(.88,1.15);g.scale(sz,sz*R(.9,1.1));
+   g.fillStyle='rgba('+(R(90,125)|0)+',6,8,'+R(.72,.95)+')';g.strokeStyle=g.fillStyle;g.lineWidth=R(1.2,2.6);g.textAlign='center';g.textBaseline='middle';g.fillText(ch,0,0);g.strokeText(ch,R(-.8,.8),R(-.8,.8));g.restore();
+   if(Math.random()<.4){const dx=x+w/2+R(-w/3,w/3),y0=y+fs*.35,L=Math.min(R(10,48),H-6-y0),lw=R(2,3.6);g.strokeStyle='rgba(95,5,7,.85)';g.lineWidth=lw;g.lineCap='round';g.beginPath();g.moveTo(dx,y0);g.lineTo(dx+R(-1,1),y0+L);g.stroke();g.fillStyle='rgba(80,4,6,.9)';g.beginPath();g.arc(dx,y0+L+lw*.3,lw*.85,0,7);g.fill()}}
+  x+=w+R(1,5)});
+ return new T.CanvasTexture(c)}
+function writing(){scene.traverse(o=>{if(!o.isMesh||o.userData.hw37||!o.geometry||o.geometry.type!=='PlaneGeometry')return;const m=o.material;
+ if(!m||Array.isArray(m)||!m.transparent||!m.map||!m.map.image||m.map.image.width!==512||m.map.image.height!==128||Math.abs(o.rotation.x)>.01)return;
+ o.userData.hw37=1;m.map=hw(o.geometry.parameters.width>4.5?'RUN. IT HEARS YOU.':TXT[Math.random()*TXT.length|0]);m.needsUpdate=true})}
+/* 3. blood running down walls + real drops with splats */
+const sg=new T.PlaneGeometry(.05,1);sg.translate(0,-.5,0),sq=new T.PlaneGeometry(1,1);
+const sm=new T.MeshStandardMaterial({color:0x4a0507,roughness:.15,metalness:.2,transparent:true,opacity:.92,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-5,polygonOffsetUnits:-5});
+const dgm=new T.SphereGeometry(.016,8,6),dm=new T.MeshStandardMaterial({color:0x5a0606,roughness:.2});
+const EM=[],DR=[],SP=[];let act=[],at=0;
+function mkRuns(){scene.traverse(o=>{if(!o.isMesh||o.material!==handM||!o.parent||!o.visible)return;const ry=o.rotation.y,nx=Math.sin(ry),nz=Math.cos(ry),tx=Math.cos(ry),tz=-Math.sin(ry),off=R(-.1,.1);
+ const s=new T.Mesh(sg,sm);s.position.set(o.position.x+nx*.005+tx*off,o.position.y-.12,o.position.z+nz*.005+tz*off);s.rotation.y=ry;s.scale.set(R(.7,1.2),.001,1);s.renderOrder=8000;o.parent.add(s);
+ EM.push({s,x:s.position.x,y:s.position.y,z:s.position.z,max:Math.min(R(.5,1.4),s.position.y-.08),age:R(0,10),next:R(2,7),len:0})})}
+function drop(x,y,z){if(DR.length>28)return;const m=new T.Mesh(dgm,dm);m.scale.set(1,1.8,1);m.position.set(x,y,z);scene.add(m);DR.push({m,v:0})}
+function splat(x,z){const m=new T.Mesh(sq,bloodM[Math.random()*3|0]);m.rotation.set(-Math.PI/2,0,R(0,6.28));m.position.set(x,.016,z);m.scale.setScalar(.05);m.renderOrder=7000+SP.length;scene.add(m);SP.push({m,t:0,mx:R(.14,.24)});if(SP.length>60)scene.remove(SP.shift().m)}
+function bloodTick(dt){at-=dt;if(at<=0){at=.4;act=EM.filter(e=>Math.hypot(e.x-P.pos.x,e.z-P.pos.z)<13)}
+ for(const e of act){e.age+=dt;e.len=e.max*(1-Math.exp(-e.age/22));e.s.scale.y=e.len+.001;e.next-=dt;if(e.next<=0&&e.len>.12){e.next=R(3,10);drop(e.x,e.y-e.len,e.z)}}
+ for(let i=DR.length-1;i>=0;i--){const d=DR[i];d.v+=9*dt;d.m.position.y-=d.v*dt;if(d.m.position.y<=.03){splat(d.m.position.x,d.m.position.z);scene.remove(d.m);DR.splice(i,1)}}
+ for(const s of SP){s.t+=dt;s.m.scale.setScalar(s.mx*(1-Math.exp(-s.t*6))+.03)}}
+/* 4. smoother character: no sprint wobble, eased lean */
+let root=null,sx=0,sz=0,fr=0;
+function charSmooth(dt){if(!root){fr-=dt;if(fr>0)return;fr=1;aarav.g.children.forEach(c=>{if(c===aarav.s)return;let sk=0;c.traverse(o=>{if(o.isSkinnedMesh)sk=1});if(sk)root=c});return}
+ const k=1-Math.exp(-9*dt);sx+=(root.rotation.x-sx)*k;sz+=(0-sz)*k;root.rotation.x=sx;root.rotation.z=sz}
+/* 5. medicine shelves in pharmacy, dispensary, stores, blood bank */
+function meds(){const wood=M(0x4a3524,.8),BC=[0x8a5a1a,0x2a6a8a,0x9a9a30,0x6a2a6a,0xc8c8c0].map(c=>new T.Color(c)),XC=[0xe8e4d8,0x3a7ab0,0xb03a3a,0x4a9a5a,0xe0b040].map(c=>new T.Color(c));
+ MLAB.filter(a=>/Pharmacy|Dispensary|Surgery Store|Blood Bank/.test(a[0])).forEach(([nm,cx,zc])=>{
+  const wi=WG.findIndex(w=>cx>w.ox&&cx<w.ox+w.n*(w.rw||7)&&Math.abs(zc-w.cz)<(w.d||8)+5);if(wi<0)return;
+  const w=WG[wi],g=WGR[wi],rw=w.rw||7,d=w.d||8,dir=zc>w.cz?1:-1,x0=cx-rw/2,zb=w.cz+dir*2+dir*d,cw=rw-3.6,mid=x0+rw/2,z2=zb-dir*.28,Y=[.1,.6,1.1,1.6,2.1];
+  box(cw,2.3,.06,wood,mid,1.15,zb-dir*.12,g);[-1,1].forEach(s=>box(.05,2.3,.4,wood,mid+s*cw/2,1.15,z2,g));Y.forEach(y=>box(cw,.03,.4,wood,mid,y,z2,g));col(mid,z2,cw,.45);
+  const n=Math.floor(cw/.13),tot=Y.length*n,ib=new T.InstancedMesh(new T.CylinderGeometry(.035,.035,.13,10),new T.MeshStandardMaterial({color:0xffffff,roughness:.3}),tot),ix=new T.InstancedMesh(new T.BoxGeometry(.09,.13,.06),new T.MeshStandardMaterial({color:0xffffff,roughness:.7}),tot),dm2=new T.Object3D();let nb=0,nx=0;
+  Y.forEach(y=>{for(let i=0;i<n;i++){const r=Math.random();if(r<.08)continue;const px=mid-cw/2+.1+i*.13;dm2.position.set(px,y+.015+.065,z2+R(-.05,.05));dm2.rotation.set(0,R(-.3,.3),0);dm2.updateMatrix();
+   if(r<.55){ib.setMatrixAt(nb,dm2.matrix);ib.setColorAt(nb++,BC[Math.random()*5|0])}else{ix.setMatrixAt(nx,dm2.matrix);ix.setColorAt(nx++,XC[Math.random()*5|0])}}});
+  ib.count=nb;ix.count=nx;ib.frustumCulled=ix.frustumCulled=false;g.add(ib,ix)})}
+/* 6. full building map: whole building, pinch zoom, drag, jump to floor */
+const mp=document.createElement('div'),mc=document.createElement('canvas'),bar=document.createElement('div'),PE={};
+mp.style.cssText='position:fixed;inset:0;z-index:35;background:#14110c;display:none;touch-action:none';mc.style.cssText='position:absolute;inset:0;width:100%;height:100%';
+bar.style.cssText='position:absolute;left:0;right:0;top:calc(6px + env(safe-area-inset-top,0px));display:flex;gap:6px;padding:0 8px;overflow-x:auto;z-index:2';
+mp.append(mc,bar);document.body.appendChild(mp);
+const sc2=document.createElement('style');sc2.textContent='.pzb{flex:none;padding:9px 14px;border-radius:999px;border:1px solid rgba(163,156,255,.45);background:rgba(20,23,34,.88);color:#eceef6;font:600 12px system-ui}.pzb.c{background:#6a2a2a}';document.head.appendChild(sc2);
+addEventListener('message',e=>{const m=e.data||{};if(m.t==='peer'&&m.p&&m.p.id!=null)PE[m.p.id]={x:m.p.x,z:m.p.z,n:m.p.n,s:performance.now()}});
+const B=6;let SC=null,XM=0,ZM=0,XN=0,ZN=0,V={s:1,cx:0,cz:0},open=0,LB=[],cw=0,ch=0,dpr=1;
+function build(){let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const c of cols){if(c[0]>1e5)continue;x0=Math.min(x0,c[0]);x1=Math.max(x1,c[1]);z0=Math.min(z0,c[2]);z1=Math.max(z1,c[3])}
+ XN=x0-3;XM=x1+3;ZN=z0-3;ZM=z1+3;SC=document.createElement('canvas');SC.width=(XM-XN)*B;SC.height=(ZM-ZN)*B;const g=SC.getContext('2d'),X=x=>(XM-x)*B,Z=z=>(ZM-z)*B,rect=(a,b,c,d)=>g.fillRect(X(b),Z(d),(b-a)*B,(d-c)*B);
+ g.fillStyle='#d3c196';g.fillRect(0,0,SC.width,SC.height);scene.updateMatrixWorld(true);
+ const F=[];scene.traverse(o=>{if(!o.isMesh||!o.geometry||o.geometry.type!=='PlaneGeometry'||Math.abs(o.rotation.x+1.5708)>.01)return;const m=o.material;if(!m||Array.isArray(m)||m.transparent||o.position.y>.05)return;
+  const p=o.geometry.parameters,w=p.width*o.scale.x,h=p.height*o.scale.y;if(w>200||h>200)return;F.push([o.position.x-w/2,o.position.x+w/2,o.position.z-h/2,o.position.z+h/2,w*h,!!m.map])});
+ F.sort((a,b)=>b[4]-a[4]).forEach(f=>{g.fillStyle=f[5]?'#ebdfbc':'#bcc796';rect(f[0],f[1],f[2],f[3])});
+ g.fillStyle='rgba(110,80,50,.55)';for(const c of cols)if(c[0]<1e5)rect(c[0],c[1],c[2],c[3]);
+ g.fillStyle='#3a2616';for(const w of walls){const p=w.geometry.parameters,hx=p.width*w.scale.x/2+.04,hz=p.depth*w.scale.z/2+.04;rect(w.position.x-hx,w.position.x+hx,w.position.z-hz,w.position.z+hz)}
+ LB=[['Emergency Ward',0,-1],['Safe room',-6,17.5],['Nurse',5.5,18],['Reception',0,38],['Patient rooms',-15,18],['X-ray',-15,32],['FINAL GATE',0,45.5]].map(a=>({t:a[0],x:a[1],z:a[2],k:0})).concat(MLAB.map(a=>({t:a[0],x:a[1],z:a[2],k:0})),WG.map(w=>({t:w.name,x:w.ox+w.n*(w.rw||7)/2,z:w.cz,k:1})),[{t:'SAFE HOUSE',x:0,z:82,k:1},{t:'PARK',x:0,z:118,k:1}],[62,132,202,270].map(z=>({t:'STAIRS',x:43,z,k:2})))}
+function fit(){V.s=Math.min(cw/(XM-XN),ch/(ZM-ZN))*.96;V.cx=(XM+XN)/2;V.cz=(ZM+ZN)/2}
+function zoomTo(x,z,s){V.cx=x;V.cz=z;V.s=Math.max(.3,Math.min(40,s))}
+function btn(t,f,c){const b=document.createElement('button');b.className='pzb'+(c?' c':'');b.textContent=t;b.onclick=f;bar.appendChild(b)}
+function bars(){bar.innerHTML='';btn('CLOSE',close,1);btn('FULL MAP',fit);btn('ME',()=>zoomTo(P.pos.x,P.pos.z,14));btn('MAIN',()=>zoomTo(-5,20,Math.min(cw/40,ch/60)));
+ WG.forEach(w=>{btn((w.name||'').split('·').pop().trim().slice(0,22),()=>zoomTo(w.ox+w.n*(w.rw||7)/2,w.cz,Math.min(cw/(w.n*(w.rw||7)+10),ch/(2*(w.d||8)+14))))});btn('SAFE HOUSE',()=>zoomTo(0,82,10))}
+function render(){if(!open)return;requestAnimationFrame(render);const g=mc.getContext('2d'),k=V.s/B,pcx=(XM-V.cx)*B,pcy=(ZM-V.cz)*B;
+ g.setTransform(dpr,0,0,dpr,0,0);g.fillStyle='#14110c';g.fillRect(0,0,cw,ch);
+ g.setTransform(dpr*k,0,0,dpr*k,dpr*(cw/2-pcx*k),dpr*(ch/2-pcy*k));g.drawImage(SC,0,0);g.setTransform(dpr,0,0,dpr,0,0);
+ const S=(x,z)=>[cw/2+(V.cx-x)*V.s,ch/2+(V.cz-z)*V.s];g.textAlign='center';g.textBaseline='middle';
+ for(const l of LB){if(l.k==0&&V.s<2.2)continue;if(l.k==2&&V.s<1.2)continue;const p=S(l.x,l.z);if(p[0]<-60||p[0]>cw+60||p[1]<-20||p[1]>ch+20)continue;
+  const f=l.k==1?Math.max(10,Math.min(20,V.s*1.6)):l.k==2?10:Math.max(9,Math.min(15,V.s*.75));g.font=(l.k?'bold ':'italic ')+f+'px Georgia';g.lineWidth=3;g.strokeStyle='rgba(235,225,190,.92)';g.strokeText(l.t,p[0],p[1]);g.fillStyle=l.k==2?'#1f4a8a':'#5a0a0a';g.fillText(l.t,p[0],p[1])}
+ if(clues.size>=3){g.fillStyle='#d99a00';items.filter(i=>/pick up/.test(i.t)).forEach(i=>{const p=S(i.x,i.z);g.beginPath();g.arc(p[0],p[1],5,0,7);g.fill()})}
+ const now=performance.now();for(const id in PE){const e=PE[id];if(now-e.s>4000)continue;const p=S(e.x,e.z);g.fillStyle='#2a8aff';g.beginPath();g.arc(p[0],p[1],6,0,7);g.fill();g.fillStyle='#103a6a';g.font='bold 11px system-ui';g.fillText(e.n||'',p[0],p[1]-12)}
+ {const p=S(kabir.g.position.x,kabir.g.position.z);g.fillStyle='#2eaa44';g.beginPath();g.arc(p[0],p[1],6,0,7);g.fill()}
+ const p=S(P.pos.x,P.pos.z),pu=1+.25*Math.sin(now/220);g.strokeStyle='rgba(255,40,40,.7)';g.lineWidth=2;g.beginPath();g.arc(p[0],p[1],14*pu,0,7);g.stroke();
+ g.save();g.translate(p[0],p[1]);g.rotate(-P.yaw);g.fillStyle='#ff2a2a';g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.moveTo(0,-12);g.lineTo(-8,9);g.lineTo(0,5);g.lineTo(8,9);g.closePath();g.fill();g.stroke();g.restore();
+ g.fillStyle='#fff';g.font='bold 11px system-ui';g.fillText('YOU',p[0],p[1]+22);
+ g.textAlign='left';g.font='bold 12px system-ui';g.fillStyle='#eadfbf';g.fillText((curZone().n||'MAIN BUILDING')+'   pinch = zoom, drag = move',10,ch-12)}
+function openMap(){try{setRun(0)}catch(e){}joy.x=joy.y=0;if(!SC)build();dpr=Math.min(2,devicePixelRatio||1);cw=innerWidth;ch=innerHeight;mc.width=cw*dpr;mc.height=ch*dpr;bars();fit();mp.style.display='block';open=1;render()}
+function close(){open=0;mp.style.display='none'}
+mapOpen=function(){if(!P.map){toast('You have no map yet.');return}open?close():openMap()};
+const ptr=new Map();
+mp.addEventListener('pointerdown',e=>{if(e.target.closest('.pzb'))return;ptr.set(e.pointerId,[e.clientX,e.clientY]);try{mp.setPointerCapture(e.pointerId)}catch(_){}});
+mp.addEventListener('pointermove',e=>{const p=ptr.get(e.pointerId);if(!p)return;const dx=e.clientX-p[0],dy=e.clientY-p[1];
+ if(ptr.size==1){V.cx+=dx/V.s;V.cz+=dy/V.s}else if(ptr.size==2){const o=[...ptr.entries()].find(a=>a[0]!==e.pointerId)[1],d0=Math.hypot(p[0]-o[0],p[1]-o[1]),d1=Math.hypot(e.clientX-o[0],e.clientY-o[1]);if(d0>5)V.s=Math.max(.3,Math.min(40,V.s*d1/d0))}
+ p[0]=e.clientX;p[1]=e.clientY});
+const pu=e=>ptr.delete(e.pointerId);mp.addEventListener('pointerup',pu);mp.addEventListener('pointercancel',pu);
+mp.addEventListener('wheel',e=>{e.preventDefault();V.s=Math.max(.3,Math.min(40,V.s*(e.deltaY<0?1.15:.87)))},{passive:false});
+addEventListener('resize',()=>{if(open){cw=innerWidth;ch=innerHeight;mc.width=cw*dpr;mc.height=ch*dpr}});
+/* hook into the game loop */
+let first=0;const _x=extra;extra=function(dt,t){_x(dt,t);
+ if(!first){first=1;try{doorClean();writing();mkRuns();meds()}catch(e){console.log('pz37',e)}setTimeout(()=>{try{doorClean();writing()}catch(e){}},3500)}
+ try{bloodTick(dt);charSmooth(dt)}catch(e){}};
+}catch(e){console.log('pz37 error',e)}})()</script>
 </body></html>
 
 </template>
