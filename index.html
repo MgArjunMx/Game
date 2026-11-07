@@ -1967,7 +1967,7 @@ items.filter(i=>i.t=='Tap to climb the stairs').forEach((i,gi)=>{const f=i.f;i.f
 /* smaller character feels like the rooms are bigger; short battery */
 try{aarav.g.scale.setScalar(.88)}catch(e){}
 const _u=update;update=function(dt,t){if(kp.style.display=='block'){joy.x=joy.y=0;try{setRun(0)}catch(e){}}
-_u(dt,t);if(P.has){if(P.on)B-=dt*100/90;else if(P.safe)B=Math.min(100,B+dt*6);if(B<=0){B=0;P.on=false}P.bat=B}cam.position.y=Math.max(.35,cam.position.y-.2)};
+_u(dt,t);if(P.has){if(P.on)B-=dt*100/240;else if(P.safe||window.__pzPower)B=Math.min(100,B+dt*(P.safe?6:1.5));if(B<=0){B=0;P.on=false}P.bat=B}cam.position.y=Math.max(.35,cam.position.y-.2)};
 let shown=0;const _e=extra;extra=function(dt,t){_e(dt,t);try{if(started&&!shown){shown=1;intro(0)}
 for(const m of spin){m.rotation.y+=dt;m.position.y=.35+Math.sin(t*2+m.position.x)*.04}
 bp.map(b=>({b,D:Math.hypot(b.x-P.pos.x,b.z-P.pos.z)})).filter(o=>o.D<14).sort((a,c)=>a.D-c.D).slice(0,3).forEach(o=>{o.b.t-=dt;if(o.b.t<=0){o.b.t=o.b.flat?1.4:R(.95,1.1);beep(o.b)}})}catch(e){}};
@@ -2588,7 +2588,7 @@ function build(){let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const c of cols){if(c[0]>
  F.sort((a,b)=>b[4]-a[4]).forEach(f=>{g.fillStyle=f[5]?'#ebdfbc':'#bcc796';rect(f[0],f[1],f[2],f[3])});
  g.fillStyle='rgba(110,80,50,.55)';for(const c of cols)if(c[0]<1e5)rect(c[0],c[1],c[2],c[3]);
  g.fillStyle='#3a2616';for(const w of walls){const p=w.geometry.parameters,hx=p.width*w.scale.x/2+.04,hz=p.depth*w.scale.z/2+.04;rect(w.position.x-hx,w.position.x+hx,w.position.z-hz,w.position.z+hz)}
- LB=[['Emergency Ward',0,-1],['Safe room',-6,17.5],['Nurse',5.5,18],['Reception',0,38],['Patient rooms',-15,18],['X-ray',-15,32],['FINAL GATE',0,45.5]].map(a=>({t:a[0],x:a[1],z:a[2],k:0})).concat(MLAB.map(a=>({t:a[0],x:a[1],z:a[2],k:0})),WG.map(w=>({t:w.name,x:w.ox+w.n*(w.rw||7)/2,z:w.cz,k:1})),[{t:'SAFE HOUSE',x:0,z:82,k:1},{t:'PARK',x:0,z:118,k:1}],[62,132,202,270].map(z=>({t:'STAIRS',x:43,z,k:2})))}
+ LB=[['Emergency Ward',0,-1],['Safe room',-6,17.5],['Nurse',5.5,18],['Reception',0,38],['Patient rooms',-15,18],['X-ray',-15,32],['FINAL GATE',0,45.5]].map(a=>({t:a[0],x:a[1],z:a[2],k:0})).concat(MLAB.map(a=>({t:a[0],x:a[1],z:a[2],k:0})),WG.map(w=>({t:w.name,x:w.ox+w.n*(w.rw||7)/2,z:w.cz,k:1})),[{t:'POWER ROOM',x:5.5,z:25,k:1},{t:'SAFE HOUSE',x:0,z:82,k:1},{t:'PARK',x:0,z:118,k:1}],[62,132,202,270].map(z=>({t:'STAIRS',x:43,z,k:2})))}
 function fit(){V.s=Math.min(cw/(XM-XN),ch/(ZM-ZN))*.96;V.cx=(XM+XN)/2;V.cz=(ZM+ZN)/2}
 function zoomTo(x,z,s){V.cx=x;V.cz=z;V.s=Math.max(.3,Math.min(40,s))}
 function btn(t,f,c){const b=document.createElement('button');b.className='pzb'+(c?' c':'');b.textContent=t;b.onclick=f;bar.appendChild(b)}
@@ -2628,7 +2628,7 @@ let first=0;const _x=extra;extra=function(dt,t){_x(dt,t);
 if(window.__pz38)return;window.__pz38=1;
 const T=THREE,R=(a,b)=>a+Math.random()*(b-a),q=id=>document.getElementById(id);
 const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-const t0=performance.now();let FS=LS('pz38f')!==false;
+const t0=performance.now();let FS=LS('pz38f')===true;
 /* css */
 const css=document.createElement('style');
 css.textContent='.z38m{position:fixed;inset:0;z-index:66;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;animation:z38f .25s}@keyframes z38f{from{opacity:0}}@keyframes z38p{from{transform:scale(.92) translateY(10px);opacity:0}}@keyframes z38s{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}'
@@ -2753,7 +2753,7 @@ function hint(){let h;const need=['Trishul Coin','Sacred Ash','Hospital Master K
  if(!P.has)h='Find the torch on the bedside table in the first ward room.';
  else if(!P.map)h='Take the hospital map lying near the dead man by the beds.';
  else if(!doorOpen)h='The Ward door needs 4 digits. Read the notice board: day first, then month of the sealing date.';
- else if(need.length)h='Still missing: '+need.join(', ')+'. They are hidden in rooms on the upper floors. Stairs need fuses (2 per floor) and a code or key.';
+ else if(!window.__pzPower)h='The hospital power is out. Find the POWER ROOM (east side of the main corridor, next to the nurse station) and use the breaker panel. The stairs need power.';else if(need.length)h='Still missing: '+need.join(', ')+'. They are hidden in rooms on the upper floors. Stairs need fuses (2 per floor) and a code or key.';
  else if(!fin)h='All items found. The Final Gate needs a 4-digit code written on 4 torn pages around the floors. Then run to the Safe House outside.';
  else h='Walk out of the gate and cross the road to the Safe House.';
  const o=document.createElement('div');o.className='z38m';o.style.zIndex=80;o.innerHTML='<div class="z38c"><b>HINT</b><p>'+h+'</p><button>OK</button></div>';o.onpointerdown=e=>{e.stopPropagation();if(e.target===o||e.target.tagName=='BUTTON')o.remove()};document.body.appendChild(o)}
@@ -2784,6 +2784,186 @@ extra=function(dt,t){_x(dt,t);try{
 }catch(e){}};
 }catch(e){console.log('pz50g',e)}})();
 </script>
+<script>/*PZ-V60*/(function GAME_PATCH(){try{
+if(window.__pz60)return;window.__pz60=1;
+const T=THREE,q=id=>document.getElementById(id);
+const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+
+/* ---------- saved view settings ---------- */
+const o35=LS('pz35c')||{},o60=LS('pz60c')||{},dfl={d:.9,h:1.25,s:0,f:60,tb:1},Cm={};
+for(const k in dfl)Cm[k]=o60[k]!=null?o60[k]:(k!=='tb'&&o35[k]!=null?o35[k]:dfl[k]);
+Cm.d=Math.max(0,Math.min(2.5,Cm.d));
+const sv=()=>LS('pz60c',Cm);
+
+let POWER=0,roomOK=false,bshown=0;
+
+/* ---------- 1. CAMERA: 0 = first person, max 2.5m ---------- */
+const hd=new T.Vector3(),an=new T.Vector3(),L2=new T.Vector3(),off=new T.Vector3(),dv=new T.Vector3();
+let has=0,cd=Cm.d,root=null,rt=0;
+const _u=update;
+update=function(dt,t){
+ _u(dt,t);
+ try{
+  const cp=Math.cos(P.pitch),sy=Math.sin(P.yaw),cy=Math.cos(P.yaw),fp=Cm.d<.3;
+  L2.set(sy*cp,Math.sin(P.pitch),cy*cp);
+  an.set(P.pos.x,aarav.g.position.y+(fp?Math.max(Cm.h,1.4):Cm.h),P.pos.z);
+  if(!has){hd.copy(an);has=1}else{hd.lerp(an,1-Math.exp(-40*dt));if(hd.distanceToSquared(an)<1e-6)hd.copy(an)}
+  const sh=Cm.s*Math.min(1,Cm.d/.9);
+  off.copy(L2).multiplyScalar(-Cm.d);off.x-=cy*sh;off.z+=sy*sh;
+  let len=off.length();
+  if(len>.001){dv.copy(off).divideScalar(len);ray.set(hd,dv);ray.far=len;const h=ray.intersectObjects(walls)[0];if(h)len=Math.max(.2,h.distance-.2)}
+  else{dv.copy(L2).negate();len=0}
+  if(len<cd)cd=len;else cd+=(len-cd)*Math.min(1,dt*5);
+  cam.position.copy(hd).addScaledVector(dv,cd);cam.position.y=Math.max(.25,Math.min(3,cam.position.y));
+  cam.lookAt(cam.position.x+L2.x,cam.position.y+L2.y,cam.position.z+L2.z);
+  const tf=P.sprint?Cm.f+4:Cm.f;cam.fov+=(tf-cam.fov)*(1-Math.exp(-6*dt));
+  cam.near=fp?.05:.15;cam.updateProjectionMatrix();
+  /* hide the character in first person */
+  rt-=dt;if(rt<=0){rt=.5;if(!root){aarav.g.children.forEach(c=>{if(c===aarav.s)return;let sk=0;c.traverse(o=>{if(o.isSkinnedMesh)sk=1});if(sk)root=c})}}
+  if(root&&root.visible===fp)root.visible=!fp;
+  /* torch brightness setting */
+  if(spot&&spot.visible)spot.intensity*=Cm.tb;
+ }catch(e){}
+};
+
+/* ---------- 2. SETTINGS: CAMERA tab (distance, height, shoulder, fov, sensitivity, torch) ---------- */
+try{
+const S=q('pzs');
+if(S){
+ const tb=S.querySelector('.tb');tb.style.flexWrap='wrap';
+ [...tb.querySelectorAll('button')].forEach(b=>{if(b.textContent==='CAMERA')b.style.display='none'});
+ const bt=document.createElement('button');bt.textContent='CAMERA';tb.appendChild(bt);
+ const p=document.createElement('div');p.style.display='none';
+ p.innerHTML='<label>Camera distance <b id="z60dv"></b><input type="range" id="z60d" min="0" max="250"></label><div class="pzd">0 = first person (character chhup jaata hai). Default 0.9</div><label>Camera height<input type="range" id="z60h" min="100" max="190"></label><label>Shoulder (left / right)<input type="range" id="z60s" min="-60" max="60"></label><label>Field of view<input type="range" id="z60f" min="40" max="100"></label><label>Look sensitivity <b id="z60nv"></b><input type="range" id="z60n" min="10" max="400"></label><label>Torch brightness<input type="range" id="z60t" min="40" max="250"></label><button class="pzg" id="z60r">RESET CAMERA</button>';
+ S.appendChild(p);
+ const zs=q('z50s');if(zs){zs.min=10;zs.max=400}
+ const fill=()=>{q('z60d').value=Math.round(Cm.d*100);q('z60h').value=Math.round(Cm.h*100);q('z60s').value=Math.round(Cm.s*100);q('z60f').value=Cm.f;q('z60t').value=Math.round(Cm.tb*100);q('z60n').value=zs?zs.value:100;lab()};
+ const lab=()=>{q('z60dv').textContent=Cm.d<.3?'(first person)':(Cm.d).toFixed(2)+' m';q('z60nv').textContent=q('z60n').value+'%'};
+ q('z60d').oninput=e=>{Cm.d=e.target.value/100;sv();lab()};
+ q('z60h').oninput=e=>{Cm.h=e.target.value/100;sv()};
+ q('z60s').oninput=e=>{Cm.s=e.target.value/100;sv()};
+ q('z60f').oninput=e=>{Cm.f=+e.target.value;sv()};
+ q('z60t').oninput=e=>{Cm.tb=e.target.value/100;sv()};
+ q('z60n').oninput=e=>{if(zs){zs.value=e.target.value;zs.dispatchEvent(new Event('input',{bubbles:true}))}lab()};
+ q('z60r').onclick=()=>{Cm.d=dfl.d;Cm.h=dfl.h;Cm.s=dfl.s;Cm.f=dfl.f;Cm.tb=1;sv();if(zs){zs.value=100;zs.dispatchEvent(new Event('input',{bubbles:true}))}fill()};
+ fill();
+ bt.onclick=()=>{[...S.children].forEach(c=>{if(!c.classList.contains('h')&&!c.classList.contains('tb'))c.style.display='none'});p.style.display='';tb.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===bt))};
+ tb.querySelectorAll('button').forEach(x=>{if(x!==bt)x.addEventListener('click',()=>{p.style.display='none'})});
+}
+}catch(e){console.log('pz60 settings',e)}
+
+/* ---------- 3. POWER ROOM (east side of main corridor, next to nurse station) ---------- */
+const ind=[];
+let pat=[0,1,0,1];
+try{
+ let seed=7;try{const s=String(parent.PZ.party)+new Date().toDateString();for(let i=0;i<s.length;i++)seed=(Math.imul(seed,31)+s.charCodeAt(i))>>>0}catch(e){}
+ pat=[0,1,2,3].map(i=>(seed>>>(i*5+3))&1);if(pat.every(v=>v===pat[0]))pat[2]=1-pat[2];
+
+ const wo=walls.find(o=>Math.abs(o.position.x-2)<.06&&Math.abs(o.position.z-23.5)<.06);
+ if(wo){
+  wo.parent&&wo.parent.remove(wo);walls.splice(walls.indexOf(wo),1);
+  for(let i=cols.length-1;i>=0;i--){const c=cols[i];if(Math.abs(c[0]-1.85)<.03&&Math.abs(c[1]-2.15)<.03&&c[2]<17&&c[3]>30)cols.splice(i,1)}
+  seg(2,17,2,24);seg(2,26,2,30);seg(2,24,2,26,.5,.3,2.7);seg(9,20,9,30);
+  /* old decals that now float in the doorway */
+  scene.traverse(o=>{if(o.isMesh&&o.geometry&&o.geometry.type==='PlaneGeometry'&&Math.abs(o.position.x-1.84)<.03&&o.position.z>23.8&&o.position.z<26.2&&Math.abs(o.rotation.x)<.1)o.visible=false});
+  const fr=M(0x2a2a28,.7),mt=M(0x2f3a33,.5,.5),mm=M(0x6a6f70,.4,.7),dk=M(0x1b1d1f,.6,.3),yl=M(0xb08a20,.5,.3);
+  const cyl=(r,h,m,x,y,z)=>{const o=new T.Mesh(new T.CylinderGeometry(r,r,h,16),m);o.position.set(x,y,z);o.castShadow=true;scene.add(o);return o};
+  box(.36,2.7,.36,fr,2,1.35,24.1);box(.36,2.7,.36,fr,2,1.35,25.9);
+  sign('POWER ROOM',1.84,2.95,25,-Math.PI/2,1.9,.4,'#ffd070','rgba(30,18,6,.95)',34);
+  sign('MAIN BREAKER',8.84,2.55,25,-Math.PI/2,2.2,.4,'#ffd070','rgba(30,18,6,.95)',32);
+  sign('DANGER 440V',3.2,2.2,29.84,Math.PI,2,.4,'#ff5a4a','rgba(25,6,6,.95)',32);
+  /* generator */
+  box(2.4,1.3,1.3,mt,6.2,.65,25);col(6.2,25,2.4,1.3);box(2.5,.12,1.4,dk,6.2,1.36,25);
+  cyl(.28,.7,mm,5.4,1.75,24.5);cyl(.28,.7,mm,6.2,1.75,24.5);cyl(.28,.7,mm,7,1.75,24.5);
+  box(.12,1.6,.12,mm,7.2,2.2,25.5);box(.7,.04,.5,dk,6.2,1.4,25.6);
+  /* barrels, pipes, crates */
+  cyl(.3,.9,yl,3.2,.45,28.7);col(3.2,28.7,.65,.65);cyl(.3,.9,yl,3.9,.45,28.9);col(3.9,28.9,.65,.65);cyl(.3,.9,M(0x7a2a1a,.6),3.5,.45,27.9);col(3.5,27.9,.65,.65);
+  box(7,.14,.14,mm,5.5,2.9,21.5);box(7,.14,.14,mm,5.5,2.7,29);box(.14,.14,8,mm,3,2.8,25);
+  box(.9,.8,.9,M(0x5a4a30,.9),8.3,.4,21.4);col(8.3,21.4,.9,.9);
+  /* breaker panel on east wall */
+  box(.18,1.8,1.5,dk,8.82,1.3,25);col(8.82,25,.3,1.6);
+  for(let i=0;i<4;i++){const m=new T.Mesh(new T.BoxGeometry(.04,.12,.12),new T.MeshBasicMaterial({color:0xff2a1a}));m.position.set(8.71,1.75-i*.24,24.5);scene.add(m);ind.push(m)}
+  for(let i=0;i<4;i++)box(.05,.3,.08,mm,8.71,1.75-i*.24,25.3);
+  /* dead ceiling light, comes on with power */
+  tube(5.5,25,{intensity:0},1,true);
+  /* a corpse that did not make it */
+  try{corpse(3.4,22.6,2.2)}catch(e){}
+  dFloor(1,3.6,22.8,1.6);
+  /* maintenance log in the nurse station */
+  box(.3,.012,.4,M(0xd8d4c4,1),5,1.03,16.05);
+  items.push({x:5,z:14.9,t:'Tap to read maintenance log',keep:1,f(){
+   const w=i=>'Breaker '+(i+1)+': <b>'+(pat[i]?'UP':'DOWN')+'</b>';
+   note('<b>MAINTENANCE LOG</b><br><i>"After the last outage I locked the breakers like this, so nobody touches them again:"</i><br>'+[0,1,2,3].map(w).join('<br>')+'<br><i>"Then pull the main switch in the Power Room (east side of the main corridor)."</i>')}});
+  items.push({x:7.8,z:25,t:'Tap to use breaker panel',keep:1,f(){if(POWER)return toast('Power is already on.',1500);openPanel()}});
+  try{MLAB.push(['POWER ROOM',5.5,25])}catch(e){}
+  roomOK=true;
+ }
+}catch(e){console.log('pz60 power room',e)}
+if(!roomOK)POWER=1;
+window.__pzPower=POWER;
+
+/* stairs need power */
+items.filter(i=>i.t==='Tap to climb the stairs').forEach(i=>{const f=i.f;i.f=function(){if(!POWER){note('<b>Stair panel</b><br>The hospital power is out.<br>Find the <b>POWER ROOM</b> first (east side of the main corridor, next to the nurse station).');return}f.apply(this,arguments)}});
+
+/* breaker puzzle UI */
+const bs=[0,0,0,0];
+function openPanel(){
+ joy.x=joy.y=0;
+ const o=document.createElement('div');o.className='z38m';o.style.zIndex=80;
+ const c=document.createElement('div');c.className='z38c';o.appendChild(c);
+ c.innerHTML='<b>BREAKER PANEL</b><p>Set each breaker UP or DOWN, then pull the MAIN SWITCH.</p>';
+ const row=document.createElement('div');row.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:6px';c.appendChild(row);
+ const bts=bs.map((v,i)=>{const b=document.createElement('button');b.onclick=()=>{bs[i]=1-bs[i];paint()};row.appendChild(b);return b});
+ const paint=()=>bts.forEach((b,i)=>{b.textContent='BREAKER '+(i+1)+': '+(bs[i]?'UP':'DOWN');b.style.background=bs[i]?'#2a5a8a':'#2a2f2c'});paint();
+ const msg=document.createElement('p');msg.style.minHeight='22px';c.appendChild(msg);
+ const mb=document.createElement('button');mb.textContent='PULL MAIN SWITCH';mb.style.background='#8a2a1a';
+ mb.onclick=()=>{const ok=bs.filter((v,i)=>v===pat[i]).length;if(ok===4){o.remove();powerOn(1)}else{msg.textContent='Breakers matching: '+ok+'/4. The panel sparks!';G.fk=1.6;toast('The breaker trips. Sparks fly!',1800);o.classList.add('bad');setTimeout(()=>o.classList.remove('bad'),400)}};
+ const cb=document.createElement('button');cb.textContent='CLOSE';cb.onclick=()=>o.remove();
+ c.appendChild(mb);c.appendChild(cb);
+ o.addEventListener('pointerdown',e=>e.stopPropagation());document.body.appendChild(o)}
+
+/* power on (also sent to friends) */
+const fl=document.createElement('div');fl.style.cssText='position:fixed;inset:0;z-index:10;background:#fff3c0;opacity:0;pointer-events:none';document.body.appendChild(fl);
+function flash(){[0,140,260,420].forEach((d,i)=>setTimeout(()=>{fl.style.transition='opacity .12s';fl.style.opacity=i%2?0:.55},d));setTimeout(()=>{fl.style.opacity=0},700)}
+function emitPw(){if(parent===window)return;const s=()=>parent.postMessage({t:'pos',d:{x:+P.pos.x.toFixed(2),z:+P.pos.z.toFixed(2),y:+P.yaw.toFixed(2),on:P.on?1:0,ev:[{k:'pw',u:'pw'+Date.now()}]}},'*');s();setTimeout(s,900)}
+function powerOn(local){
+ if(POWER)return;POWER=1;window.__pzPower=1;
+ tubes.forEach(k=>{k.dead=false});
+ ind.forEach(m=>m.material.color.set(0x33ff77));
+ flash();toast('Power restored. The lights are back on.',2600);
+ if(local)emitPw()}
+addEventListener('message',e=>{if(e.source!==parent)return;const m=e.data||{};if(m.t!=='peer'||!m.p||!m.p.ev)return;if(m.p.ev.some(v=>v.k==='pw'))powerOn(0)});
+
+/* ---------- 4. HUD hint + banner + lighting ---------- */
+const pw=document.createElement('div');
+pw.style.cssText='position:fixed;left:50%;top:calc(86px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:7;pointer-events:none;font:700 11px ui-monospace,Menlo,monospace;letter-spacing:.12em;color:#ffcf70;background:rgba(0,0,0,.55);padding:6px 12px;border-radius:12px;display:none;text-align:center';
+pw.textContent='POWER OFF · FIND THE POWER ROOM (SEE MAP)';document.body.appendChild(pw);
+const bn=document.createElement('div');
+bn.style.cssText='position:fixed;left:0;right:0;top:30%;text-align:center;z-index:11;pointer-events:none;font:italic 22px Georgia,serif;letter-spacing:3px;color:#ffe3a0;text-shadow:0 0 14px #000;opacity:0;transition:opacity 1.2s;padding:0 14px';document.body.appendChild(bn);
+function say(t,ms){bn.textContent=t;bn.style.opacity=1;setTimeout(()=>{bn.style.opacity=0},ms||3200)}
+const introDone=()=>{const e=q('ethi');return !e||e.style.display!=='flex'};
+const poolL=scene.children.filter(o=>o.isPointLight&&o.color.getHex()===0xffffff&&o.distance===14);
+
+const _x=extra;
+extra=function(dt,t){
+ _x(dt,t);
+ try{
+  const day=scene.fog&&scene.fog.density<.03;
+  if(Cm.d<.3)aarav.s.visible=false;
+  if(!day&&started){
+   /* always keep the hospital visible, more light after the power is back */
+   hemi.intensity=G.bo?.14:(POWER?.8:.5);
+   if(zl.intensity>0){zl.distance=22;zl.intensity*=POWER?1.8:1.35}
+   for(const l of poolL)l.intensity*=POWER?1.25:.45;
+   scene.fog.density=POWER?.036:.046;
+  }
+  const on=started&&introDone()&&!G.dead;
+  if(on&&!bshown){bshown=1;if(roomOK&&!POWER){say('THE HOSPITAL POWER HAS FAILED',3000);setTimeout(()=>say('Find the POWER ROOM. Check the MAP.',3400),3600)}}
+  pw.style.display=(on&&roomOK&&!POWER&&!fin)?'block':'none';
+ }catch(e){}
+};
+console.log('PZ-V60 loaded');
+}catch(e){console.log('pz60 error',e)}})();</script>
 </body></html>
 
 </template>
@@ -2794,8 +2974,9 @@ extra=function(dt,t){_x(dt,t);try{
 const SB_URL='https://kcktgsaljxzmflaroegk.supabase.co';
 const SB_KEY='sb_publishable_3EAExKGfbQ180UKQy_I4pQ_IZfZdfzH';
 // TURN is needed for mobile data (cellular). Paste your Metered / Cloudflare credentials here:
-const TURN=[/* {urls:'turn:YOUR_HOST:443?transport=tcp',username:'USER',credential:'PASS'} */];
-const ICE=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},...TURN];
+const TURN=[];
+let ICE=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
+const TURN_READY=(async()=>{try{const c=new AbortController(),tm=setTimeout(()=>c.abort(),4500);const r=await fetch('https://zghost.metered.live/api/v1/turn/credentials?apiKey=71b9bad5ad3830a7f210b19c0d017811ee8e',{signal:c.signal});clearTimeout(tm);const t=await r.json();if(Array.isArray(t)&&t.length){ICE=[...ICE,...t];console.log('TURN ready',t.length)}else console.warn('TURN bad response',t)}catch(e){console.warn('TURN fetch failed',e)}})();
 // ==================
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2867,7 +3048,7 @@ $('#cp').onclick=async()=>{const l=location.origin+location.pathname+'?party='+p
 $('#ij').onclick=()=>{$('#shI').classList.remove('on');if(pend)joinParty(pend)};
 
 // ----- party + voice (WebRTC mesh, signaling over Supabase Realtime) -----
-async function joinParty(id){if(ch)await sb.removeChannel(ch);Object.values(pc).forEach(p=>p.close());pc={};$('#audios').innerHTML='';party=id;members={};
+async function joinParty(id){await TURN_READY;if(ch)await sb.removeChannel(ch);Object.values(pc).forEach(p=>p.close());pc={};$('#audios').innerHTML='';party=id;members={};
  ch=sb.channel('p:'+id,{config:{presence:{key:me.id},broadcast:{self:false}}});
  ch.on('presence',{event:'sync'},()=>{members=ch.presenceState();
   Object.keys(members).forEach(k=>{if(k!=me.id&&!pc[k]&&me.id>k)call(k)});
