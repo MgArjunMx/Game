@@ -2278,7 +2278,39 @@ addEventListener('message',e=>{if(e.source!==parent)return;const m=e.data||{};if
  q('vm').className=m.mic?'':'off';q('vm').textContent=m.mic?'\uD83C\uDFA4':'\uD83D\uDD07';q('vs').className=m.spk?'':'off';q('vs').textContent=m.spk?'\uD83D\uDD0A':'\uD83D\uDD07'});
 /* game sound volume */
 let lm=null,lg=-1;const _x=extra;extra=function(dt,t){_x(dt,t);if(typeof mst!=='undefined'&&mst&&(lm!==mst||lg!==VV.g)){lm=mst;lg=VV.g;mst.gain.value=.8*VV.g/100}};
-}catch(e){console.log('pz30 game patch error',e)}})()</script></body></html>
+}catch(e){console.log('pz30 game patch error',e)}})()</script><script>/*PZ-V32-GAME*/(function G32(){try{
+if(window.__pz32)return;window.__pz32=1;
+const T=THREE,LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const C=Object.assign({d:1.05,h:1.4,s:.32,q:'high'},LS('pz32c')||{}),sv=()=>LS('pz32c',C);
+/* sharp resolution (earlier patches had locked pixel ratio at 1) */
+const P0=T.WebGLRenderer.prototype;
+function setQ(){const dpr=window.devicePixelRatio||1,r={low:.75,med:1,high:Math.min(dpr,1.6),ultra:Math.min(dpr,2.2)}[C.q]||1;P0.setPixelRatio.call(renderer,r);P0.setSize.call(renderer,innerWidth,innerHeight,true)}
+setQ();cam.near=.15;cam.updateProjectionMatrix();
+/* rigid camera: no lerp, no bob, no roll, no shake */
+const hd=new T.Vector3(),L=new T.Vector3(),wn=new T.Vector3(),dv=new T.Vector3();let cd=C.d;
+const _u=update;update=function(dt,t){_u(dt,t);
+ const cp=Math.cos(P.pitch),sy=Math.sin(P.yaw),cy=Math.cos(P.yaw);
+ L.set(sy*cp,Math.sin(P.pitch),cy*cp);
+ hd.set(P.pos.x,aarav.g.position.y+C.h,P.pos.z);
+ wn.copy(hd).addScaledVector(L,-C.d);wn.x-=cy*C.s;wn.z+=sy*C.s;
+ dv.copy(wn).sub(hd);let len=dv.length();dv.normalize();ray.set(hd,dv);ray.far=len;
+ const h=ray.intersectObjects(walls)[0];if(h)len=Math.max(.25,h.distance-.2);
+ if(len<cd)cd=len;else cd+=(len-cd)*Math.min(1,dt*5);
+ cam.position.copy(hd).addScaledVector(dv,cd);cam.position.y=Math.max(.3,Math.min(3,cam.position.y));
+ cam.lookAt(cam.position.x+L.x,cam.position.y+L.y,cam.position.z+L.z)};
+/* camera tab inside Settings */
+const S=document.getElementById('pzs');
+if(S){const tb=S.querySelector('.tb'),b=document.createElement('button');b.textContent='CAMERA';b.dataset.p=3;tb.appendChild(b);
+ const p3=document.createElement('div');p3.style.display='none';
+ p3.innerHTML='<label>Camera distance (kam = paas)<input type="range" id="pzc_d" min="30" max="300"></label><label>Camera height<input type="range" id="pzc_h" min="100" max="190"></label><label>Shoulder (left/right)<input type="range" id="pzc_s" min="0" max="70"></label><label>Quality<select id="pzc_q"><option value="low">Low (fast)</option><option value="med">Medium</option><option value="high">High</option><option value="ultra">Ultra</option></select></label><button id="pzc_r">RESET</button> <button id="pzc_v">SAVE</button>';
+ S.appendChild(p3);const q=id=>document.getElementById(id);
+ const fill=()=>{q('pzc_d').value=C.d*100;q('pzc_h').value=C.h*100;q('pzc_s').value=C.s*100;q('pzc_q').value=C.q};fill();
+ S.querySelectorAll('.tb button').forEach(x=>x.addEventListener('click',()=>{const on=x==b;p3.style.display=on?'':'none';if(on){S.querySelectorAll('.tb button').forEach(y=>y.classList.toggle('on',y==b));q('p1').style.display=q('p2').style.display='none'}}));
+ q('pzc_d').oninput=e=>{C.d=e.target.value/100;sv()};q('pzc_h').oninput=e=>{C.h=e.target.value/100;sv()};q('pzc_s').oninput=e=>{C.s=e.target.value/100;sv()};
+ q('pzc_q').onchange=e=>{C.q=e.target.value;sv();setQ()};
+ q('pzc_r').onclick=()=>{Object.assign(C,{d:1.05,h:1.4,s:.32,q:'high'});sv();fill();setQ()};
+ q('pzc_v').onclick=()=>{sv();try{toast('Camera saved')}catch(e){}}}
+}catch(e){console.log('pz32 error',e)}})()</script></body></html>
 
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
