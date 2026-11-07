@@ -3266,6 +3266,46 @@ const _x=extra;extra=function(dt,t){_x(dt,t);try{
   const op=l.o>.5;l.c[0]=op?1e6:43.05;l.c[1]=op?1e6+1:43.2}
 }catch(e){}};
 }catch(e){console.log('PZ-ELEV error',e)}})();</script>
+<script>/*PZ-V2-PATCH*/(function(){try{
+if(window.__pzV2)return;window.__pzV2=1;
+/* slightly wider doorways */
+for(const c of cols){if(c[0]>1e5)continue;const dx=c[1]-c[0],dz=c[3]-c[2];if(dx<.4&&dz>1.2){c[2]+=.1;c[3]-=.1}else if(dz<.4&&dx>1.2){c[0]+=.1;c[1]-=.1}}
+const S=[.5,.6,.5];
+{const _p=HB.peer;HB.peer=function(){const o=_p.apply(this,arguments);try{o.g.scale.set(S[0],S[1],S[2])}catch(e){}return o}}
+const st=document.createElement('style');
+st.textContent='#pzIb{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:44%;z-index:9;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:rgba(20,23,34,.75);color:#eceef6;font:700 11px ui-monospace,monospace;letter-spacing:.1em;touch-action:manipulation;transition:opacity .6s;display:none}#pzIo{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center}#pzIo .c{width:min(88%,520px);max-height:88%;overflow:auto;background:#10151a;border:1px solid #3a4a5f;border-radius:14px;padding:16px;color:#d8d2c8;font:15px/1.6 Georgia,serif}#pzIo b{color:#c33;letter-spacing:3px}#pzIo button{margin-top:10px;width:100%;padding:12px;border-radius:10px;border:1px solid #9b1c1c;background:transparent;color:#d8d2c8;font:16px Georgia,serif}';
+document.head.appendChild(st);
+const ib=document.createElement('button');ib.id='pzIb';ib.textContent='INSTRUCTIONS';document.body.appendChild(ib);
+const io=document.createElement('div');io.id='pzIo';io.innerHTML='<div class="c"><b>MISSION</b><p>You are part of a special response team sent into the hospital after reports of missing staff. There is blood, broken equipment and abandoned rooms. Your team calls from outside: get out as fast as possible. Something is inside with you.</p><b>OBJECTIVE</b><p>Explore, find clues, keys and ritual items. Solve puzzles to unlock floors. Avoid the entity. Open the Final Gate and reach the Safe House outside.</p><b>POWER</b><p>If the lights go out, go to the Power Room next to the nurse station and fix the generator.</p><button>CLOSE</button></div>';
+document.body.appendChild(io);io.addEventListener('pointerdown',e=>e.stopPropagation());
+io.querySelector('button').onclick=()=>{io.style.display='none';ib.style.display='none'};
+ib.onclick=()=>{io.style.display='flex'};
+/* overlapping wall text: keep one, hide the rest */
+function fixText(){scene.updateMatrixWorld(true);const L=[];
+scene.traverse(o=>{if(!o.isMesh||!o.visible||!o.geometry||o.geometry.type!=='PlaneGeometry')return;const m=o.material;if(!m||Array.isArray(m)||!m.map||!m.map.image||m.map.image.width!==512||m.map.image.height!==128||Math.abs(o.rotation.x)>.01)return;
+let v=1,p=o;while(p){if(!p.visible)v=0;p=p.parent}if(!v)return;const w=new T.Vector3();o.getWorldPosition(w);const ry=o.rotation.y,pa=o.geometry.parameters;
+L.push({o,x:w.x,y:w.y,z:w.z,nx:Math.sin(ry),nz:Math.cos(ry),w:pa.width*o.scale.x,h:pa.height*o.scale.y,tr:m.transparent?1:0})});
+L.sort((a,b)=>a.tr-b.tr);const kept=[];
+L.forEach(a=>{for(const b of kept){if(a.nx*b.nx+a.nz*b.nz<.9)continue;if(Math.abs((a.x-b.x)*a.nx+(a.z-b.z)*a.nz)>.5)continue;
+const al=Math.abs((a.x-b.x)*a.nz-(a.z-b.z)*a.nx);if(al<(a.w+b.w)/2*.9&&Math.abs(a.y-b.y)<(a.h+b.h)/2*.9){a.o.visible=false;return}}kept.push(a)})}
+/* bright light while power is on */
+const amb=new T.AmbientLight(0xfff2dc,0);scene.add(amb);
+window.__pzRestored=1;
+let play=0,cutAt=100+Math.random()*60,cutOn=0,fx=[5,12],hj=0;
+const _x=extra;extra=function(dt,t){_x(dt,t);try{
+aarav.g.scale.set(S[0],S[1],S[2]);
+if(started&&!G.dead&&!fin)play+=dt;
+const day=scene.fog&&scene.fog.density<.03,lit=started&&!day&&window.__pzPower&&!G.bo;
+amb.intensity+=((lit?(G.st>=3?.5:1.15):0)-amb.intensity)*Math.min(1,dt*3);
+if(lit){const f=G.st>=3?.6:1;hemi.intensity=Math.max(hemi.intensity,1.9*f);if(scene.fog)scene.fog.density=Math.min(scene.fog.density,.009);zl.intensity*=1.5;for(const l of scene.children)if(l.isPointLight&&l.distance===14)l.intensity*=1.5}
+if(!cutOn&&play>cutAt){cutOn=1;window.__pzRestored=0}
+if(io.style.display==='flex')G.prot=Math.max(G.prot,2);
+if(fx.length&&play>fx[0]){fx.shift();fixText()}
+const e=el('ethi');
+if(started&&!hj){hj=1;if(e&&e.style.display==='flex'){e.style.visibility='hidden';for(let k=0;k<6&&e.style.display==='flex';k++){const b=[...e.querySelectorAll('button')];if(!b.length)break;(b.find(x=>x.textContent==='SKIP')||b[b.length-1]).click()}e.style.visibility=''}
+ib.style.display='block';ib.style.opacity=1;setTimeout(()=>{ib.style.opacity=0;setTimeout(()=>{if(io.style.display!=='flex')ib.style.display='none'},700)},5000)}
+}catch(e){}};
+}catch(e){console.log('PZ-V2 error',e)}})();</script>
 </body></html>
 
 </template>
