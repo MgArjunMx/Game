@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
+<html lang="en"><head><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#0b0d13"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>PLAY ZONE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3212,123 +3212,45 @@ const _x=extra;extra=function(dt,t){_x(dt,t);try{
  if(cut&&!window.__pzPower&&!window.__pzRestored)rd.style.opacity=.55+.3*Math.sin(t*3);else rd.style.opacity=0}catch(e){}};
 }catch(e){console.log('PZ-V71 error',e)}})();
 </script>
-<script>/*PZ-ELEV-PATCH*/(function(){try{
-if(window.__pzElev)return;window.__pzElev=1;
-const HH=3.4,GZ=[62,132,202,270,302.5,337.5,372.5],ZL=[27.5,97.5,167.5,237.5,291,326,361,396],NM=['G','1','2','3','4','5','6','7'],X=42.15;
-const bandOf=z=>{let b=0;for(const g of GZ)if(z>g)b++;return b};
-/* ---- text: remove clutter, stop overlaps ---- */
-const st=document.createElement('style');
-st.textContent='#lvh{display:none!important}.lvbn{top:12%!important}[style*="top: 24%"]{top:46%!important}[style*="top: 30%"]{top:54%!important}'
-+'#lfm{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}#lfm .c{background:#10151a;border:1px solid #3a4a5f;border-radius:14px;padding:14px;color:#d8d2c8;font:15px Georgia,serif;text-align:center;min-width:230px}#lfm .g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}#lfm button{padding:12px 0;border-radius:10px;border:1px solid #3a4a5f;background:#1a222b;color:#d8d2c8;font:700 16px Georgia,serif;touch-action:manipulation}#lfm button.cur{border-color:#ffd070;color:#ffd070}#lfm button.lk{opacity:.4}'
-+'#lfi{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:12;pointer-events:none;font:700 40px monospace;color:#ffd98a;text-shadow:0 0 14px #000;display:none}';
-document.head.appendChild(st);
-let n0=0;const iv0=setInterval(()=>{[...document.body.children].forEach(e=>{if(/POWERED BY/.test(e.textContent)&&!e.children.length)e.remove()});if(++n0>40)clearInterval(iv0)},500);
-/* ---- layout: each floor gets some bigger (merged) rooms ---- */
-const rmWall=(x,zc,d)=>{for(let i=walls.length-1;i>=0;i--){const w=walls[i],p=w.geometry&&w.geometry.parameters;if(!p||p.width>.5||p.depth<d-.5)continue;
- if(Math.abs(w.position.x-x)>.15||Math.abs(w.position.z-zc)>.15)continue;
- const cx=w.position.x,cz=w.position.z;w.parent&&w.parent.remove(w);walls.splice(i,1);
- for(let k=cols.length-1;k>=0;k--){const c=cols[k];if(Math.abs((c[0]+c[1])/2-cx)<.05&&Math.abs((c[2]+c[3])/2-cz)<.05&&Math.abs(c[1]-c[0]-p.width)<.06)cols.splice(k,1)}return}};
-WG.forEach((w,i)=>{const n=w.n,rw=w.rw||7,d=w.d||8;if(n<3)return;
- [-1,1].forEach((s,si)=>{if((i+si)%3==2)return;const k=1+((i*2+si*2+1)%(n-1));rmWall(w.ox+k*rw,w.cz+s*(2+d/2),d)})});
-/* ---- basic lift ---- */
-const sm=M(0x4a4e52,.5,.5),fm=M(0x2a2a2c,.8),dm=M(0x8a9094,.4,.8),bm=new T.MeshBasicMaterial({color:0xffcf70}),L=[];
-let maxB=0,RIDE=null;
-const ui=document.createElement('div');ui.id='lfm';ui.innerHTML='<div class="c"><div>LIFT</div><div class="g"></div><button id="lfx" style="width:100%">CLOSE</button></div>';document.body.appendChild(ui);
-ui.addEventListener('pointerdown',e=>e.stopPropagation());ui.querySelector('#lfx').onclick=()=>ui.style.display='none';
-const ind=document.createElement('div');ind.id='lfi';document.body.appendChild(ind);
-function openUI(b){if(RIDE)return;joy.x=joy.y=0;const g=ui.querySelector('.g');g.innerHTML='';
- NM.forEach((n,i)=>{const bt=document.createElement('button');bt.textContent=i>maxB?n+'\uD83D\uDD12':n;if(i==b)bt.className='cur';else if(i>maxB)bt.className='lk';
-  bt.onclick=()=>{if(i>maxB)return toast('Floor locked. Unlock it with the stairs first.',2200);if(i==b)return toast('You are here.',1200);ui.style.display='none';RIDE={f:b,to:i,t0:0,dur:1.3+.7*Math.abs(i-b),go:0,sw:0,u:0};};g.appendChild(bt)});
- ui.style.display='flex'}
-ZL.forEach((Z,b)=>{const g=new T.Group();g.position.y=b*HH;scene.add(g);
- box(2,3,.1,sm,X,1.5,Z-1.1,g);box(2,3,.1,sm,X,1.5,Z+1.1,g);box(2.1,.08,2.3,sm,X,2.95,Z,g);box(2,.03,2.2,fm,X,.03,Z,g);
- box(.05,.7,.35,dm,41.25,1.3,Z-.75,g);for(let i=0;i<4;i++)box(.04,.06,.06,bm,41.3,1.5-i*.15,Z-.75,g);
- box(.3,.12,.05,bm,43.1,2.7,Z,g);
- const dl=box(.06,2.6,1.1,dm,43.12,1.3,Z-.55,g),dr=box(.06,2.6,1.1,dm,43.12,1.3,Z+.55,g),c=[43.05,43.2,Z-1.1,Z+1.1];
- cols.push([X-1.05,X+1.05,Z-1.15,Z-1.05],[X-1.05,X+1.05,Z+1.05,Z+1.15],c);L.push({b,Z,dl,dr,o:0,c});
- items.push({x:44.1,z:Z,t:'Tap to use the lift',keep:1,f(){openUI(b)}})});
-const _u=update;update=function(dt,t){if(RIDE){joy.x=joy.y=0}_u(dt,t);
- if(RIDE){const R=RIDE,Z=R.sw?ZL[R.to]:ZL[R.f],k=Math.min(1,dt*4);P.vel.set(0,0,0);
-  P.pos.x+=(X-P.pos.x)*k;P.pos.z+=(Z-P.pos.z)*k;aarav.g.position.x=P.pos.x;aarav.g.position.z=P.pos.z;
-  const dy=Math.atan2(Math.sin(Math.PI/2-P.yaw),Math.cos(Math.PI/2-P.yaw));P.yaw+=dy*k;
-  if(R.go&&R.u<1){cam.position.x+=rnd(-.012,.012);cam.position.y+=rnd(-.015,.015)}}};
-const _x=extra;extra=function(dt,t){_x(dt,t);try{
- const px=P.pos.x,pz=P.pos.z;if(px>40.5){const b=bandOf(pz);if(b>maxB)maxB=b}
- if(ui.style.display=='flex'||RIDE)G.prot=Math.max(G.prot,2);
- const R=RIDE;
- if(R){R.t0+=dt;if(R.t0>.9&&!R.go){R.go=1;ind.style.display='block';el('blk').style.opacity=1}
-  if(R.go){const u=Math.min(1,(R.t0-.9)/R.dur);R.u=u;const fl=Math.round(R.f+(R.to-R.f)*u);ind.textContent=(R.to>R.f?'\u25B2 ':'\u25BC ')+NM[fl];
-   if(u>.55&&!R.sw){R.sw=1;P.pos.set(X,0,ZL[R.to]);aarav.g.position.set(X,aarav.g.position.y,ZL[R.to])}
-   if(u>.8&&!G.dead)el('blk').style.opacity=0;
-   if(u>=1){RIDE=null;ind.style.display='none';toast('Floor '+NM[R.to],1800)}}}
- for(const l of L){const tg=RIDE?(l.b==RIDE.to&&RIDE.sw&&RIDE.u>=.85?1:0):(px>40.5&&Math.abs(pz-l.Z)<3.4?1:0);
-  l.o+=(tg-l.o)*Math.min(1,dt*3);l.dl.position.z=l.Z-.55-l.o*.9;l.dr.position.z=l.Z+.55+l.o*.9;
-  const op=l.o>.5;l.c[0]=op?1e6:43.05;l.c[1]=op?1e6+1:43.2}
-}catch(e){}};
-}catch(e){console.log('PZ-ELEV error',e)}})();</script>
-<script>/*PZ-V2-PATCH*/(function(){try{
-if(window.__pzV2)return;window.__pzV2=1;
-/* slightly wider doorways */
-for(const c of cols){if(c[0]>1e5)continue;const dx=c[1]-c[0],dz=c[3]-c[2];if(dx<.4&&dz>1.2){c[2]+=.1;c[3]-=.1}else if(dz<.4&&dx>1.2){c[0]+=.1;c[1]-=.1}}
-const S=[.5,.6,.5];
-{const _p=HB.peer;HB.peer=function(){const o=_p.apply(this,arguments);try{o.g.scale.set(S[0],S[1],S[2])}catch(e){}return o}}
-const st=document.createElement('style');
-st.textContent='#pzIb{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:44%;z-index:9;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:rgba(20,23,34,.75);color:#eceef6;font:700 11px ui-monospace,monospace;letter-spacing:.1em;touch-action:manipulation;transition:opacity .6s;display:none}#pzIo{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center}#pzIo .c{width:min(88%,520px);max-height:88%;overflow:auto;background:#10151a;border:1px solid #3a4a5f;border-radius:14px;padding:16px;color:#d8d2c8;font:15px/1.6 Georgia,serif}#pzIo b{color:#c33;letter-spacing:3px}#pzIo button{margin-top:10px;width:100%;padding:12px;border-radius:10px;border:1px solid #9b1c1c;background:transparent;color:#d8d2c8;font:16px Georgia,serif}';
-document.head.appendChild(st);
-const ib=document.createElement('button');ib.id='pzIb';ib.textContent='INSTRUCTIONS';document.body.appendChild(ib);
-const io=document.createElement('div');io.id='pzIo';io.innerHTML='<div class="c"><b>MISSION</b><p>You are part of a special response team sent into the hospital after reports of missing staff. There is blood, broken equipment and abandoned rooms. Your team calls from outside: get out as fast as possible. Something is inside with you.</p><b>OBJECTIVE</b><p>Explore, find clues, keys and ritual items. Solve puzzles to unlock floors. Avoid the entity. Open the Final Gate and reach the Safe House outside.</p><b>POWER</b><p>If the lights go out, go to the Power Room next to the nurse station and fix the generator.</p><button>CLOSE</button></div>';
-document.body.appendChild(io);io.addEventListener('pointerdown',e=>e.stopPropagation());
-io.querySelector('button').onclick=()=>{io.style.display='none';ib.style.display='none'};
-ib.onclick=()=>{io.style.display='flex'};
-/* overlapping wall text: keep one, hide the rest */
-function fixText(){scene.updateMatrixWorld(true);const L=[];
-scene.traverse(o=>{if(!o.isMesh||!o.visible||!o.geometry||o.geometry.type!=='PlaneGeometry')return;const m=o.material;if(!m||Array.isArray(m)||!m.map||!m.map.image||m.map.image.width!==512||m.map.image.height!==128||Math.abs(o.rotation.x)>.01)return;
-let v=1,p=o;while(p){if(!p.visible)v=0;p=p.parent}if(!v)return;const w=new T.Vector3();o.getWorldPosition(w);const ry=o.rotation.y,pa=o.geometry.parameters;
-L.push({o,x:w.x,y:w.y,z:w.z,nx:Math.sin(ry),nz:Math.cos(ry),w:pa.width*o.scale.x,h:pa.height*o.scale.y,tr:m.transparent?1:0})});
-L.sort((a,b)=>a.tr-b.tr);const kept=[];
-L.forEach(a=>{for(const b of kept){if(a.nx*b.nx+a.nz*b.nz<.9)continue;if(Math.abs((a.x-b.x)*a.nx+(a.z-b.z)*a.nz)>.5)continue;
-const al=Math.abs((a.x-b.x)*a.nz-(a.z-b.z)*a.nx);if(al<(a.w+b.w)/2*.9&&Math.abs(a.y-b.y)<(a.h+b.h)/2*.9){a.o.visible=false;return}}kept.push(a)})}
-/* bright light while power is on */
-const amb=new T.AmbientLight(0xfff2dc,0);scene.add(amb);
-window.__pzRestored=1;
-let play=0,cutAt=100+Math.random()*60,cutOn=0,fx=[5,12],hj=0;
-const _x=extra;extra=function(dt,t){_x(dt,t);try{
-aarav.g.scale.set(S[0],S[1],S[2]);
-if(started&&!G.dead&&!fin)play+=dt;
-const day=scene.fog&&scene.fog.density<.03,lit=started&&!day&&window.__pzPower&&!G.bo;
-amb.intensity+=((lit?(G.st>=3?.5:1.15):0)-amb.intensity)*Math.min(1,dt*3);
-if(lit){const f=G.st>=3?.6:1;hemi.intensity=Math.max(hemi.intensity,1.9*f);if(scene.fog)scene.fog.density=Math.min(scene.fog.density,.009);zl.intensity*=1.5;for(const l of scene.children)if(l.isPointLight&&l.distance===14)l.intensity*=1.5}
-if(!cutOn&&play>cutAt){cutOn=1;window.__pzRestored=0}
-if(io.style.display==='flex')G.prot=Math.max(G.prot,2);
-if(fx.length&&play>fx[0]){fx.shift();fixText()}
-const e=el('ethi');
-if(started&&!hj){hj=1;if(e&&e.style.display==='flex'){e.style.visibility='hidden';for(let k=0;k<6&&e.style.display==='flex';k++){const b=[...e.querySelectorAll('button')];if(!b.length)break;(b.find(x=>x.textContent==='SKIP')||b[b.length-1]).click()}e.style.visibility=''}
-ib.style.display='block';ib.style.opacity=1;setTimeout(()=>{ib.style.opacity=0;setTimeout(()=>{if(io.style.display!=='flex')ib.style.display='none'},700)},5000)}
-}catch(e){}};
-}catch(e){console.log('PZ-V2 error',e)}})();</script>
-<script>/*PZ-V3-PATCH*/(function(){try{
-if(window.__pzV3)return;window.__pzV3=1;
+<script>/*PZ-FINAL-PATCH*/(function(){
+const ST=[],HX=[],HP=[],HQ=[],BID='76IYR1';
+const S={play:0};
+let badgeEl=null;
+function badge(){try{if(!badgeEl){badgeEl=document.createElement('div');badgeEl.style.cssText='position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:99;background:rgba(0,0,0,.8);color:#9fe;font:11px/1.4 monospace;padding:6px 10px;border-radius:10px;max-width:86%;text-align:center';badgeEl.onclick=()=>badgeEl.remove();document.body.appendChild(badgeEl)}
+const bad=ST.filter(s=>!/ OK$/.test(s));badgeEl.style.color=bad.length?'#ffb070':'#9fe';badgeEl.textContent=bad.length?('PATCH '+BID+' problems: '+bad.join(' | ')+' (tap to hide)'):('PATCH '+BID+' OK: '+ST.length+'/'+ST.length);if(!bad.length)setTimeout(()=>{badgeEl&&badgeEl.remove()},6000)}catch(e){}}
+const sec=(n,f)=>{try{f();ST.push(n+' OK')}catch(e){ST.push(n+' FAIL '+(e&&e.message))}};
+const run=(h,dt,t)=>{try{h.f(dt,t)}catch(e){if(!h.e){h.e=1;ST.push(h.n+' runtime '+(e&&e.message));badge()}}};
+const hook=(arr,n,f)=>arr.push({n,f});
 const HH=3.4,GZ=[62,132,202,270,302.5,337.5,372.5],ZL=[27.5,97.5,167.5,237.5,291,326,361,396],NM=['G','1','2','3','4','5','6','7'],X=42.15;
 const bandOf=z=>{let b=0;for(const g of GZ)if(z>g)b++;return b};
 let sd=11;try{const s=String(parent.PZ.party)+'|lay|'+new Date().toDateString();for(let i=0;i<s.length;i++)sd=(Math.imul(sd,31)+s.charCodeAt(i))>>>0}catch(e){}
 const rg=()=>{sd=(sd+0x6D2B79F5)|0;let t=Math.imul(sd^(sd>>>15),1|sd);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296},rr=(a,b)=>a+rg()*(b-a);
-/* A. random room sizes: merge neighbouring rooms differently on every floor and side */
-const rmWall=(x,zc,d)=>{for(let i=walls.length-1;i>=0;i--){const w=walls[i],p=w.geometry&&w.geometry.parameters;if(!p||p.width>.5||p.depth<d-.5)continue;if(Math.abs(w.position.x-x)>.15||Math.abs(w.position.z-zc)>.15)continue;const cx=w.position.x,cz=w.position.z;w.parent&&w.parent.remove(w);walls.splice(i,1);for(let k=cols.length-1;k>=0;k--){const c=cols[k];if(Math.abs((c[0]+c[1])/2-cx)<.05&&Math.abs((c[2]+c[3])/2-cz)<.05&&c[1]-c[0]<.5)cols.splice(k,1)}return}};
-WG.forEach((w,i)=>{const n=w.n,rw=w.rw||7,d=w.d||8;if(n<3)return;[-1,1].forEach(s=>{if(rg()<.25)return;const c=rg()<.5?2:1,used=[];for(let q=0;q<c;q++){const k=1+Math.floor(rg()*(n-1));if(used.some(u=>Math.abs(u-k)<2))continue;used.push(k);rmWall(w.ox+k*rw,w.cz+s*(2+d/2),d)}})});
-/* B. windows with sills on the back wall of many rooms (random size and count) */
-{const fr=M(0x2a2a2c,.6,.4),pane=new T.MeshBasicMaterial({color:0x7d93b0}),sil=M(0x6a6a66,.7);
+const css=document.createElement('style');document.head.appendChild(css);
+let CSS='';const addCss=s=>{CSS+=s;css.textContent=CSS};
+/* 1. text clutter */
+sec('text',()=>{addCss('#lvh{display:none!important}.lvbn{top:12%!important}[style*="top: 24%"]{top:46%!important}[style*="top: 30%"]{top:54%!important}');let n=0;const iv=setInterval(()=>{[...document.body.children].forEach(e=>{if(/POWERED BY/.test(e.textContent)&&!e.children.length)e.remove()});if(++n>40)clearInterval(iv)},500)});
+/* 2. wider doorways */
+sec('doors',()=>{for(const c of cols){if(c[0]>1e5)continue;const dx=c[1]-c[0],dz=c[3]-c[2];if(dx<.4&&dz>1.2){c[2]+=.1;c[3]-=.1}else if(dz<.4&&dx>1.2){c[0]+=.1;c[1]-=.1}}});
+/* 3. smaller character */
+const SC=[.5,.6,.5];
+sec('size',()=>{aarav.g.scale.set(SC[0],SC[1],SC[2]);const _p=HB.peer;HB.peer=function(){const o=_p.apply(this,arguments);try{o.g.scale.set(SC[0],SC[1],SC[2])}catch(e){}return o};hook(HX,'size',()=>aarav.g.scale.set(SC[0],SC[1],SC[2]))});
+/* 4. random room sizes + windows */
+sec('rooms',()=>{
+const rmWall=(x,zc,d)=>{for(let i=walls.length-1;i>=0;i--){const w=walls[i],p=w.geometry&&w.geometry.parameters;if(!p||p.width>.5||p.depth<d-.5)continue;if(Math.abs(w.position.x-x)>.15||Math.abs(w.position.z-zc)>.15)continue;const cx=w.position.x,cz=w.position.z;w.parent&&w.parent.remove(w);walls.splice(i,1);for(let k=cols.length-1;k>=0;k--){const c=cols[k];if(Math.abs((c[0]+c[1])/2-cx)<.05&&Math.abs((c[2]+c[3])/2-cz)<.05&&c[1]-c[0]<.5)cols.splice(k,1)}return 1}return 0};
+let merged=0;
+WG.forEach((w,i)=>{const n=w.n,rw=w.rw||7,d=w.d||8;if(n<3)return;[-1,1].forEach(s=>{if(rg()<.2)return;const c=rg()<.5?2:1,used=[];for(let q=0;q<c;q++){const k=1+Math.floor(rg()*(n-1));if(used.some(u=>Math.abs(u-k)<2))continue;used.push(k);merged+=rmWall(w.ox+k*rw,w.cz+s*(2+d/2),d)}})});
+const fr=M(0x2a2a2c,.6,.4),pane=new T.MeshBasicMaterial({color:0x7d93b0}),sil=M(0x6a6a66,.7);let wins=0;
 MLAB.slice().forEach(a=>{const nm=a[0],cx=a[1],zc=a[2];if(/Morgue|Mortuary|Autopsy|Tunnel|Boiler|Ritual|Freezer|Generator|Crawl|Store|Archive|Linen|Laundry|Bath|Seal|POWER/.test(nm)||rg()<.3)return;
 const wi=WG.findIndex(w=>cx>w.ox&&cx<w.ox+w.n*(w.rw||7)&&Math.abs(zc-w.cz)<(w.d||8)+5);if(wi<0)return;
 const w=WG[wi],g=WGR[wi],rw=w.rw||7,d=w.d||8,dir=zc>w.cz?1:-1,x0=cx-rw/2,zb=w.cz+dir*2+dir*d,cnt=1+(rg()<.5?1:0);
 for(let q=0;q<cnt;q++){const ww=rr(.9,1.8),wh=rr(.8,1.1),wx=x0+(cnt==1?rr(1.6,rw-1.6):(q?rw*.72:rw*.28)),wy=1.65,z1=zb-dir*.185;
 g.children.forEach(o=>{if(o.isMesh&&o.geometry&&o.geometry.type==='PlaneGeometry'&&Math.abs(o.rotation.x)<.01&&o.material&&o.material.map&&Math.abs(o.position.z-zb)<.5&&Math.abs(o.position.x-wx)<ww/2+.5&&o.position.y>.8&&o.position.y<2.6)o.visible=false});
-box(ww+.16,wh+.16,.05,fr,wx,wy,zb-dir*.17,g);box(ww,wh,.04,pane,wx,wy,z1,g);box(.04,wh,.05,fr,wx,wy,z1-dir*.01,g);box(ww,.04,.05,fr,wx,wy,z1-dir*.01,g);box(ww+.3,.05,.18,sil,wx,wy-wh/2-.1,zb-dir*.24,g)}})}
-/* C. remove the old basic lift */
+box(ww+.16,wh+.16,.05,fr,wx,wy,zb-dir*.17,g);box(ww,wh,.04,pane,wx,wy,z1,g);box(.04,wh,.05,fr,wx,wy,z1-dir*.01,g);box(ww,.04,.05,fr,wx,wy,z1-dir*.01,g);box(ww+.3,.05,.18,sil,wx,wy-wh/2-.1,zb-dir*.24,g);wins++}});
+ST.push('rooms-info merged '+merged+' windows '+wins+' OK')});
+/* 5. lift */
+sec('lift',()=>{
 scene.children.filter(o=>o.isGroup&&o.children.some(c=>{const p=c.geometry&&c.geometry.parameters;return c.geometry&&c.geometry.type==='BoxGeometry'&&p&&Math.abs(p.width-.06)<.001&&Math.abs(p.height-2.6)<.001&&Math.abs(p.depth-1.1)<.001})).forEach(g=>scene.remove(g));
-for(let i=cols.length-1;i>=0;i--){const c=cols[i],zc=(c[2]+c[3])/2,dz=c[3]-c[2];
-const side=c[0]>41&&c[0]<41.3&&c[1]>43&&c[1]<43.3&&dz<.25&&ZL.some(Z=>Math.abs(Math.abs(zc-Z)-1.1)<.06),door=ZL.some(Z=>Math.abs(zc-Z)<.06)&&dz>1.9&&dz<2.3&&(c[0]>1e5||Math.abs(c[0]-43.05)<.02);if(side||door)cols.splice(i,1)}
-for(let i=items.length-1;i>=0;i--)if(items[i].t==='Tap to use the lift')items.splice(i,1);
-/* D. new lift: designed cabin, animated doors, moving light stripes, floor display, acceleration feel */
+for(let i=items.length-1;i>=0;i--)if(/use the lift|choose a floor/.test(items[i].t))items.splice(i,1);
 const steel=M(0xa4abb2,.3,.85),dark=M(0x23262a,.5,.6),wood=M(0x5a4430,.75),mir=M(0xaab8c0,.08,.95),lampM=new T.MeshBasicMaterial({color:0xfff0c8});
 const fmat=new T.MeshStandardMaterial({map:tex(128,128,(g,w,h)=>{for(let i=0;i<4;i++)for(let j=0;j<4;j++){g.fillStyle=(i+j)%2?'#8a8d90':'#4a4d50';g.fillRect(i*32,j*32,32,32)}},1,1),roughness:.35,metalness:.3});
 const sTx=tex(64,256,(g,w,h)=>{for(let i=0;i<8;i++){g.fillStyle='rgba(255,230,170,'+(i%2?.3:.9)+')';g.fillRect(8,i*32+10,w-16,5)}},1,1);
@@ -3336,6 +3258,7 @@ const smat=new T.MeshBasicMaterial({map:sTx,transparent:true,opacity:0,depthWrit
 const L=[];let RIDE=null,maxB=0;
 function disp(l,a,txt,col){const k=a+'|'+txt+'|'+col;if(l.d.k===k)return;l.d.k=k;const x=l.d.x;x.fillStyle='#050805';x.fillRect(0,0,128,64);x.fillStyle=col;if(a){x.beginPath();if(a>0){x.moveTo(26,16);x.lineTo(42,46);x.lineTo(10,46)}else{x.moveTo(10,18);x.lineTo(42,18);x.lineTo(26,48)}x.fill()}x.font='bold 40px monospace';x.textAlign='center';x.textBaseline='middle';x.fillText(txt,a?88:64,34);l.d.t.needsUpdate=true}
 function refresh(){for(const l of L)l.bt.forEach((m,i)=>m.color.setHex(i===l.b?0xffb030:i<=maxB?0xdddddd:0x5a2222))}
+const mkDoor=(g,Z,s)=>{const d=new T.Group();d.position.set(43.12,1.3,Z+s*.55);box(.05,2.55,1.1,steel,0,0,0,d);box(.06,2.45,.03,dark,0,0,-s*.5,d);box(.06,2.45,.02,dark,0,0,0,d);g.add(d);return d};
 ZL.forEach((Z,b)=>{const g=new T.Group();g.position.y=b*HH;scene.add(g);
 const cv=document.createElement('canvas');cv.width=128;cv.height=64;const l={b,Z,o:0,c:[43.05,43.2,Z-1.1,Z+1.1],d:{c:cv,x:cv.getContext('2d'),t:new T.CanvasTexture(cv),k:''},bt:[]};
 box(2,3,.08,steel,X,1.5,Z-1.1,g);box(2,3,.08,steel,X,1.5,Z+1.1,g);
@@ -3345,25 +3268,23 @@ box(.06,2.9,2.2,wood,41.2,1.45,Z,g);box(.02,1,1.4,mir,41.25,1.7,Z,g);box(.05,.05
 box(2.1,.08,2.3,dark,X,2.96,Z,g);box(1,.02,1,lampM,X,2.91,Z,g);
 const f=new T.Mesh(new T.PlaneGeometry(2,2.2),fmat);f.rotation.x=-Math.PI/2;f.position.set(X,.04,Z);g.add(f);
 box(.45,1.1,.04,dark,42.75,1.35,Z+1.03,g);
-for(let i=0;i<8;i++){const mt=new T.MeshBasicMaterial({color:0x444444});box(.09,.09,.03,mt,42.62+(i%2)*.26,.95+Math.floor(i/2)*.22,Z+1.0,g).material=mt;l.bt.push(mt)}
+for(let i=0;i<8;i++){const mt=new T.MeshBasicMaterial({color:0x444444});const bm=box(.09,.09,.03,steel,42.62+(i%2)*.26,.95+Math.floor(i/2)*.22,Z+1.0,g);bm.material=mt;l.bt.push(mt)}
 box(.2,.45,2.3,dark,43.15,2.8,Z,g);box(.2,2.6,.12,dark,43.15,1.3,Z-1.07,g);box(.2,2.6,.12,dark,43.15,1.3,Z+1.07,g);
 const dm=new T.MeshBasicMaterial({map:l.d.t}),d1=new T.Mesh(new T.PlaneGeometry(.8,.4),dm),d2=new T.Mesh(new T.PlaneGeometry(.8,.4),dm);d1.position.set(43.27,2.8,Z);d1.rotation.y=Math.PI/2;d2.position.set(43.03,2.8,Z);d2.rotation.y=-Math.PI/2;g.add(d1,d2);
-const door=s=>{const d=new T.Group();d.position.set(43.12,1.3,Z+s*.55);box(.05,2.55,1.1,steel,0,0,0,d);box(.06,2.45,.03,dark,0,0,-s*.5,d);box(.06,2.45,.02,dark,0,0,0,d);g.add(d);return d};
-l.dl=door(-1);l.dr=door(1);cols.push([X-1.05,X+1.05,Z-1.15,Z-1.05],[X-1.05,X+1.05,Z+1.05,Z+1.15],l.c);L.push(l);
+l.dl=mkDoor(g,Z,-1);l.dr=mkDoor(g,Z,1);cols.push([X-1.05,X+1.05,Z-1.15,Z-1.05],[X-1.05,X+1.05,Z+1.05,Z+1.15],l.c);L.push(l);
 items.push({x:44.1,z:Z,t:'Tap to use the lift',keep:1,f(){openUI(b)}},{x:42.7,z:Z+.4,t:'Tap to choose a floor',keep:1,f(){openUI(b)}})});
 refresh();
 const cl=new T.PointLight(0xffe6b0,0,5,2);scene.add(cl);
-const st=document.createElement('style');st.textContent='#lf3{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}#lf3 .c{background:#10151a;border:1px solid #3a4a5f;border-radius:14px;padding:14px;color:#d8d2c8;font:15px Georgia,serif;text-align:center;min-width:230px}#lf3 .g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}#lf3 button{padding:12px 0;border-radius:10px;border:1px solid #3a4a5f;background:#1a222b;color:#d8d2c8;font:700 16px Georgia,serif;touch-action:manipulation}#lf3 button.cur{border-color:#ffd070;color:#ffd070}#lf3 button.lk{opacity:.4}#lf3b{position:fixed;inset:0;z-index:11;background:#000;opacity:0;pointer-events:none}';document.head.appendChild(st);
+addCss('#lf3{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}#lf3 .c{background:#10151a;border:1px solid #3a4a5f;border-radius:14px;padding:14px;color:#d8d2c8;font:15px Georgia,serif;text-align:center;min-width:230px}#lf3 .g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}#lf3 button{padding:12px 0;border-radius:10px;border:1px solid #3a4a5f;background:#1a222b;color:#d8d2c8;font:700 16px Georgia,serif;touch-action:manipulation}#lf3 button.cur{border-color:#ffd070;color:#ffd070}#lf3 button.lk{opacity:.4}#lf3b{position:fixed;inset:0;z-index:11;background:#000;opacity:0;pointer-events:none}');
 const ui=document.createElement('div');ui.id='lf3';const bx=document.createElement('div');bx.className='c';const hd=document.createElement('div');hd.textContent='LIFT';const gr=document.createElement('div');gr.className='g';const cb=document.createElement('button');cb.textContent='CLOSE';cb.style.width='100%';cb.onclick=()=>ui.style.display='none';bx.append(hd,gr,cb);ui.appendChild(bx);document.body.appendChild(ui);ui.addEventListener('pointerdown',e=>e.stopPropagation());
 const bl=document.createElement('div');bl.id='lf3b';document.body.appendChild(bl);
 function blink(){bl.style.transition='none';bl.style.opacity=.95;setTimeout(()=>{bl.style.transition='opacity .35s';bl.style.opacity=0},120)}
 function openUI(b){if(RIDE)return;joy.x=joy.y=0;gr.innerHTML='';NM.forEach((n,i)=>{const bt=document.createElement('button');bt.textContent=i>maxB?n+'\uD83D\uDD12':n;if(i===b)bt.className='cur';else if(i>maxB)bt.className='lk';
 bt.onclick=()=>{if(i>maxB)return toast('Floor locked. Unlock it with the stairs first.',2200);if(i===b)return toast('You are here.',1200);ui.style.display='none';RIDE={f:b,to:i,ph:0,t:0,u:0,dur:2+.9*Math.abs(i-b),sw:0,dir:i>b?1:-1}};gr.appendChild(bt)});ui.style.display='flex'}
-const _u=update;update=function(dt,t){if(RIDE){joy.x=joy.y=0}_u(dt,t);const R=RIDE;
-if(R){const Z=R.sw?ZL[R.to]:ZL[R.f],k=Math.min(1,dt*4);P.vel.set(0,0,0);P.pos.x+=(X-P.pos.x)*k;P.pos.z+=(Z-P.pos.z)*k;aarav.g.position.x=P.pos.x;aarav.g.position.z=P.pos.z;P.yaw+=Math.atan2(Math.sin(Math.PI/2-P.yaw),Math.cos(Math.PI/2-P.yaw))*k;
-if(R.ph===1){cam.position.y+=-R.dir*.05*Math.cos(Math.PI*R.u)+(Math.random()-.5)*.012;cam.position.x+=(Math.random()-.5)*.012}}};
-const _x=extra;extra=function(dt,t){_x(dt,t);try{
-const px=P.pos.x,pz=P.pos.z,R=RIDE;
+hook(HP,'lift-pre',()=>{if(RIDE){joy.x=joy.y=0}});
+hook(HQ,'lift-post',(dt)=>{const R=RIDE;if(!R)return;const Z=R.sw?ZL[R.to]:ZL[R.f],k=Math.min(1,dt*4);P.vel.set(0,0,0);P.pos.x+=(X-P.pos.x)*k;P.pos.z+=(Z-P.pos.z)*k;aarav.g.position.x=P.pos.x;aarav.g.position.z=P.pos.z;P.yaw+=Math.atan2(Math.sin(Math.PI/2-P.yaw),Math.cos(Math.PI/2-P.yaw))*k;
+if(R.ph===1){cam.position.y+=-R.dir*.05*Math.cos(Math.PI*R.u)+(Math.random()-.5)*.012;cam.position.x+=(Math.random()-.5)*.012}});
+hook(HX,'lift',(dt,t)=>{const px=P.pos.x,pz=P.pos.z,R=RIDE;
 if(px>40.5){const bb=bandOf(pz);if(bb>maxB){maxB=bb;refresh()}}
 if(ui.style.display==='flex'||R)G.prot=Math.max(G.prot,2);
 if(R){R.t+=dt;const lf=L[R.f],lt=L[R.to];
@@ -3379,9 +3300,36 @@ l.o+=Math.max(-dt*.9,Math.min(dt*.9,tg-l.o));const e=l.o*l.o*(3-2*l.o);l.dl.posi
 const op=l.o>.5;l.c[0]=op?1e6:43.05;l.c[1]=op?1e6+1:43.2;
 if(!R||(l!==L[R.f]&&l!==L[R.to]))disp(l,0,NM[l.b],'#ffb030')}
 let best=null,bd=1e9;for(const l of L){if(px>40.5&&bandOf(pz)===l.b){const d=Math.hypot(px-X,pz-l.Z);if(d<bd){bd=d;best=l}}}
-if(best&&bd<6){cl.position.set(X,best.b*HH+2.5,best.Z);cl.intensity=1.4*(R&&R.ph===1?.85+.15*Math.sin(t*40):1)}else cl.intensity=0;
-}catch(e){}};
-}catch(e){console.log('PZ-V3 error',e)}})();</script>
+if(best&&bd<6){cl.position.set(X,best.b*HH+2.5,best.Z);cl.intensity=1.4*(R&&R.ph===1?.85+.15*Math.sin(t*40):1)}else cl.intensity=0})});
+/* 6. light + power cut later */
+sec('light',()=>{const amb=new T.AmbientLight(0xfff2dc,0);scene.add(amb);window.__pzRestored=1;let cutAt=100+Math.random()*60,cutOn=0;
+hook(HX,'light',(dt,t)=>{if(started&&!G.dead&&!fin)S.play+=dt;
+const day=scene.fog&&scene.fog.density<.03,lit=started&&!day&&window.__pzPower&&!G.bo;
+amb.intensity+=((lit?(G.st>=3?.5:1.15):0)-amb.intensity)*Math.min(1,dt*3);
+if(lit){const f=G.st>=3?.6:1;hemi.intensity=Math.max(hemi.intensity,1.9*f);if(scene.fog)scene.fog.density=Math.min(scene.fog.density,.009);zl.intensity*=1.5;for(const l of scene.children)if(l.isPointLight&&l.distance===14)l.intensity*=1.5}
+if(!cutOn&&S.play>cutAt){cutOn=1;window.__pzRestored=0}})});
+/* 7. overlapping wall text */
+sec('text-fix',()=>{function fixText(){scene.updateMatrixWorld(true);const L=[];
+scene.traverse(o=>{if(!o.isMesh||!o.visible||!o.geometry||o.geometry.type!=='PlaneGeometry')return;const m=o.material;if(!m||Array.isArray(m)||!m.map||!m.map.image||m.map.image.width!==512||m.map.image.height!==128||Math.abs(o.rotation.x)>.01)return;
+let v=1,p=o;while(p){if(!p.visible)v=0;p=p.parent}if(!v)return;const w=new T.Vector3();o.getWorldPosition(w);const ry=o.rotation.y,pa=o.geometry.parameters;
+L.push({o,x:w.x,y:w.y,z:w.z,nx:Math.sin(ry),nz:Math.cos(ry),w:pa.width*o.scale.x,h:pa.height*o.scale.y,tr:m.transparent?1:0})});
+L.sort((a,b)=>a.tr-b.tr);const kept=[];
+L.forEach(a=>{for(const b of kept){if(a.nx*b.nx+a.nz*b.nz<.9)continue;if(Math.abs((a.x-b.x)*a.nx+(a.z-b.z)*a.nz)>.5)continue;const al=Math.abs((a.x-b.x)*a.nz-(a.z-b.z)*a.nx);if(al<(a.w+b.w)/2*.9&&Math.abs(a.y-b.y)<(a.h+b.h)/2*.9){a.o.visible=false;return}}kept.push(a)})}
+const fx=[5,12];hook(HX,'text-fix',()=>{if(fx.length&&S.play>fx[0]){fx.shift();fixText()}})});
+/* 8. instructions button (5 s) */
+sec('intro',()=>{addCss('#pzIb{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:44%;z-index:9;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:rgba(20,23,34,.75);color:#eceef6;font:700 11px monospace;letter-spacing:.1em;touch-action:manipulation;transition:opacity .6s;display:none}#pzIo{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center}#pzIo .c{width:min(88%,520px);max-height:88%;overflow:auto;background:#10151a;border:1px solid #3a4a5f;border-radius:14px;padding:16px;color:#d8d2c8;font:15px/1.6 Georgia,serif}#pzIo b{color:#c33;letter-spacing:3px}#pzIo button{margin-top:10px;width:100%;padding:12px;border-radius:10px;border:1px solid #9b1c1c;background:transparent;color:#d8d2c8;font:16px Georgia,serif}');
+const ib=document.createElement('button');ib.id='pzIb';ib.textContent='INSTRUCTIONS';document.body.appendChild(ib);
+const io=document.createElement('div');io.id='pzIo';io.innerHTML='<div class="c"><b>MISSION</b><p>You are part of a special response team sent into the hospital after reports of missing staff. Your team calls from outside: get out as fast as possible. Something is inside with you.</p><b>OBJECTIVE</b><p>Explore, find clues, keys and ritual items. Solve puzzles to unlock floors. Avoid the entity. Open the Final Gate and reach the Safe House outside.</p><b>POWER</b><p>If the lights go out, go to the Power Room next to the nurse station and fix the generator.</p><button>CLOSE</button></div>';
+document.body.appendChild(io);io.addEventListener('pointerdown',e=>e.stopPropagation());
+io.querySelector('button').onclick=()=>{io.style.display='none';ib.style.display='none'};ib.onclick=()=>{io.style.display='flex'};
+let hj=0;hook(HX,'intro',()=>{if(io.style.display==='flex')G.prot=Math.max(G.prot,2);if(!started||hj)return;hj=1;const e=el('ethi');
+if(e&&e.style.display==='flex'){e.style.visibility='hidden';for(let k=0;k<6&&e.style.display==='flex';k++){const b=[...e.querySelectorAll('button')];if(!b.length)break;(b.find(x=>x.textContent==='SKIP')||b[b.length-1]).click()}e.style.visibility=''}
+ib.style.display='block';ib.style.opacity=1;setTimeout(()=>{ib.style.opacity=0;setTimeout(()=>{if(io.style.display!=='flex')ib.style.display='none'},700)},5000)})});
+/* install wrappers once */
+const _u=update;update=function(dt,t){for(const h of HP)run(h,dt,t);_u(dt,t);for(const h of HQ)run(h,dt,t)};
+const _x=extra;extra=function(dt,t){_x(dt,t);for(const h of HX)run(h,dt,t)};
+badge();
+})();</script>
 </body></html>
 
 </template>
@@ -3829,4 +3777,5 @@ window.lvDone=function(lv){if(lv>myDone())localStorage.pzdone=lv;try{ch&&ch.trac
 setInterval(()=>{try{if(G.on)return;const e=$('#mode');if(e&&!/^LEVEL/.test(e.textContent))e.textContent='LEVEL '+computeLv()+' · '+e.textContent;const l=document.querySelector('.lv');if(l)l.textContent='LV '+(1+myDone())}catch(e){}},700);
 })();
 </script>
+<div id="pzbuild" style="position:fixed;right:6px;bottom:2px;font:9px monospace;opacity:.6;color:#fff;z-index:99;pointer-events:none">build 76IYR1</div>
 </body></html>
