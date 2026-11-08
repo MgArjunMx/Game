@@ -3404,7 +3404,7 @@ for(const x of[-1.3,1.3])box(.1,.1,24,pp,x,3.05,18);
 let ad=false;try{ad=!!parent.__PZADMIN}catch(e){}
 let noclip=0,saved=[],noGhost=0;
 const _x=extra;extra=function(dt,t){_x(dt,t);try{aarav.g.scale.setScalar(S);kabir.g.scale.setScalar(S);peers.forEach(o=>{if(o.g.parent)o.g.scale.setScalar(S);else peers.delete(o)});if(noGhost)G.prot=1e4}catch(e){}};
-if(ad){
+if(false){
  const ev=e=>dispatchEvent(new MessageEvent('message',{data:{t:'peer',p:{ev:[Object.assign({u:'adm'+Math.random()},e)]}},source:parent}));
  const b=document.createElement('button');b.textContent='ADMIN';b.style.cssText='position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:60%;z-index:9;padding:8px 12px;border-radius:999px;border:1px solid #6a62f0;background:rgba(20,23,34,.8);color:#eceef6;font:700 11px monospace;letter-spacing:.1em';
  const pn=document.createElement('div');pn.style.cssText='position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center';
@@ -3425,7 +3425,79 @@ if(ad){
  [27.5,97.5,167.5,237.5,291,326,361,396].forEach((z,i)=>A('Floor '+(i?i:'G'),()=>{P.pos.set(43,0,z);P.vel.set(0,0,0);pn.style.display='none'}));
  A('CLOSE',()=>pn.style.display='none',4);
 }
-}catch(e){console.log('PZ-X1 game',e)}})();</script></body></html>
+}catch(e){console.log('PZ-X1 game',e)}})();/*PZ-PATCH-X2*/(function(){try{
+const T=THREE,R=(a,b)=>a+Math.random()*(b-a);
+const orig=window.__pzCut;window.__pzCut=undefined;
+const sun=new T.AmbientLight(0xfff4e0,0);scene.add(sun);
+let play=0,next=R(240,420),cd=0,t0=0;
+const bn=document.createElement('div');bn.style.cssText='position:fixed;left:0;right:0;top:36%;text-align:center;z-index:12;pointer-events:none;padding:0 14px;opacity:0;transition:opacity .5s;color:#ff6a5a;text-shadow:0 0 14px #000;font:700 24px Georgia,serif;letter-spacing:3px';
+bn.innerHTML='POWER CUT<small style="display:block;margin-top:8px;font:600 14px system-ui;color:#ffe3a0">The generator failed. Go to the Power Room next to the nurse station.</small>';document.body.appendChild(bn);
+const intro=()=>{const e=document.getElementById('ethi');return !e||e.style.display!=='flex'};
+/* random furniture on a random side of every room */
+const pm=[M(0x4a3524,.8),M(0x5a6a60,.6),M(0x6a5a40,.9)],lf=M(0x2f7a2f,1),pot=M(0x6a3a22,.8);
+MLAB.slice().forEach(([nm,cx,zc])=>{const wi=WG.findIndex(w=>cx>w.ox&&cx<w.ox+w.n*(w.rw||7)&&Math.abs(zc-w.cz)<(w.d||8)+5);if(wi<0)return;
+ const w=WG[wi],g=WGR[wi],rw=w.rw||7,d=w.d||8,dir=zc>w.cz?1:-1,x0=cx-rw/2,zf=w.cz+dir*2,side=Math.random()<.5,n=2+(Math.random()*3|0);
+ for(let k=0;k<n;k++){const u=side?R(rw-1.5,rw-.6):R(.6,1.5),v=R(3.6,d-1),x=x0+u,z=zf+dir*v,r=Math.random();
+  if(r<.4){const h=R(.6,1.8),ww=R(.5,.9);box(ww,h,ww,pm[k%3],x,h/2,z,g);col(x,z,ww,ww)}
+  else if(r<.7){box(.45,.06,.45,pm[0],x,.45,z,g);box(.45,.45,.06,pm[0],x,.7,z-dir*.2,g);col(x,z,.5,.5)}
+  else{const p=new T.Mesh(new T.CylinderGeometry(.2,.15,.3,10),pot);p.position.set(x,.15,z);g.add(p);const b=new T.Mesh(new T.SphereGeometry(.32,8,6),lf);b.position.set(x,.6,z);g.add(b);col(x,z,.5,.5)}}});
+/* roomier movement: shrink furniture colliders */
+const seen=new WeakSet();
+function loosen(){for(const c of cols){if(seen.has(c)||c[0]>1e5)continue;seen.add(c);const a=c[1]-c[0],b=c[3]-c[2];if(a>.45&&b>.45&&a<4&&b<4){c[0]+=.1;c[1]-=.1;c[2]+=.1;c[3]-=.1}}}
+[1500,6000,12000].forEach(m=>setTimeout(loosen,m));
+/* ground shadows */
+const sh=()=>{const m=new T.Mesh(new T.CircleGeometry(.5,16),new T.MeshBasicMaterial({color:0,transparent:true,opacity:.4,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-8,polygonOffsetUnits:-8}));m.rotation.x=-Math.PI/2;m.renderOrder=9000;scene.add(m);return m};
+const ms=sh(),ps=new Map(),_p=HB.peer;
+HB.peer=function(){const o=_p.apply(this,arguments);ps.set(o,sh());return o};
+const _x=extra;extra=function(dt,t){_x(dt,t);try{
+ if(started&&intro()&&!G.dead&&!fin)play+=dt;
+ ms.position.set(aarav.g.position.x,aarav.g.position.y-(window.JJ?JJ.y:0)+.03,aarav.g.position.z);
+ ps.forEach((m,o)=>{if(!o.g.parent){scene.remove(m);ps.delete(o);return}m.position.set(o.g.position.x,o.g.position.y+.03,o.g.position.z)});
+ const day=scene.fog&&scene.fog.density<.03,lit=started&&!day&&window.__pzPower&&!G.bo&&cd<2;
+ sun.intensity+=((lit?(G.st>=3?.7:1.8):0)-sun.intensity)*Math.min(1,dt*4);
+ if(lit&&G.st<3){hemi.intensity=Math.max(hemi.intensity,2.6);scene.fog.density=Math.min(scene.fog.density,.004)}
+ if(cd==0&&orig&&play>next&&window.__pzPower&&G.st==0&&!G.dead&&!fin){cd=1;t0=play;G.fk=1.4;try{S.slam(P.pos.x,P.pos.z)}catch(e){}}
+ if(cd==1&&play-t0>1.4){cd=2;orig();bn.style.opacity=1;setTimeout(()=>bn.style.opacity=0,6000)}
+ if(cd==2&&window.__pzPower){cd=0;next=play+R(240,420)}
+}catch(e){}};
+}catch(e){console.log('PZ-X2',e)}})();/*PZ-PATCH-X3*/(function(){try{
+const T=THREE,S=.9;let ad=false;try{ad=!!parent.__PZADMIN}catch(e){}
+const css=document.createElement('style');css.textContent=`
+#pzIb,#pzIo{display:none!important}
+.lvc{width:min(96vw,720px)!important;height:min(92vh,430px)!important;box-sizing:border-box;grid-template-columns:1fr!important;grid-template-rows:auto auto 1fr auto auto!important;padding:12px 16px!important}
+.lvc h3{font-size:16px!important}.lvc>p:not(.mg){font-size:13px!important;opacity:.8!important}
+.lvc .bd{grid-column:1!important;grid-row:3!important;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+.lvc .mg{grid-column:1!important;grid-row:4!important}
+.lvc .ft{grid-column:1!important;grid-row:5!important;flex-direction:row!important;flex-wrap:wrap;justify-content:center}
+.lvc .ft .lvb{min-width:120px;flex:0 0 auto}
+.lvc .g2{width:min(480px,90%);grid-template-columns:1fr 1fr 1fr 1fr!important}.lvb.cd{height:78px!important}
+.lvc .gl{width:min(230px,52vh)!important}.lvc .sb{zoom:.72}
+.lvx{display:block!important;width:40px;height:40px;top:8px;right:10px;font-size:20px}
+.lvb.hx{display:none!important}
+.lvc .ft .lvb.pw{position:absolute!important;right:14px;bottom:14px;width:62px;height:62px;min-width:0;border-radius:50%;font-size:0!important;padding:0!important;min-height:0!important;opacity:1;background:#2a1a10;border:2px solid #c9a020}
+.lvb.pw:before{content:'🔨';font-size:28px}
+.lvb.pw:after{content:attr(data-n);position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;border-radius:10px;background:#c33;color:#fff;font:700 12px/20px system-ui}
+`;document.head.appendChild(css);
+const fixM=()=>document.querySelectorAll('.lvm .lvb').forEach(b=>{if(b.classList.contains('pw'))b.dataset.n=(b.textContent.match(/\d+/)||[''])[0];else if(b.textContent==='CLOSE')b.classList.add('hx')});
+const rm=n=>{if(n.nodeType==1&&!n.children.length&&/^(PATCH |build )/.test((n.textContent||'').trim()))n.remove()};
+new MutationObserver(ms=>{ms.forEach(m=>m.addedNodes.forEach(rm));fixM()}).observe(document.body,{childList:true,subtree:true});
+[...document.body.children].forEach(rm);
+const pe=new Set(),_p=HB.peer;HB.peer=function(){const o=_p.apply(this,arguments);pe.add(o);return o};
+const pool=scene.children.filter(o=>o.isPointLight&&o.distance===14&&o.color.getHex()===0xffffff);
+const intro=()=>{const e=document.getElementById('ethi');return !e||e.style.display!=='flex'};
+const fd=document.createElement('div');fd.style.cssText='position:fixed;inset:0;background:#000;z-index:60;display:none';document.body.appendChild(fd);
+let adm=0,fr=0,sv=null;const ZS=[27.5,97.5,167.5,237.5,291,326,361,396];
+const _x=extra;extra=function(dt,t){_x(dt,t);try{
+ aarav.g.scale.setScalar(S);kabir.g.scale.setScalar(S);pe.forEach(o=>{if(o.g.parent)o.g.scale.setScalar(S);else pe.delete(o)});
+ const day=scene.fog&&scene.fog.density<.03;
+ if(started&&!day&&window.__pzPower&&!G.bo&&G.st<3)pool.forEach(l=>l.intensity=0);
+ if(ad&&started&&intro()){G.prot=1e4;
+  if(!adm){adm=1;P.has=true;aarav.torch.visible=true;P.map=true;['Trishul Coin','Sacred Ash','Hospital Master Key'].forEach(n=>inv.add(n));
+   if(!doorOpen){dOpen=1;doorOpen=1;G.on=1;G.t=40;const i=cols.indexOf(doorCol);if(i>=0)cols.splice(i,1)}
+   fd.style.display='block';sv=[P.pos.x,P.pos.z];cols.splice(0);fr=0}
+  if(adm==1){const i=fr>>1;if(i<ZS.length){P.pos.set(43,0,ZS[i]);P.vel.set(0,0,0)}else{P.pos.set(sv[0],0,sv[1]);fd.style.display='none';adm=2}fr++}}
+}catch(e){}};
+}catch(e){console.log('PZ-X3',e)}})();</script></body></html>
 
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -3877,13 +3949,13 @@ setInterval(()=>{try{if(G.on)return;const e=$('#mode');if(e&&!/^LEVEL/.test(e.te
 <div id="pzbuild" style="position:fixed;right:6px;bottom:2px;font:9px monospace;opacity:.6;color:#fff;z-index:99;pointer-events:none">build 76POUQ</div>
 <script>/*PZ-PATCH-X1-OUTER*/(function(){try{
 const ADM="kumar";
-const isAdm=()=>!!(ADM&&prof&&me&&(String(prof.username).toLowerCase()===ADM||me.id===ADM));
+const isAdm=()=>!!(ADM&&prof&&me&&(String(prof.username).toLowerCase()===ADM||String(me.email||'').toLowerCase()===ADM||me.id===ADM));
 Object.defineProperty(window,'__PZADMIN',{get:isAdm});
 const css=document.createElement('style');css.textContent=`
 .bg{background:radial-gradient(70% 55% at 50% 105%,rgba(143,136,255,.4),transparent 70%),radial-gradient(45% 40% at 12% 18%,rgba(94,194,183,.3),transparent 70%),radial-gradient(45% 40% at 88% 22%,rgba(255,150,120,.22),transparent 70%),linear-gradient(#090b13,#10131f)!important;background-size:130% 130%,130% 130%,130% 130%,100% 100%!important;animation:pzdr 20s ease-in-out infinite alternate}
 @keyframes pzdr{from{background-position:0 0,0 0,100% 0,0 0}to{background-position:30% 20%,40% 10%,70% 30%,0 0}}
 #lobby:before{content:"";position:absolute;left:50%;bottom:11%;width:62vmin;height:15vmin;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(163,156,255,.38),transparent 70%);filter:blur(6px);pointer-events:none}
-.pzi{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--ln);border-radius:12px;padding:12px 14px;color:var(--tx);font:600 15px Inter,system-ui,sans-serif;outline:none}
+#pzbuild{display:none!important}.pzi{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--ln);border-radius:12px;padding:12px 14px;color:var(--tx);font:600 15px Inter,system-ui,sans-serif;outline:none}
 `;document.head.appendChild(css);
 const inp='class="pzi" autocapitalize="none" autocomplete="off" spellcheck="false"';
 /* login screen: email */
@@ -3909,6 +3981,6 @@ $('#bset').addEventListener('click',()=>{const e=me&&me.email;$('#sinfo').textCo
  let a=$('#pza');if(a)a.remove();if(!isAdm())return;
  a=document.createElement('div');a.id='pza';a.style.cssText='display:flex;flex-direction:column;gap:8px';
  a.innerHTML='<div class="sub">ADMIN</div><div style="display:flex;gap:8px"><select id="pzlv" class="pzi" style="flex:1">'+[1,2,3,4,5,6,7,8].map(n=>'<option value="'+n+'">Level '+n+'</option>').join('')+'</select><button class="btn sb" id="pzt">TEST GAME</button></div>';
- card.insertBefore(a,eb);
+ card.insertBefore(a,card.children[1]);
  $('#pzt').onclick=()=>{$('#shS').classList.remove('on');launch(+$('#pzlv').value)}});
 }catch(e){console.log('PZ-X1 outer',e)}})();</script></body></html>
