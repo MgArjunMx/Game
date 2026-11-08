@@ -3213,7 +3213,7 @@ const _x=extra;extra=function(dt,t){_x(dt,t);try{
 }catch(e){console.log('PZ-V71 error',e)}})();
 </script>
 <script>/*PZ-FINAL-PATCH*/(function(){
-const ST=[],HX=[],HP=[],HQ=[],BID='76IYR1';
+const ST=[],HX=[],HP=[],HQ=[],BID='76OGY8';
 const S={play:0};
 let badgeEl=null;
 function badge(){try{if(!badgeEl){badgeEl=document.createElement('div');badgeEl.style.cssText='position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:99;background:rgba(0,0,0,.8);color:#9fe;font:11px/1.4 monospace;padding:6px 10px;border-radius:10px;max-width:86%;text-align:center';badgeEl.onclick=()=>badgeEl.remove();document.body.appendChild(badgeEl)}
@@ -3247,6 +3247,40 @@ for(let q=0;q<cnt;q++){const ww=rr(.9,1.8),wh=rr(.8,1.1),wx=x0+(cnt==1?rr(1.6,rw
 g.children.forEach(o=>{if(o.isMesh&&o.geometry&&o.geometry.type==='PlaneGeometry'&&Math.abs(o.rotation.x)<.01&&o.material&&o.material.map&&Math.abs(o.position.z-zb)<.5&&Math.abs(o.position.x-wx)<ww/2+.5&&o.position.y>.8&&o.position.y<2.6)o.visible=false});
 box(ww+.16,wh+.16,.05,fr,wx,wy,zb-dir*.17,g);box(ww,wh,.04,pane,wx,wy,z1,g);box(.04,wh,.05,fr,wx,wy,z1-dir*.01,g);box(ww,.04,.05,fr,wx,wy,z1-dir*.01,g);box(ww+.3,.05,.18,sil,wx,wy-wh/2-.1,zb-dir*.24,g);wins++}});
 ST.push('rooms-info merged '+merged+' windows '+wins+' OK')});
+/* 4b. balconies / galleries: open balconies at wing ends and off the main hall, random per floor */
+sec('balconies',()=>{
+const slab=M(0x8d8672,.9),rail=M(0x9aa0a6,.35,.8),wd=M(0x4a3524,.8),potM=M(0x6a3a22,.8),leaf=M(0x2f7a2f,1),
+ glass=new T.MeshStandardMaterial({color:0x9fd0d8,transparent:true,opacity:.28,roughness:.1,side:T.DoubleSide});
+const cutWall=(w,a,b)=>{const p=w.geometry.parameters,x=w.position.x,dl=p.depth*w.scale.z,z0=w.position.z-dl/2,z1=w.position.z+dl/2,par=w.parent||scene,cz=w.position.z;
+ w.parent&&w.parent.remove(w);const i=walls.indexOf(w);if(i>=0)walls.splice(i,1);
+ for(let k=cols.length-1;k>=0;k--){const c=cols[k];if(Math.abs((c[0]+c[1])/2-x)<.1&&Math.abs((c[2]+c[3])/2-cz)<.1&&c[1]-c[0]<.5)cols.splice(k,1)}
+ const n=walls.length;
+ if(a-(z0+.15)>.5)seg(x,z0+.15,x,a);
+ if((z1-.15)-b>.5)seg(x,b,x,z1-.15);
+ for(let k=n;k<walls.length;k++)par.add(walls[k]);return par};
+const balcony=(par,wx,zc,hw,depth,dx)=>{const x1=wx+dx*depth,cx=(wx+x1)/2,lo=Math.min(wx,x1),hi=Math.max(wx,x1);
+ box(depth,.2,hw*2+.2,slab,cx,-.1,zc,par);
+ box(.3,.5,hw*2,wallM,wx,2.95,zc,par);
+ box(.07,.07,hw*2,rail,x1,1.02,zc,par);box(.02,.85,hw*2,glass,x1,.58,zc,par);
+ for(const s of[-1,1]){box(depth,.07,.07,rail,cx,1.02,zc+s*hw,par);box(depth,.85,.02,glass,cx,.58,zc+s*hw,par)}
+ for(let k=0;k<=4;k++)box(.07,1.05,.07,rail,x1,.52,zc-hw+k*hw/2,par);
+ for(const s of[-1,1])for(let k=1;k<=3;k++)box(.07,1.05,.07,rail,wx+dx*k*depth/3,.52,zc+s*hw,par);
+ cols.push([x1-.1,x1+.1,zc-hw-.1,zc+hw+.1],[lo,hi,zc-hw-.12,zc-hw+.08],[lo,hi,zc+hw-.08,zc+hw+.12]);
+ const bz=zc+(rg()<.5?-1:1)*(hw-.5);box(1.6,.06,.5,wd,x1-dx*.5,.45,bz,par);box(1.6,.5,.06,wd,x1-dx*.5,.7,bz+(bz>zc?.22:-.22),par);
+ cols.push([x1-dx*.5-.8,x1-dx*.5+.8,bz-.3,bz+.3]);
+ const px=x1-dx*.45,pz=zc-(bz>zc?1:-1)*(hw-.6);box(.4,.4,.4,potM,px,.2,pz,par);const bush=new T.Mesh(new T.SphereGeometry(.38,8,6),leaf);bush.position.set(px,.7,pz);par.add(bush);cols.push([px-.22,px+.22,pz-.22,pz+.22])};
+let nE=0,nW=0;
+WG.forEach((w,i)=>{if(rg()<.3||!WGR[i])return;const ex=w.ox+w.n*(w.rw||7),depth=rr(2.6,5.5);
+ const wl=walls.find(q=>{const p=q.geometry&&q.geometry.parameters;return p&&p.width<.5&&p.depth>3.8&&p.depth<4.8&&Math.abs(q.position.x-ex)<.2&&Math.abs(q.position.z-w.cz)<.2});if(!wl)return;
+ const par=cutWall(wl,w.cz-5,w.cz+5);balcony(par,ex,w.cz,2.0,depth,1);nE++});
+const lowB=[-.5,...GZ.map(g=>g+4)],hiB=[...GZ.map(g=>g-4),403];
+for(let b=0;b<8;b++){if(rg()<.25)continue;
+ for(let tr=0;tr<8;tr++){const zc=rr(lowB[b]+8,hiB[b]-8);if(Math.abs(zc-ZL[b])<5.5||(b==0&&zc>24)||(zc>86&&zc<154))continue;
+  const hl=2.2,wl=walls.find(q=>{const p=q.geometry&&q.geometry.parameters;if(!p||p.width>.5||Math.abs(q.position.x-41)>.2)return false;const dl=p.depth*q.scale.z;return q.position.z-dl/2<zc-hl-.4&&q.position.z+dl/2>zc+hl+.4});
+  if(!wl)continue;const par=cutWall(wl,zc-hl,zc+hl);
+  (par.children||[]).forEach(o=>{if(o.isMesh&&o.geometry&&o.geometry.type==='PlaneGeometry'&&Math.abs(o.position.x-41.16)<.06&&Math.abs(o.position.z-zc)<hl+.3)o.visible=false});
+  balcony(par,41,zc,hl,rr(3,5.5),-1);nW++;break}}
+ST.push('balconies east '+nE+' hall '+nW+' OK')});
 /* 5. lift */
 sec('lift',()=>{
 scene.children.filter(o=>o.isGroup&&o.children.some(c=>{const p=c.geometry&&c.geometry.parameters;return c.geometry&&c.geometry.type==='BoxGeometry'&&p&&Math.abs(p.width-.06)<.001&&Math.abs(p.height-2.6)<.001&&Math.abs(p.depth-1.1)<.001})).forEach(g=>scene.remove(g));
@@ -3301,13 +3335,18 @@ const op=l.o>.5;l.c[0]=op?1e6:43.05;l.c[1]=op?1e6+1:43.2;
 if(!R||(l!==L[R.f]&&l!==L[R.to]))disp(l,0,NM[l.b],'#ffb030')}
 let best=null,bd=1e9;for(const l of L){if(px>40.5&&bandOf(pz)===l.b){const d=Math.hypot(px-X,pz-l.Z);if(d<bd){bd=d;best=l}}}
 if(best&&bd<6){cl.position.set(X,best.b*HH+2.5,best.Z);cl.intensity=1.4*(R&&R.ph===1?.85+.15*Math.sin(t*40):1)}else cl.intensity=0})});
-/* 6. light + power cut later */
-sec('light',()=>{const amb=new T.AmbientLight(0xfff2dc,0);scene.add(amb);window.__pzRestored=1;let cutAt=100+Math.random()*60,cutOn=0;
+/* 6. light + power cut (own timer, does not depend on older patches) */
+sec('light',()=>{const amb=new T.AmbientLight(0xfff2dc,0);scene.add(amb);window.__pzRestored=1;
+let cutAt=70+Math.random()*40,stage=0,cutT=0;
+const bn=document.createElement('div');bn.style.cssText='position:fixed;left:0;right:0;top:40%;text-align:center;z-index:12;pointer-events:none;padding:0 14px;opacity:0;transition:opacity .5s;color:#ff6a5a;text-shadow:0 0 14px #000,0 0 30px #a00;font:700 26px Georgia,serif;letter-spacing:3px';
+bn.innerHTML='POWER CUT<small style="display:block;margin-top:8px;font:600 14px system-ui;letter-spacing:1px;color:#ffe3a0">Go to the POWER ROOM next to the nurse station and start the generator.</small>';document.body.appendChild(bn);
 hook(HX,'light',(dt,t)=>{if(started&&!G.dead&&!fin)S.play+=dt;
 const day=scene.fog&&scene.fog.density<.03,lit=started&&!day&&window.__pzPower&&!G.bo;
 amb.intensity+=((lit?(G.st>=3?.5:1.15):0)-amb.intensity)*Math.min(1,dt*3);
 if(lit){const f=G.st>=3?.6:1;hemi.intensity=Math.max(hemi.intensity,1.9*f);if(scene.fog)scene.fog.density=Math.min(scene.fog.density,.009);zl.intensity*=1.5;for(const l of scene.children)if(l.isPointLight&&l.distance===14)l.intensity*=1.5}
-if(!cutOn&&S.play>cutAt){cutOn=1;window.__pzRestored=0}})});
+if(stage===0&&S.play>cutAt&&window.__pzPower&&window.__pzCut&&G.st===0&&!G.dead&&!fin&&items.some(i=>/generator panel|breaker panel/.test(i.t))){stage=1;cutT=0;try{S.slam(P.pos.x,P.pos.z)}catch(e){}}
+if(stage===1){cutT+=dt;G.fk=Math.max(G.fk,.6);if(cutT>1.8){stage=2;window.__pzCut();bn.style.opacity=1;setTimeout(()=>{bn.style.opacity=0},6000)}}
+if(stage===2&&window.__pzPower&&S.play>cutAt+30)stage=3})});
 /* 7. overlapping wall text */
 sec('text-fix',()=>{function fixText(){scene.updateMatrixWorld(true);const L=[];
 scene.traverse(o=>{if(!o.isMesh||!o.visible||!o.geometry||o.geometry.type!=='PlaneGeometry')return;const m=o.material;if(!m||Array.isArray(m)||!m.map||!m.map.image||m.map.image.width!==512||m.map.image.height!==128||Math.abs(o.rotation.x)>.01)return;
@@ -3777,5 +3816,6 @@ window.lvDone=function(lv){if(lv>myDone())localStorage.pzdone=lv;try{ch&&ch.trac
 setInterval(()=>{try{if(G.on)return;const e=$('#mode');if(e&&!/^LEVEL/.test(e.textContent))e.textContent='LEVEL '+computeLv()+' · '+e.textContent;const l=document.querySelector('.lv');if(l)l.textContent='LV '+(1+myDone())}catch(e){}},700);
 })();
 </script>
-<div id="pzbuild" style="position:fixed;right:6px;bottom:2px;font:9px monospace;opacity:.6;color:#fff;z-index:99;pointer-events:none">build 76IYR1</div>
+
+<div id="pzbuild" style="position:fixed;right:6px;bottom:2px;font:9px monospace;opacity:.6;color:#fff;z-index:99;pointer-events:none">build 76OGY8</div>
 </body></html>
