@@ -1463,8 +1463,8 @@ try{
  ready.catch(e=>console.log('RC model load failed',e));
  function actor(src,clips,sc){
   const root=new T.Group(),m=T.SkeletonUtils.clone(src);m.rotation.y=0;/*AF*/m.updateMatrixWorld(true);{let f,t;m.traverse(o=>{if(/LeftFoot$/.test(o.name))f=o;if(/LeftToeBase$/.test(o.name))t=o});if(f&&t){const a=new T.Vector3(),b=new T.Vector3();f.getWorldPosition(a);t.getWorldPosition(b);m.rotation.y=-Math.atan2(b.x-a.x,b.z-a.z)}}/*AFE*/root.add(m);
-  const b=new T.Box3().setFromObject(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
-  const b2=new T.Box3().setFromObject(m);m.position.y-=b2.min.y;
+  const b=(window.__SB||function(x){return new T.Box3().setFromObject(x)})(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
+  const b2=(window.__SB||function(x){return new T.Box3().setFromObject(x)})(m);m.position.y-=b2.min.y;
   m.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.frustumCulled=false;
    [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.4,.4,.4);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
   const a={root:root,m:m,mx:null,A:null,W:{i:1,w:0,r:0}};
@@ -4086,7 +4086,7 @@ for(var z=30;z<400;z+=40)draw(43,H(z),z,[0,Math.PI],-1);
 WG.forEach(function(w,i){draw(w.ox+w.n*(w.rw||7)/2,WGR[i].position.y+1.6,w.cz,[Math.PI/2,-Math.PI/2],i)});
 WGR.forEach(function(g,i){g.visible=vis[i]});cam.position.copy(sp);cam.quaternion.copy(sq);
 }catch(e){console.log('warmup',e)}})();
-</script><!--CHAR2-START--><script>window.__CHARURLS=["https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Michelle.glb","https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Xbot.glb","https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb"];
+</script><!--CHAR2-START--><script>window.__CHARURLS=["https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Michelle.glb","https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Xbot.glb","https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb"];window.__SB=function(x){var T=THREE,b=new T.Box3(),v=new T.Vector3(),ok=0;x.updateMatrixWorld(true);x.traverse(function(o){if(!o.isSkinnedMesh||typeof o.boneTransform!=='function')return;var n=o.geometry.attributes.position.count;for(var i=0;i<n;i++){o.boneTransform(i,v).applyMatrix4(o.matrixWorld);b.expandByPoint(v);ok=1}});return ok?b:new T.Box3().setFromObject(x)};
 /*CHAR-V2*/
 (function(){try{
 if(window.__chr2)return;window.__chr2=1;
@@ -4108,10 +4108,10 @@ async function build(u){
  o.updateMatrixWorld(true);
  o.traverse(function(b){if(/LeftFoot$/.test(b.name))f=b;if(/LeftToeBase$/.test(b.name))t=b});
  if(f&&t){var p=new T.Vector3(),q=new T.Vector3();f.getWorldPosition(p);t.getWorldPosition(q);o.rotation.y=-Math.atan2(q.x-p.x,q.z-p.z)}
- var bx=new T.Box3().setFromObject(o),h=bx.max.y-bx.min.y;
+ var bx=window.__SB(o),h=bx.max.y-bx.min.y;
  if(!(h>.01&&isFinite(h)))throw new Error('bad size');
  o.scale.multiplyScalar(1.75/h);
- bx=new T.Box3().setFromObject(o);o.position.y-=bx.min.y;
+ bx=window.__SB(o);o.position.y-=bx.min.y;
  o.traverse(function(x){if(!x.isMesh)return;x.frustumCulled=false;[].concat(x.material).forEach(function(q){if(!q)return;if(q.map&&q.emissive){q.emissive.setRGB(.26,.26,.26);q.emissiveMap=q.map}q.needsUpdate=true})});
  return{o:o,clips:clips}}
 function grid(){
@@ -4476,8 +4476,8 @@ try{
  ready.catch(e=>console.log('RC model load failed',e));
  function actor(src,clips,sc){
   const root=new T.Group(),m=T.SkeletonUtils.clone(src);m.rotation.y=0;/*AF*/m.updateMatrixWorld(true);{let f,t;m.traverse(o=>{if(/LeftFoot$/.test(o.name))f=o;if(/LeftToeBase$/.test(o.name))t=o});if(f&&t){const a=new T.Vector3(),b=new T.Vector3();f.getWorldPosition(a);t.getWorldPosition(b);m.rotation.y=-Math.atan2(b.x-a.x,b.z-a.z)}}/*AFE*/root.add(m);
-  const b=new T.Box3().setFromObject(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
-  const b2=new T.Box3().setFromObject(m);m.position.y-=b2.min.y;
+  const b=(window.__SB||function(x){return new T.Box3().setFromObject(x)})(m),h=(b.max.y-b.min.y)||1;m.scale.multiplyScalar((CFG.h||1.75)*(sc||1)/h);
+  const b2=(window.__SB||function(x){return new T.Box3().setFromObject(x)})(m);m.position.y-=b2.min.y;
   m.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.frustumCulled=false;
    [].concat(o.material).forEach(mt=>{if(!mt)return;mt.roughness=Math.max(mt.roughness||.8,.7);mt.metalness=0;if(mt.map&&mt.emissive){mt.emissive.setRGB(.4,.4,.4);mt.emissiveMap=mt.map}mt.needsUpdate=true})});
   const a={root:root,m:m,mx:null,A:null,W:{i:1,w:0,r:0}};
@@ -5252,4 +5252,4 @@ launch=function(lv){
 }catch(e){console.log('PZ-DESIGN error',e)}})();
 </script>
 <!--PZ-DESIGN-END-->
-</body></html>
+<!--SB-START--><script>window.__SB=function(x){var T=THREE,b=new T.Box3(),v=new T.Vector3(),ok=0;x.updateMatrixWorld(true);x.traverse(function(o){if(!o.isSkinnedMesh||typeof o.boneTransform!=='function')return;var n=o.geometry.attributes.position.count;for(var i=0;i<n;i++){o.boneTransform(i,v).applyMatrix4(o.matrixWorld);b.expandByPoint(v);ok=1}});return ok?b:new T.Box3().setFromObject(x)};</script><!--SB-END--></body></html>
