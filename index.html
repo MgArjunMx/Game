@@ -173,7 +173,7 @@ document.addEventListener('pointerdown',on,{passive:true})})();
 
 <section class="scr" id="wb"><div class="hero"><i></i><i></i><i></i><b>PZ</b></div><div class="logo">PLAY<b>ZONE</b></div><div class="card"><h2 id="wbn"></h2><div class="sub">Tap to enter in full screen.</div><button class="btn" id="wbb">ENTER</button></div></section>
 <section class="scr" id="login"><div class="hero"><i></i><i></i><i></i><b>PZ</b></div><div class="logo">PLAY<b>ZONE</b></div>
-<div class="card"><h2>Drop in</h2><div class="sub">No sign-up. Play as a guest, find friends by username and talk live while you play.</div>
+<div class="card"><h2>Drop in</h2><div class="sub">No sign-up. Play as a guest, find friends by username and talk live while you play. Guest progress is lost if you log out; add an email in Settings to keep your account.</div>
 <button class="btn" id="guest">PLAY AS GUEST</button><div class="er" id="er0"></div></div></section>
 
 <section class="scr" id="name"><div class="logo">PLAY<b>ZONE</b></div>
@@ -606,7 +606,7 @@ portal(OX+.9,80,'Tap to go back DOWN to Reception',6.8,35,-Math.PI/2);portal(OX+
 const zl=new T.PointLight(0xcfe0ff,0,13,2);scene.add(zl);
 function curZone(){for(let i=0;i<WG.length;i++){const w=WG[i];if(P.pos.x>w.ox-3&&Math.abs(P.pos.z-w.cz)<13)return{i,x:w.ox-4,zt:w.cz+13,w:w.n*7+8,h:26,n:w.name}}return{i:-1,x:-21,zt:53,w:32,h:60,n:''}}
 function extra(dt,t){const a=aarav;
- {const z=curZone();WGR.forEach((g,i)=>g.visible=z.i==i);if(z.n!==lastZ){lastZ=z.n;if(z.n)toast(z.n)}zl.position.set(P.pos.x,2.6,P.pos.z);zl.color.set(z.n=='BASEMENT'?0xff6a44:0xcfe0ff);zl.intensity=z.i<0?0:G.bo?.02:(1.0*(G.st>0&&Math.random()<.12*G.st?.05:1))}
+ {const z=curZone();WGR.forEach((g,i)=>g.visible=z.i==i||(P.pos.x>38&&Math.abs(WG[i].cz-P.pos.z)<40));if(z.n!==lastZ){lastZ=z.n;if(z.n)toast(z.n)}zl.position.set(P.pos.x,2.6,P.pos.z);zl.color.set(z.n=='BASEMENT'?0xff6a44:0xcfe0ff);zl.intensity=z.i<0?0:G.bo?.02:(1.0*(G.st>0&&Math.random()<.12*G.st?.05:1))}
  for(const d of DL){const dx=d.g.position.x+.8-P.pos.x,dz=d.g.position.z-P.pos.z;d.a+=((dx*dx+dz*dz<9?1:0)-d.a)*Math.min(1,dt*3);d.g.rotation.y=d.s*1.6*d.a}
  for(const p of POOLS){p.t+=dt;if(p.t>0){const s=.2+(p.max-.2)*(1-Math.exp(-p.t/14));p.m.scale.set(s,s,1)}}
  for(const d of DRIPS){if(d.w>0){d.w-=dt;d.m.visible=false;continue}d.v+=9*dt;d.y-=d.v*dt;d.m.visible=true;if(d.y<=.03){d.y=d.y0;d.v=0;d.w=rnd(1.2,3.5)}d.m.position.y=d.y}
@@ -1429,7 +1429,7 @@ try{
  const collect=()=>{CU.list.length=0;const wg=new Set(WGR);scene.children.forEach(o=>{if(o.isMesh)addM(o);else if(wg.has(o))o.children.forEach(k=>{if(k.isMesh)addM(k)})});CU.n=scene.children.length};
  const cullStep=()=>{if(scene.children.length!==CU.n)collect();const day=scene.fog&&scene.fog.density<.03,px=P.pos.x,pz=P.pos.z;
   for(let i=CU.list.length-1;i>=0;i--){const m=CU.list[i];if(!m.parent){CU.list.splice(i,1);continue}const u=m.userData;
-   const far=!day&&Math.hypot(u.cx-px,u.cz-pz)-u.cr>38;
+   const far=!day&&Math.hypot(u.cx-px,u.cz-pz)-u.cr>90;
    if(far){if(m.visible){m.visible=false;u.cl=1}}else if(u.cl){m.visible=true;u.cl=0}}};
  let rs=1;const ap=()=>renderer.setSize(Math.round(innerWidth*rs),Math.round(innerHeight*rs),false);
  addEventListener('resize',()=>{if(rs<1)setTimeout(ap,150)});
@@ -1438,7 +1438,7 @@ try{
   HB.tick(dt);
   const h=cur?1:0;if(h!==hot){hot=h;el('bInt').classList.toggle('hot',!!h)}
   ct-=dt;if(ct<=0){ct=.2;cullStep()}
-  const far=scene.fog.density<.03?160:44;if(cam.far!==far){cam.far=far;cam.updateProjectionMatrix()}
+  const far=scene.fog.density<.03?160:90;if(cam.far!==far){cam.far=far;cam.updateProjectionMatrix()}
   if(dt<.25){fa+=dt;fn++}
   if(fa>1.5){const f=fn/fa;fa=0;fn=0;if(started&&f<42&&rs>.55){rs=Math.max(.55,rs-.1);ap()}}
  };
@@ -2307,7 +2307,7 @@ const _u=update;update=function(dt,t){_u(dt,t);
 const S=document.getElementById('pzs');
 if(S){const tb=S.querySelector('.tb'),b=document.createElement('button');b.textContent='CAMERA';b.dataset.p=3;tb.appendChild(b);
  const p3=document.createElement('div');p3.style.display='none';
- p3.innerHTML='<label>Camera distance (kam = paas)<input type="range" id="pzc_d" min="30" max="300"></label><label>Camera height<input type="range" id="pzc_h" min="100" max="190"></label><label>Shoulder (left/right)<input type="range" id="pzc_s" min="0" max="70"></label><label>Quality<select id="pzc_q"><option value="low">Low (fast)</option><option value="med">Medium</option><option value="high">High</option><option value="ultra">Ultra</option></select></label><button id="pzc_r">RESET</button> <button id="pzc_v">SAVE</button>';
+ p3.innerHTML='<label>Camera distance (low = close)<input type="range" id="pzc_d" min="30" max="300"></label><label>Camera height<input type="range" id="pzc_h" min="100" max="190"></label><label>Shoulder (left/right)<input type="range" id="pzc_s" min="0" max="70"></label><label>Quality<select id="pzc_q"><option value="low">Low (fast)</option><option value="med">Medium</option><option value="high">High</option><option value="ultra">Ultra</option></select></label><button id="pzc_r">RESET</button> <button id="pzc_v">SAVE</button>';
  S.appendChild(p3);const q=id=>document.getElementById(id);
  const fill=()=>{q('pzc_d').value=C.d*100;q('pzc_h').value=C.h*100;q('pzc_s').value=C.s*100;q('pzc_q').value=C.q};fill();
  S.querySelectorAll('.tb button').forEach(x=>x.addEventListener('click',()=>{const on=x==b;p3.style.display=on?'':'none';if(on){S.querySelectorAll('.tb button').forEach(y=>y.classList.toggle('on',y==b));q('p1').style.display=q('p2').style.display='none'}}));
@@ -2367,7 +2367,7 @@ function apply(){const W=Wd(),H=Ht(),D=defs();ED.forEach(([id])=>{const e=q(id);
 apply();addEventListener('resize',apply);
 /* ---------- settings: new CUSTOM HUD tab ---------- */
 if(S){const t1=S.querySelector('.tb button[data-p="1"]');if(t1)t1.textContent='CUSTOM HUD';
- const p1=q('p1');if(p1)p1.innerHTML='<div class="pzt">Custom HUD</div><div class="pzd">Apne buttons haath se kahin bhi rakho. Edit dabane par ye panel chhup jaata hai. Kuch bhi overlap nahi hoga.</div><button class="pzp" id="pzeb">EDIT LAYOUT</button><button class="pzg" id="pzrs">RESET ALL</button>'}
+ const p1=q('p1');if(p1)p1.innerHTML='<div class="pzt">Custom HUD</div><div class="pzd">Drag buttons anywhere you like. The panel hides while you edit. Buttons cannot overlap.</div><button class="pzp" id="pzeb">EDIT LAYOUT</button><button class="pzg" id="pzrs">RESET ALL</button>'}
 /* ---------- editor ---------- */
 const bar=document.createElement('div');bar.id='pzh';
 bar.innerHTML='<b id="pzhn">TAP A BUTTON</b><span>Visibility<input type="range" id="pzho" min="15" max="100" disabled></span><span>Size<input type="range" id="pzhs" min="50" max="200" disabled></span><button class="pzg" id="pzhc">CANCEL</button><button class="pzp" id="pzhv">SAVE</button>';
@@ -2380,7 +2380,7 @@ function enter(){edit=1;snap=JSON.stringify(L);S&&(S.style.display='none');bar.s
 function leave(save){if(save)LS('pz33h',L);else L=JSON.parse(snap);edit=0;sel=null;bar.style.display='none';document.body.classList.remove('pzedit');['bTorch','bMap'].forEach(i=>q(i)&&q(i).style.removeProperty('display'));apply();mark();if(S)S.style.display='block';if(save)try{toast('HUD saved')}catch(e){}}
 document.addEventListener('pointerdown',e=>{if(!edit||e.target.closest('#pzh'))return;e.stopPropagation();e.preventDefault();const t=e.target.closest('[data-pzh]');if(!t){select(null);return}select(t.dataset.pzh);const g=gi(sel),c=L[sel];drag={x:e.clientX,y:e.clientY,cx:g.cx,cy:g.cy,px:c.x,py:c.y}},true);
 addEventListener('pointermove',e=>{if(!drag)return;e.preventDefault();put(sel,drag.cx+e.clientX-drag.x,drag.cy+e.clientY-drag.y);apply();mark()},true);
-const up=()=>{if(!drag)return;const d=drag;drag=null;if(!fit(sel)){const c=L[sel];c.x=d.px;c.y=d.py;try{toast('Jagah bhari hai')}catch(e){}}apply();mark()};
+const up=()=>{if(!drag)return;const d=drag;drag=null;if(!fit(sel)){const c=L[sel];c.x=d.px;c.y=d.py;try{toast('No space here')}catch(e){}}apply();mark()};
 addEventListener('pointerup',up,true);addEventListener('pointercancel',up,true);
 document.addEventListener('click',e=>{if(edit&&!e.target.closest('#pzh')){e.stopPropagation();e.preventDefault()}},true);
 ov.oninput=()=>{if(!sel)return;ensure(sel).o=ov.value/100;apply()};
@@ -2460,8 +2460,8 @@ const S2=q('pzs');
 if(S2){const tb=S2.querySelector('.tb');const old=tb.querySelector('button[data-p="3"]');if(old)old.style.display='none';
  const oc=q('pzc_d');const p3=oc?oc.parentNode.parentNode:null;
  const mk=(t,html)=>{const b=document.createElement('button');b.textContent=t;tb.appendChild(b);const p=document.createElement('div');p.style.display='none';p.innerHTML=html;S2.appendChild(p);return[b,p]};
- const [bq,pq]=mk('QUALITY','<label>Graphics quality<select id="z35q"><option value="low">Low (fast)</option><option value="med">Medium (sharp)</option><option value="high">High (HD)</option><option value="ultra">Ultra HD</option><option value="xtreme">Extreme HD (heavy)</option></select></label><div class="pzd">Medium = default. Extreme phone ko slow ya garam kar sakta hai.</div>');
- const [bc,pc]=mk('CAMERA','<label>Distance (kam = paas, zyada = door)<input type="range" id="z35d" min="15" max="600"></label><label>Height<input type="range" id="z35h" min="50" max="250"></label><label>Shoulder left/right (0 = center)<input type="range" id="z35s" min="-80" max="80"></label><label>Zoom / FOV (kam = zoom in)<input type="range" id="z35f" min="35" max="95"></label><button class="pzg" id="z35r">RESET CAMERA</button>');
+ const [bq,pq]=mk('QUALITY','<label>Graphics quality<select id="z35q"><option value="low">Low (fast)</option><option value="med">Medium (sharp)</option><option value="high">High (HD)</option><option value="ultra">Ultra HD</option><option value="xtreme">Extreme HD (heavy)</option></select></label><div class="pzd">Medium is the default. Extreme can slow down or heat up your phone.</div>');
+ const [bc,pc]=mk('CAMERA','<label>Distance (low = close)<input type="range" id="z35d" min="15" max="600"></label><label>Height<input type="range" id="z35h" min="50" max="250"></label><label>Shoulder left/right (0 = center)<input type="range" id="z35s" min="-80" max="80"></label><label>Zoom / FOV (low = zoom in)<input type="range" id="z35f" min="35" max="95"></label><button class="pzg" id="z35r">RESET CAMERA</button>');
  const fill=()=>{q('z35q').value=C.q;q('z35d').value=C.d*100;q('z35h').value=C.h*100;q('z35s').value=C.s*100;q('z35f').value=C.f};fill();
  q('z35q').onchange=e=>{C.q=e.target.value;sv();setQ()};
  q('z35d').oninput=e=>{C.d=e.target.value/100;sv()};q('z35h').oninput=e=>{C.h=e.target.value/100;sv()};q('z35s').oninput=e=>{C.s=e.target.value/100;sv()};q('z35f').oninput=e=>{C.f=+e.target.value;sv()};
@@ -2523,7 +2523,7 @@ function runPos(){const b=q('bSpr'),j=q('joy');if(!b||!j||document.body.classLis
  b.style.setProperty('left',(r.left+r.width/2-b.offsetWidth/2)+'px','important');b.style.setProperty('top',(r.top-b.offsetHeight-10)+'px','important')}
 let first=0,rt=0;const _x=extra;extra=function(dt,t){_x(dt,t);
  if(!first){first=1;try{solids();levelFloors()}catch(e){console.log('pz36',e)}setTimeout(()=>{try{solids()}catch(e){}},3500)}
- for(const p of pool){if(p.l.position.distanceToSquared(p.p)>.01){p.p.copy(p.l.position);p.r=0}p.r=Math.min(1,p.r+dt*2.5);p.l.intensity*=p.r}
+ for(const p of pool){if(p.l.position.distanceToSquared(p.p)>.01){p.p.copy(p.l.position);p.r=0}p.r=1;}
  if(started&&AC&&P.sprint&&P.vel.length()>2&&!G.dead){fs-=dt;if(fs<=0){fs=.27;step(.05)}}else fs=0;
  rt-=dt;if(rt<=0){rt=.3;runPos()}};
 }catch(e){console.log('pz36 error',e)}})()</script>
@@ -2735,7 +2735,7 @@ if(window.__pz50)return;window.__pz50=1;
 if(window.__rr)Math.random=window.__rr;
 const T=THREE,R=(a,b)=>a+Math.random()*(b-a),q=id=>document.getElementById(id);
 const LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-const C=Object.assign({sens:1,inv:0,br:1,dif:1,fps:0},LS('pz50')||{}),sv=()=>LS('pz50',C);
+const C=Object.assign({sens:1,inv:0,br:1.3,dif:1,fps:0},LS('pz50')||{}),sv=()=>LS('pz50',C);
 /* own character colour (fix: uses parent.PZ) */
 {const PAL=[0xff6b6b,0x6bb0ff,0x6bff9a,0xffd45e];try{const nm=parent.PZ.prof.name,i=[...String(nm)].reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7)%4;let n=0,f=0;const iv=setInterval(()=>{n++;aarav.g.traverse(m=>{if(!m.isSkinnedMesh||m.userData.tn)return;m.userData.tn=1;f++;const g=x=>{x=x.clone();if(x.color)x.color.multiply(new T.Color(PAL[i]));return x};m.material=Array.isArray(m.material)?m.material.map(g):g(m.material)});if((f&&n>2)||n>150)clearInterval(iv)},400)}catch(e){}}
 /* lives + checkpoint respawn (keeps your items) */
@@ -2839,7 +2839,7 @@ if(S){
  [...tb.querySelectorAll('button')].forEach(b=>{if(b.textContent==='CAMERA')b.style.display='none'});
  const bt=document.createElement('button');bt.textContent='CAMERA';tb.appendChild(bt);
  const p=document.createElement('div');p.style.display='none';
- p.innerHTML='<label>Camera distance <b id="z60dv"></b><input type="range" id="z60d" min="0" max="250"></label><div class="pzd">0 = first person (character chhup jaata hai). Default 0.9</div><label>Camera height<input type="range" id="z60h" min="100" max="190"></label><label>Shoulder (left / right)<input type="range" id="z60s" min="-60" max="60"></label><label>Field of view<input type="range" id="z60f" min="40" max="100"></label><label>Look sensitivity <b id="z60nv"></b><input type="range" id="z60n" min="10" max="400"></label><label>Torch brightness<input type="range" id="z60t" min="40" max="250"></label><button class="pzg" id="z60r">RESET CAMERA</button>';
+ p.innerHTML='<label>Camera distance <b id="z60dv"></b><input type="range" id="z60d" min="0" max="250"></label><div class="pzd">0 = first person (character hidden). Default 0.9</div><label>Camera height<input type="range" id="z60h" min="100" max="190"></label><label>Shoulder (left / right)<input type="range" id="z60s" min="-60" max="60"></label><label>Field of view<input type="range" id="z60f" min="40" max="100"></label><label>Look sensitivity <b id="z60nv"></b><input type="range" id="z60n" min="10" max="400"></label><label>Torch brightness<input type="range" id="z60t" min="40" max="250"></label><button class="pzg" id="z60r">RESET CAMERA</button>';
  S.appendChild(p);
  const zs=q('z50s');if(zs){zs.min=10;zs.max=400}
  const fill=()=>{q('z60d').value=Math.round(Cm.d*100);q('z60h').value=Math.round(Cm.h*100);q('z60s').value=Math.round(Cm.s*100);q('z60f').value=Cm.f;q('z60t').value=Math.round(Cm.tb*100);q('z60n').value=zs?zs.value:100;lab()};
@@ -2999,7 +2999,7 @@ const $q=(o,s)=>o.querySelector(s);
 function modal(title,txt){joy.x=joy.y=0;const o=document.createElement('div');o.className='lvm';o.st=CURST;LASTM=o;o.innerHTML='<div class="lvc"><button class="lvx">\u2715</button><h3>'+title+'</h3><p>'+txt+'</p><div class="bd"></div><p class="mg"></p><div class="ft"></div></div>';o.addEventListener('pointerdown',e=>e.stopPropagation());document.body.appendChild(o);OPEN++;o.close=()=>{if(o.parentNode){o.remove();OPEN--}};$q(o,'.lvx').onclick=o.close;o.addEventListener('click',e=>{if(e.target===o)o.close()});return o}
 function btn(par,t,f,cls){const b=document.createElement('button');b.className='lvb '+(cls||'');b.textContent=t;b.onclick=f;par.appendChild(b);return b}
 function msg(o,t){const m=$q(o,'.mg'),c=$q(o,'.lvc');m.style.color='#ffb070';m.textContent=t;c.classList.remove('lvshake');void c.offsetWidth;c.classList.add('lvshake')}
-function foot(o,hint,ex){const f=$q(o,'.ft'),S=CURST;if(S)btn(f,'USE POWER ('+POW+' left)',()=>{if(S.solved)return;if(POW<=0)return msg(o,'No power left. Solve it yourself!');POW--;hud();toast('Power used. '+POW+' left.',1800);win(S,o)},'pw');if(hint)btn(f,'HINT',()=>{const m=$q(o,'.mg');m.style.color='#9fe';m.textContent=hint});if(ex)btn(f,ex[0],ex[1]);btn(f,'CLOSE',o.close)}
+function foot(o,hint,ex){const f=$q(o,'.ft'),S=CURST;if(hint)btn(f,'HINT',()=>{const m=$q(o,'.mg');m.style.color='#9fe';m.textContent=hint});if(ex)btn(f,ex[0],ex[1]);btn(f,'CLOSE',o.close)}
 const hudEl=document.createElement('div');hudEl.id='lvh';document.body.appendChild(hudEl);
 function hud(){hudEl.textContent='LEVEL '+LV+' · SEALS '+seals+'/'+NEED+' · POWER '+POW;hudEl.className=seals>=NEED?'done':''}
 function banner(a,b,ms){ms=ms||4200;const e=document.createElement('div');e.className='lvbn';e.innerHTML='<div>'+a+'</div><small>'+b+'</small>';document.body.appendChild(e);setTimeout(()=>e.classList.add('out'),ms);setTimeout(()=>e.remove(),ms+1200)}
@@ -3133,7 +3133,7 @@ GZ.forEach((g,i)=>{const y=i*HH;
 DL.forEach(d=>Object.defineProperty(d,'fc',{get:()=>0,set(){},configurable:true}));
 /* 7. a different corridor design on every floor */
 const wm=M(0x4a4e48,.85),cr=M(0x5a4a30,.9);
-WG.forEach((w,i)=>{const G2=WGR[i];if(!G2)return;const rw=w.rw||7,L=w.n*rw,ox=w.ox,cz=w.cz,v=(i*7+2)%5,n0=scene.children.length;
+WG.forEach((w,i)=>{const G2=WGR[i];return;const rw=w.rw||7,L=w.n*rw,ox=w.ox,cz=w.cz,v=(i*7+2)%5,n0=scene.children.length;
  if(v==0)for(let k=1;k<w.n;k++){const x=ox+k*rw;k%2?seg(x,cz-2,x,cz+.5):seg(x,cz+2,x,cz-.5)}
  else if(v==1)for(let k=1;k<w.n;k++){const x=ox+k*rw,z=cz+(k%2?.95:-.95);box(.6,3.2,.6,wm,x,1.6,z);col(x,z,.6,.6)}
  else if(v==2)for(let j=0;rw*(2*j+3)<=L;j++)seg(ox+rw*(2*j+1)+.8,cz,ox+rw*(2*j+3)-.8,cz);
@@ -3451,7 +3451,7 @@ const seen=new WeakSet();
 function loosen(){for(const c of cols){if(seen.has(c)||c[0]>1e5)continue;seen.add(c);const a=c[1]-c[0],b=c[3]-c[2];if(a>.45&&b>.45&&a<4&&b<4){c[0]+=.1;c[1]-=.1;c[2]+=.1;c[3]-=.1}}}
 [1500,6000,12000].forEach(m=>setTimeout(loosen,m));
 /* ground shadows */
-const sh=()=>{const m=new T.Mesh(new T.CircleGeometry(.5,16),new T.MeshBasicMaterial({color:0,transparent:true,opacity:.4,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-8,polygonOffsetUnits:-8}));m.rotation.x=-Math.PI/2;m.renderOrder=9000;scene.add(m);return m};
+const sh=()=>{const m=new T.Mesh(new T.CircleGeometry(.5,16),new T.MeshBasicMaterial({color:0,transparent:true,opacity:.4,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-8,polygonOffsetUnits:-8}));m.rotation.x=-Math.PI/2;m.renderOrder=9000;m.visible=false;scene.add(m);return m};
 const ms=sh(),ps=new Map(),_p=HB.peer;
 HB.peer=function(){const o=_p.apply(this,arguments);ps.set(o,sh());return o};
 const _x=extra;extra=function(dt,t){_x(dt,t);try{
@@ -3923,7 +3923,7 @@ function lights(dt,t){
  var out=P.pos.z>46&&P.pos.x<40,pw=window.__PW,L=(pw?pw.lv:1)*(G.bo?.12:1),k=Math.min(1,dt*3);
  fo+=((out?1:0)-fo)*k;
  hemi.color.copy(HI).lerp(HO,fo);hemi.groundColor.copy(HG).lerp(GO,fo);
- hemi.intensity=(.14+.3*L)*(1-fo)+.75*fo;
+ hemi.intensity=(.2+.34*L)*(1-fo)+.75*fo;
  scene.fog.color.copy(NF).lerp(OF,fo);if(scene.background&&scene.background.copy)scene.background.copy(scene.fog.color);
  scene.fog.density=(.034+.016*(1-L))*(1-fo)+.011*fo;
  if(spot.visible){spot.intensity=Math.min(spot.intensity,5.5);spot.color.set(0xfff0cc);spot.distance=30;spot.penumbra=.6}
@@ -4006,7 +4006,32 @@ var _x=extra;extra=function(dt,t){_x(dt,t);try{
 }catch(e){}};
 console.log('PZ-V92 loaded');
 }catch(e){console.log('PZ-V92 error',e)}})();
-</script><!--V92-END--></body></html>
+</script><!--V92-END--><script>/*PZ-PATCHER-1*/
+(function(){try{
+var s=document.createElement('style');
+s.textContent='.lvb.pw{display:none!important}#obj{font-size:15px!important;max-width:56%!important;padding:5px 12px!important;line-height:1.3}#prompt{font-size:15px!important;padding:8px 14px!important}';
+document.head.appendChild(s);
+}catch(e){console.log('patcher css',e)}})();
+</script><script>/*PZ-SHADOW*/
+(function(){try{
+var T=THREE,s=new T.SpotLight(0xffffff,.35,16,.32,.8,0);
+s.castShadow=true;s.shadow.mapSize.set(512,512);s.shadow.bias=-.0008;s.shadow.normalBias=.02;
+scene.add(s,s.target);renderer.shadowMap.enabled=true;
+var _x=extra;extra=function(dt,t){_x(dt,t);var g=aarav.g.position;
+ s.target.position.set(g.x,g.y,g.z);s.position.set(g.x+1,g.y+6.5,g.z+.5)};
+}catch(e){console.log('shadow',e)}})();
+</script><script>/*PZ-WARMUP*/
+(function(){try{
+var GZ=[62,132,202,270,302.5,337.5,372.5],H=function(z){return GZ.filter(function(g){return z>g}).length*3.4+1.6};
+var vis=WGR.map(function(g){return g.visible}),sp=cam.position.clone(),sq=cam.quaternion.clone();
+var draw=function(x,y,z,yaws,only){WGR.forEach(function(g,i){g.visible=i===only});
+ yaws.forEach(function(a){cam.position.set(x,y,z);cam.rotation.set(0,a,0);cam.updateMatrixWorld(true);renderer.render(scene,cam)})};
+[[0,0],[0,20],[-14,25],[-14,35],[0,60],[0,118]].forEach(function(p){draw(p[0],1.6,p[1],[0,Math.PI],-1)});
+for(var z=30;z<400;z+=40)draw(43,H(z),z,[0,Math.PI],-1);
+WG.forEach(function(w,i){draw(w.ox+w.n*(w.rw||7)/2,WGR[i].position.y+1.6,w.cz,[Math.PI/2,-Math.PI/2],i)});
+WGR.forEach(function(g,i){g.visible=vis[i]});cam.position.copy(sp);cam.quaternion.copy(sq);
+}catch(e){console.log('warmup',e)}})();
+</script></body></html>
 
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -4112,7 +4137,7 @@ function renderSquad(){const ids=Object.keys(members),host=party==me.id;let h=''
  ids.slice(0,4).forEach(k=>{const m=members[k][0];h+=`<div class="sl">${av(m.u,m.n)}<div>${esc(m.n)}${k==me.id?' (you)':''}<small>${k==party?'Host':'Squad'}${pc[k]&&pc[k].connectionState=='connected'?' · voice on':''}</small></div></div>`});
  if(false)h+=`<div class="sl e" data-inv><svg class="i"><use href="#i-add"/></svg><div>Invite friend</div></div>`;sync3d(ids);
  $('#squad').innerHTML=h;$('#squad').onclick=e=>e.target.closest('[data-inv]')&&$('#binv').click();
- $('#start').disabled=!host;$('#start').textContent=host?'START':'WAITING';$('#mode').textContent=host?'ESCAPE THE HOSPITAL':'Host will start the match'}
+ $('#start').disabled=!host;$('#start').textContent=host?'START':'WAITING';$('#mode').textContent=host?'ESCAPE THE HOSPITAL':'Waiting for the host to press START'}
 $('#bmic').onclick=()=>{if(!stream)return initMic().then(()=>joinParty(party));muted=!muted;stream.getAudioTracks().forEach(t=>t.enabled=!muted);ic($('#bmic'),muted?'mic0':'mic');$('#bmic').classList.toggle('off',muted)};
 $('#bspk').onclick=()=>{deaf=!deaf;$$('#audios audio').forEach(a=>a.muted=deaf);ic($('#bspk'),deaf?'spk0':'spk');$('#bspk').classList.toggle('off',deaf)};
 
@@ -4122,7 +4147,7 @@ function soldier(hue){const g=new THREE.Group(),Mt=(c,r)=>new THREE.MeshStandard
  const mk=(geo,m,x,y,z,p,sx,sy,sz)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.scale.set(sx||1,sy||1,sz||1);(p||g).add(o);return o},sp=(r,m,x,y,z,p,sx,sy,sz)=>mk(SPG,m,x,y,z,p,r*(sx||1),r*(sy||1),r*(sz||1));
  const jk=Mt(new THREE.Color('hsl('+hue+',38%,34%)')),pt=Mt(0x262d3a),sk=Mt(0xc79a7a,.65),hr=Mt(0x0d0b0a,1),wh=Mt(0xf2efe6,.4),sh=Mt(0x1a1512,.55),cl=Mt(new THREE.Color('hsl('+hue+',30%,55%)'));
  mk(CYG(1,1.08,.08),Mt(0x141828,.4),0,-.04,0);
- const rg=new THREE.Mesh(new THREE.RingGeometry(.84,.96,48),new THREE.MeshBasicMaterial({color:0xa39cff,side:2}));rg.rotation.x=-Math.PI/2;rg.position.y=.01;g.add(rg);
+ const rg=new THREE.Mesh(new THREE.RingGeometry(.84,.96,48),new THREE.MeshBasicMaterial({color:0xa39cff,side:2}));rg.rotation.x=-Math.PI/2;rg.position.y=.01;
  [-1,1].forEach(s=>{const L=new THREE.Group();L.position.set(s*.11,.84,0);g.add(L);mk(CYG(.088,.07,.4),pt,0,-.2,0,L);sp(.088,pt,0,0,0,L);const K=new THREE.Group();K.position.y=-.4;L.add(K);sp(.07,pt,0,0,0,K);mk(CYG(.068,.055,.38),pt,0,-.19,0,K);sp(.075,sh,0,-.385,.055,K,1,.62,1.9);sp(.056,sh,0,-.37,-.02,K)});
  const t=new THREE.Group();t.position.y=1.15;g.add(t);
  sp(.2,jk,0,.12,0,t,1.12,1.15,.7);mk(CYG(.17,.155,.36),jk,0,-.13,0,t,1,1,.72);sp(.17,pt,0,-.38,0,t,1.1,.75,.85);sp(.07,jk,.25,.3,0,t);sp(.07,jk,-.25,.3,0,t);
@@ -4292,7 +4317,7 @@ try{
   const c=HB.build({skin:0xc6926c,hair:0x0d0b0a,hairStyle:hue%2?'messy':'short',top:col.getHex(),topType:'shirt',sleeves:'long',pants:0x262d3a,torch:true});
   c.torch.visible=true;g.add(c.g);
   const base=new THREE.Mesh(new THREE.CylinderGeometry(1,1.08,.08,40),new THREE.MeshStandardMaterial({color:0x141828,roughness:.4}));base.position.y=-.04;g.add(base);
-  const rg=new THREE.Mesh(new THREE.RingGeometry(.84,.96,48),new THREE.MeshBasicMaterial({color:0xa39cff,side:2}));rg.rotation.x=-Math.PI/2;rg.position.y=.01;g.add(rg);
+  const rg=new THREE.Mesh(new THREE.RingGeometry(.84,.96,48),new THREE.MeshBasicMaterial({color:0xa39cff,side:2}));rg.rotation.x=-Math.PI/2;rg.position.y=.01;
   c.elbR.rotation.x=-.55;c.elbL.rotation.x=-.18;
   return{g,t:c.torso,l:c.armL,r:c.armR};
  };
@@ -4355,7 +4380,7 @@ try{
  window.soldier=function(hue){
   const g=new T.Group();
   const base=new T.Mesh(new T.CylinderGeometry(1,1.08,.08,40),new T.MeshStandardMaterial({color:0x141828,roughness:.4}));base.position.y=-.04;g.add(base);
-  const rg=new T.Mesh(new T.RingGeometry(.84,.96,48),new T.MeshBasicMaterial({color:0xa39cff,side:2}));rg.rotation.x=-Math.PI/2;rg.position.y=.01;g.add(rg);
+  const rg=new T.Mesh(new T.RingGeometry(.84,.96,48),new T.MeshBasicMaterial({color:0xa39cff,side:2}));rg.rotation.x=-Math.PI/2;rg.position.y=.01;
   RC.ready.then(r=>{const a=RC.actor(r.src,r.clips,1);g.add(a.root);list.push(a)});
   return{g:g,t:new T.Object3D(),l:new T.Object3D(),r:new T.Object3D()};
  };
@@ -4463,7 +4488,7 @@ Object.defineProperty(window,'__PZADMIN',{get:isAdm});
 const css=document.createElement('style');css.textContent=`
 .bg{background:radial-gradient(70% 55% at 50% 105%,rgba(143,136,255,.4),transparent 70%),radial-gradient(45% 40% at 12% 18%,rgba(94,194,183,.3),transparent 70%),radial-gradient(45% 40% at 88% 22%,rgba(255,150,120,.22),transparent 70%),linear-gradient(#090b13,#10131f)!important;background-size:130% 130%,130% 130%,130% 130%,100% 100%!important;animation:pzdr 20s ease-in-out infinite alternate}
 @keyframes pzdr{from{background-position:0 0,0 0,100% 0,0 0}to{background-position:30% 20%,40% 10%,70% 30%,0 0}}
-#lobby:before{content:"";position:absolute;left:50%;bottom:11%;width:62vmin;height:15vmin;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(163,156,255,.38),transparent 70%);filter:blur(6px);pointer-events:none}
+#lobby:before{display:none;content:"";position:absolute;left:50%;bottom:11%;width:62vmin;height:15vmin;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(163,156,255,.38),transparent 70%);filter:blur(6px);pointer-events:none}
 #pzbuild{display:none!important}.pzi{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--ln);border-radius:12px;padding:12px 14px;color:var(--tx);font:600 15px Inter,system-ui,sans-serif;outline:none}
 `;document.head.appendChild(css);
 const inp='class="pzi" autocapitalize="none" autocomplete="off" spellcheck="false"';
@@ -4524,10 +4549,10 @@ function decor(){
  var bk=new T.Mesh(new T.PlaneGeometry(26,13),new T.MeshBasicMaterial({map:new T.CanvasTexture(c),fog:false}));bk.position.set(0,3.4,-9);S3.add(bk);
  /* glossy floor + glowing rings */
  var fl=new T.Mesh(new T.CircleGeometry(14,64),new T.MeshStandardMaterial({color:0x0b0e1a,roughness:.28,metalness:.55}));fl.rotation.x=-Math.PI/2;fl.position.y=-.06;S3.add(fl);
- [[3.2,3.26,0xa39cff],[5.2,5.24,0x5ec2b7],[7.5,7.53,0x3a3f66]].forEach(function(a){var r=new T.Mesh(new T.RingGeometry(a[0],a[1],96),new T.MeshBasicMaterial({color:a[2],transparent:true,opacity:.7,side:2,blending:T.AdditiveBlending,depthWrite:false,fog:false}));r.rotation.x=-Math.PI/2;r.position.y=-.04;S3.add(r)});
+ [].forEach(function(a){var r=new T.Mesh(new T.RingGeometry(a[0],a[1],96),new T.MeshBasicMaterial({color:a[2],transparent:true,opacity:.7,side:2,blending:T.AdditiveBlending,depthWrite:false,fog:false}));r.rotation.x=-Math.PI/2;r.position.y=-.04;S3.add(r)});
  /* neon strips, light cone, spot, red flicker */
  [[-7,0x5ec2b7],[7,0xa39cff]].forEach(function(a){var n=new T.Mesh(new T.BoxGeometry(.12,7,.12),new T.MeshBasicMaterial({color:a[1],fog:false}));n.position.set(a[0],3,-6);S3.add(n)});
- var cone=new T.Mesh(new T.ConeGeometry(3.2,9,32,1,true),new T.MeshBasicMaterial({color:0xa39cff,transparent:true,opacity:.07,side:2,blending:T.AdditiveBlending,depthWrite:false,fog:false}));cone.position.set(0,4.5,0);S3.add(cone);
+ var cone=new T.Mesh(new T.ConeGeometry(3.2,9,32,1,true),new T.MeshBasicMaterial({color:0xa39cff,transparent:true,opacity:.07,side:2,blending:T.AdditiveBlending,depthWrite:false,fog:false}));cone.position.set(0,4.5,0);
  var sp=new T.SpotLight(0xdfe4ff,2.2,24,.5,.6,1);sp.position.set(0,9,2);sp.target.position.set(0,0,0);S3.add(sp,sp.target);
  var red=new T.PointLight(0xff2a3a,0,14);red.position.set(5,2,-4);S3.add(red);
  /* dust */
