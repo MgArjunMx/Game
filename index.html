@@ -1496,7 +1496,7 @@ try{
   const s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),transparent:true,depthTest:false}));s.scale.set(1.4,.35,1);s.position.y=2.15;return s;
  }
  return{ready:ready,actor:actor,upd:upd,torch:torch,label:label};
-})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb","idle":"","walk":"","run":"","h":1.75});(function gamePatch(RC){
+})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Xbot.glb","idle":"","walk":"","run":"","h":1.75});(function gamePatch(RC){
  const T=THREE;let PL=null,KB=null;const peers=[];
  const hide=g=>g.traverse(o=>{if(o.isMesh)o.visible=false});
  RC.ready.then(r=>{
@@ -4086,7 +4086,49 @@ for(var z=30;z<400;z+=40)draw(43,H(z),z,[0,Math.PI],-1);
 WG.forEach(function(w,i){draw(w.ox+w.n*(w.rw||7)/2,WGR[i].position.y+1.6,w.cz,[Math.PI/2,-Math.PI/2],i)});
 WGR.forEach(function(g,i){g.visible=vis[i]});cam.position.copy(sp);cam.quaternion.copy(sq);
 }catch(e){console.log('warmup',e)}})();
-</script></body></html>
+</script><!--CHAR1-START--><script>
+/*CHAR-V1*/
+(function(){try{
+if(window.__chr1)return;window.__chr1=1;
+var T=THREE,root=null,mm=null,meshes=[],y0=0,scan=0,tried=0,wk=0,tm=0,v=new T.Vector3();
+var rb=document.getElementById('bSpr'),wb=document.createElement('button');
+wb.id='bWalk';wb.textContent='WALK';
+wb.style.cssText='position:fixed;z-index:8;width:72px;height:72px;border-radius:50%;border:2px solid rgba(255,255,255,.35);background:rgba(20,20,20,.6);color:#d8d2c8;font:13px Georgia,serif;touch-action:none;pointer-events:auto';
+document.body.appendChild(wb);
+function setWalk(on){wk=on?1:0;wb.textContent=wk?'WALK \u2713':'WALK';wb.style.background=wk?'rgba(40,120,90,.65)':'rgba(20,20,20,.6)';if(wk&&window.RUN&&RUN.on&&window.setRun)window.setRun(0)}
+wb.onpointerdown=function(e){e.preventDefault();e.stopPropagation();setWalk(!wk)};
+addEventListener('keydown',function(e){if(e.code==='KeyV')setWalk(!wk)});
+function hasSkin(k){var s=0;k.traverse(function(o){if(o.isSkinnedMesh)s=1});return s}
+function find(){aarav.g.children.forEach(function(c){if(c===aarav.s||root)return;if(hasSkin(c)){root=c;mm=c.children.filter(hasSkin)[0]||null}})}
+function build(){aarav.g.updateMatrixWorld(true);meshes=[];
+ mm.traverse(function(o){if(!o.isSkinnedMesh||typeof o.boneTransform!=='function')return;
+  var n=o.geometry.attributes.position.count,ys=new Float32Array(n),lo=1e9,hi=-1e9,i;
+  for(i=0;i<n;i++){o.boneTransform(i,v).applyMatrix4(o.matrixWorld);ys[i]=v.y;if(v.y<lo)lo=v.y;if(v.y>hi)hi=v.y}
+  var lim=lo+(hi-lo)*.08,idx=[];for(i=0;i<n;i++)if(ys[i]<=lim)idx.push(i);
+  var st=Math.max(1,Math.ceil(idx.length/500)),pick=[];for(i=0;i<idx.length;i+=st)pick.push(idx[i]);
+  meshes.push({o:o,i:pick})});
+ y0=mm.position.y}
+function ground(dt){
+ if(!started||G.dead)return;
+ if(!root||!root.parent||!mm){root=null;mm=null;meshes=[];tried=0;scan-=dt;if(scan>0)return;scan=.4;find();if(!mm)return}
+ if(!tried){tried=1;build()}
+ if(!meshes.length||!root.visible||!aarav.g.visible)return;
+ aarav.g.updateMatrixWorld(true);
+ var lo=1e9,a,b;
+ for(a=0;a<meshes.length;a++){var m=meshes[a];for(b=0;b<m.i.length;b++){m.o.boneTransform(m.i[b],v).applyMatrix4(m.o.matrixWorld);if(v.y<lo)lo=v.y}}
+ var ws=aarav.g.scale.y||1,need=aarav.g.position.y-lo,r=need<0?10:3,d=need*(1-Math.exp(-r*dt))/ws;
+ mm.position.y=Math.max(y0-.6/ws,Math.min(y0+.6/ws,mm.position.y+d))}
+var _u=update;
+update=function(dt,t){var jx=joy.x,jy=joy.y;
+ if(wk&&window.RUN&&RUN.on)setWalk(0);
+ if(wk){joy.x=jx*.5;joy.y=jy*.5}
+ _u(dt,t);
+ if(wk){joy.x=jx;joy.y=jy}};
+var _x=extra;
+extra=function(dt,t){_x(dt,t);try{ground(dt)}catch(e){}
+ tm-=dt;if(tm<=0){tm=.3;var r=rb&&rb.getBoundingClientRect();if(r&&r.width){wb.style.left=(r.right+8)+'px';wb.style.top=r.top+'px';wb.style.width=r.width+'px';wb.style.height=r.height+'px'}}};
+}catch(e){console.log('CHAR-V1 error',e)}})();
+</script><!--CHAR1-END--></body></html>
 
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -4430,7 +4472,7 @@ try{
   const s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(cv),transparent:true,depthTest:false}));s.scale.set(1.4,.35,1);s.position.y=2.15;return s;
  }
  return{ready:ready,actor:actor,upd:upd,torch:torch,label:label};
-})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb","idle":"","walk":"","run":"","h":1.75});(function lobbyPatch(RC){
+})({"url":"https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Xbot.glb","idle":"","walk":"","run":"","h":1.75});(function lobbyPatch(RC){
  const T=THREE,list=[];
  window.soldier=function(hue){
   const g=new T.Group();
@@ -4674,7 +4716,7 @@ T.AnimationMixer.prototype.update=function(dt){
   for(i=0;i<A.length;i++){a=A[i];
    if(!a.__k){var n=a._clip.name;a.__k=/walk/i.test(n)?'w':/run/i.test(n)?'r':'i'}
    a.__n=a._clip.name;
-   if(a.__k==='w'){a.setEffectiveWeight(ww);a.timeScale=Math.max(.8,Math.min(1.9,v/1.25))}
+   if(a.__k==='w'){a.setEffectiveWeight(ww);a.timeScale=Math.max(.5,Math.min(2.4,v/1.2))}
    else if(a.__k==='r'){a.setEffectiveWeight(wr);a.timeScale=Math.max(.9,Math.min(1.6,v/2.9))}
    else a.setEffectiveWeight(wi);
    a._clip.name='zq';
@@ -4698,7 +4740,7 @@ extra=function(dt,t){_x(dt,t);try{
   if(!root)aarav.g.children.forEach(function(c){if(c===aarav.s)return;var k=0;c.traverse(function(o){if(o.isSkinnedMesh)k=1});if(k)root=c});
   var ch=document.body.children;for(var i=ch.length-1;i>=0;i--){var e=ch[i];if(e.style&&e.style.zIndex==='25'&&/^ESCAPE THE HOSPITAL$/.test(e.textContent||''))e.remove()}}
  for(var j=0;j<mats.length;j++){var m=mats[j];
-  if(m.color.getHex()!==0xffffff)m.color.setHex(0xffffff);
+  if(m.map&&m.color.getHex()!==0xffffff)m.color.setHex(0xffffff);
   if(m.emissive)m.emissive.setRGB(.5,.5,.5);
   if(m.map&&m.emissiveMap!==m.map){m.emissiveMap=m.map;m.needsUpdate=true}}
  if(root){root.rotation.x=P.fall||0;root.rotation.z=0}
@@ -4750,7 +4792,7 @@ cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
  if(D===null){A+=V;V*=.93;if(Math.abs(V)<1e-4)V=0}
  rot=A;
  C3.position.set(Math.sin(A)*8.5,1.6,Math.cos(A)*8.5);C3.lookAt(0,1,0);
- for(var id in chars){chars[id].g.traverse(function(o){if(!o.isSkinnedMesh)return;[].concat(o.material).forEach(function(m){if(m&&m.color&&m.color.getHex()!==0xffffff)m.color.setHex(0xffffff)})})}
+ for(var id in chars){chars[id].g.traverse(function(o){if(!o.isSkinnedMesh)return;[].concat(o.material).forEach(function(m){if(m&&m.map&&m.color&&m.color.getHex()!==0xffffff)m.color.setHex(0xffffff)})})}
 }catch(e){}})();
 }catch(e){console.log('PZ-FIX-ALL lobby error',e)}})();
 </script><!--PZ-FIX-END-->
