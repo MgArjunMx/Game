@@ -4639,4 +4639,119 @@ B2(1,.4,2.2,ST,4.2,.45,-1);B2(.9,.12,2,M2(0xcfcabc,1),4.2,.72,-1);B2(.05,2,.05,S
 (function f(t){requestAnimationFrame(f);if(Math.random()<.05){var m=tubes[Math.random()*tubes.length|0].material;m.color.setScalar(Math.random()<.5?.15:1)}})(0);
 }
 }catch(e){console.log('lobby2',e)}})();
-</script></body></html>
+</script><!--PZ-FIX-START--><script>
+/*PZ-FIX-ALL*/
+function gameFix(){try{
+if(window.__pzfx)return;window.__pzfx=1;
+var T=THREE,P0=T.WebGLRenderer.prototype;
+var st=document.createElement('style');
+st.textContent='.lvbn{display:none!important}'
++'#pzINb{position:fixed;left:calc(12px + env(safe-area-inset-left,0px));top:46%;z-index:9;padding:9px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(20,23,34,.75);color:#eceef6;font:700 11px monospace;letter-spacing:.1em;touch-action:manipulation}'
++'#pzINo{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center}'
++'#pzINo .c{width:min(90%,540px);max-height:88%;overflow:auto;background:#10151a;border:1px solid #3a4a5f;border-radius:14px;padding:16px;color:#d8d2c8;font:15px/1.6 Georgia,serif}'
++'#pzINo b{color:#c33;letter-spacing:3px}#pzINo button{margin-top:10px;width:100%;padding:12px;border-radius:10px;border:1px solid #9b1c1c;background:transparent;color:#d8d2c8;font:16px Georgia,serif}';
+document.head.appendChild(st);
+var ib=document.createElement('button');ib.id='pzINb';ib.textContent='INSTRUCTIONS';document.body.appendChild(ib);
+var io=document.createElement('div');io.id='pzINo';
+io.innerHTML='<div class="c"><b>MISSION</b><p>You are inside a sealed hospital. Something invisible is in here with you. Find the exit and escape.</p><b>HOW TO PLAY</b><p>Take the torch and the map first. Open the Ward door (the code is on the notice board). Break the seals, find the 3 ritual items, then open the Final Gate and run to the Safe House outside.</p><p>When the lights flicker, turn on your torch. The chalk-circle room is safe. If the power goes out, fix the generator in the Power Room next to the nurse station. Read every note: they hold codes.</p><button>CLOSE</button></div>';
+document.body.appendChild(io);
+io.addEventListener('pointerdown',function(e){e.stopPropagation()});
+io.querySelector('button').onclick=function(){io.style.display='none'};
+ib.onclick=function(){io.style.display='flex'};
+
+setTimeout(function(){try{if(!started)document.getElementById('go').click()}catch(e){}},30);
+
+var up=T.AnimationMixer.prototype.update,MX=new WeakMap(),W3=new T.Vector3();
+function sm(a,b,x){var t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)}
+T.AnimationMixer.prototype.update=function(dt){
+ var A=this._actions||[],i,a;
+ try{
+  var r=MX.get(this);if(!r){r={p:new T.Vector3(),v:0,i:0};MX.set(this,r)}
+  this._root.getWorldPosition(W3);
+  if(r.i&&dt>0){var s=Math.hypot(W3.x-r.p.x,W3.z-r.p.z)/dt;if(s<14)r.v+=(s-r.v)*Math.min(1,dt*8)}
+  r.p.copy(W3);r.i=1;
+  var v=r.v,wi=1-sm(.15,.55,v),wr=sm(3.1,3.9,v),ww=Math.max(0,1-wi-wr);
+  for(i=0;i<A.length;i++){a=A[i];
+   if(!a.__k){var n=a._clip.name;a.__k=/walk/i.test(n)?'w':/run/i.test(n)?'r':'i'}
+   a.__n=a._clip.name;
+   if(a.__k==='w'){a.setEffectiveWeight(ww);a.timeScale=Math.max(.8,Math.min(1.9,v/1.25))}
+   else if(a.__k==='r'){a.setEffectiveWeight(wr);a.timeScale=Math.max(.9,Math.min(1.6,v/2.9))}
+   else a.setEffectiveWeight(wi);
+   a._clip.name='zq';
+  }
+ }catch(e){}
+ var res=up.apply(this,arguments);
+ try{for(i=0;i<A.length;i++){a=A[i];if(a.__n!=null)a._clip.name=a.__n}}catch(e){}
+ return res};
+
+var mats=[],pe=[],root=null,sc=0,fa=0,fn=0,pr=Math.min(window.devicePixelRatio||1,1.25),cap=pr;
+var hp=HB.peer;HB.peer=function(){var o=hp.apply(this,arguments);pe.push(o);return o};
+function scan(g){g.traverse(function(o){if(!o.isSkinnedMesh)return;[].concat(o.material).forEach(function(m){if(m&&mats.indexOf(m)<0)mats.push(m)})})}
+
+try{renderer.shadowMap.enabled=false;scene.traverse(function(o){if(o.isLight)o.castShadow=false;var m=o.material;if(m)[].concat(m).forEach(function(x){x.needsUpdate=true})})}catch(e){}
+try{P0.setPixelRatio.call(renderer,pr);P0.setSize.call(renderer,innerWidth,innerHeight,true)}catch(e){}
+
+var _x=extra;
+extra=function(dt,t){_x(dt,t);try{
+ sc-=dt;
+ if(sc<=0){sc=.5;scan(aarav.g);scan(kabir.g);pe=pe.filter(function(o){return o.g.parent});pe.forEach(function(o){scan(o.g)});
+  if(!root)aarav.g.children.forEach(function(c){if(c===aarav.s)return;var k=0;c.traverse(function(o){if(o.isSkinnedMesh)k=1});if(k)root=c});
+  var ch=document.body.children;for(var i=ch.length-1;i>=0;i--){var e=ch[i];if(e.style&&e.style.zIndex==='25'&&/^ESCAPE THE HOSPITAL$/.test(e.textContent||''))e.remove()}}
+ for(var j=0;j<mats.length;j++){var m=mats[j];
+  if(m.color.getHex()!==0xffffff)m.color.setHex(0xffffff);
+  if(m.emissive)m.emissive.setRGB(.3,.3,.3);
+  if(m.map&&m.emissiveMap!==m.map){m.emissiveMap=m.map;m.needsUpdate=true}}
+ if(root){root.rotation.x=P.fall||0;root.rotation.z=0}
+ if(io.style.display==='flex')G.prot=Math.max(G.prot,2);
+ fa+=dt;fn++;
+ if(fa>2){var f=fn/fa;fa=0;fn=0;var n=pr;
+  if(f<44&&pr>.75)n=Math.max(.75,pr-.125);else if(f>57&&pr<cap)n=Math.min(cap,pr+.125);
+  if(n!==pr){pr=n;P0.setPixelRatio.call(renderer,pr);P0.setSize.call(renderer,innerWidth,innerHeight,true)}}
+}catch(e){}};
+}catch(e){console.log('gameFix error',e)}}
+
+(function(){try{
+var T=THREE;
+
+launch=function(lv){window.__PZLV=lv||computeLv();fs();show('game');G.on=1;document.body.classList.add('ingame');
+ $('#gf').srcdoc='<!DOCTYPE html>'+$('#w13').innerHTML+'<script>('+gameFix.toString()+')()<\/script>'};
+
+var _i=init3d;
+init3d=function(){var had=S3;_i();if(!had&&S3)try{arena()}catch(e){console.log('lobby arena',e)}};
+
+function wt(){var c=document.createElement('canvas');c.width=128;c.height=256;var g=c.getContext('2d');g.fillStyle='#14171f';g.fillRect(0,0,128,256);
+ for(var y=0;y<12;y++)for(var x=0;x<5;x++){g.fillStyle=Math.random()<.45?(Math.random()<.5?'#ffd890':'#cfe6ff'):'#0b0d14';g.fillRect(6+x*24,8+y*20,14,11)}
+ return new T.CanvasTexture(c)}
+
+function arena(){
+ S3.children.slice().forEach(function(o){
+  if(o.isMesh||o.isPoints)o.visible=false;
+  else if(o.isPointLight&&o.color.getHex()===0xff2a3a)S3.remove(o)});
+ S3.fog=new T.FogExp2(0x080b16,.009);
+ C3.far=220;C3.updateProjectionMatrix();
+ var c=document.createElement('canvas');c.width=1024;c.height=512;var g=c.getContext('2d'),i;
+ var gr=g.createLinearGradient(0,0,0,512);gr.addColorStop(0,'#03050b');gr.addColorStop(.55,'#121a38');gr.addColorStop(1,'#241f38');g.fillStyle=gr;g.fillRect(0,0,1024,512);
+ for(i=0;i<260;i++){g.fillStyle='rgba(255,255,255,'+(.25+Math.random()*.7)+')';g.fillRect(Math.random()*1024,Math.random()*300,1+Math.random()*1.5,1+Math.random()*1.5)}
+ var mg=g.createRadialGradient(256,120,4,256,120,60);mg.addColorStop(0,'#fffbe6');mg.addColorStop(.4,'#e8ecff');mg.addColorStop(1,'rgba(150,170,255,0)');g.fillStyle=mg;g.beginPath();g.arc(256,120,60,0,7);g.fill();
+ S3.add(new T.Mesh(new T.SphereGeometry(100,32,16),new T.MeshBasicMaterial({map:new T.CanvasTexture(c),side:T.BackSide,fog:false})));
+ var fl=new T.Mesh(new T.CircleGeometry(90,48),new T.MeshStandardMaterial({color:0x0a0d18,roughness:.45,metalness:.35}));fl.rotation.x=-Math.PI/2;fl.position.y=-.05;S3.add(fl);
+ for(i=0;i<9;i++){var a=i/9*6.283+.3,r=30+Math.random()*8,w=6+Math.random()*5,h=9+Math.random()*16;
+  var m=new T.MeshStandardMaterial({color:0x1b1f2a,roughness:.9,emissive:0xffffff,emissiveIntensity:.7,emissiveMap:wt()});
+  var b=new T.Mesh(new T.BoxGeometry(w,h,w),m);b.position.set(Math.sin(a)*r,h/2,Math.cos(a)*r);b.rotation.y=a;S3.add(b)}
+}
+
+var cv=document.getElementById('c3'),A=0,V=0,D=null,LX=0;
+cv.addEventListener('pointerdown',function(e){D=e.pointerId;LX=e.clientX;V=0});
+cv.addEventListener('pointermove',function(e){if(e.pointerId===D){var d=-(e.clientX-LX)*.012;A+=d;V=d;LX=e.clientX}});
+var end=function(e){if(e.pointerId===D)D=null};
+cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+(function f(){requestAnimationFrame(f);try{
+ if(!S3||!C3||!document.getElementById('lobby').classList.contains('on'))return;
+ if(D===null){A+=V;V*=.93;if(Math.abs(V)<1e-4)V=0}
+ rot=A;
+ C3.position.set(Math.sin(A)*8.5,1.6,Math.cos(A)*8.5);C3.lookAt(0,1,0);
+ for(var id in chars){chars[id].g.traverse(function(o){if(!o.isSkinnedMesh)return;[].concat(o.material).forEach(function(m){if(m&&m.color&&m.color.getHex()!==0xffffff)m.color.setHex(0xffffff)})})}
+}catch(e){}})();
+}catch(e){console.log('PZ-FIX-ALL lobby error',e)}})();
+</script><!--PZ-FIX-END-->
+</body></html>
