@@ -4087,8 +4087,8 @@ function mkTex(base,n){
  var t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=4;return t}
 var HW=RACE.roadHalf,AH=2.5;
 safe('road',function(){
- var LPT=[[-8,59],[8,58],[19,62],[27,72],[27,88],[19,100],[7,105],[-4,99],[-14,105],[-25,98],[-30,84],[-27,69],[-18,61]];
- loop=new T.CatmullRomCurve3(LPT.map(function(p){return new T.Vector3(p[0],0,p[1])}),true,'centripetal');
+ var LPT=[[0.3,58.6],[-0.5,63],[-7,67.5],[-20,68.5],[-45,66],[-80,63],[-120,64],[-155,72],[-185,90],[-208,118],[-240,141],[-282,146],[-325,138],[-362,150],[-388,180],[-398,222],[-392,265],[-370,300],[-336,322],[-300,350],[-290,392],[-310,430],[-352,452],[-398,458],[-440,478],[-455,520],[-440,562],[-405,590],[-360,600],[-315,628],[-300,672],[-322,712]];
+ loop=new T.CatmullRomCurve3(LPT.map(function(p){return new T.Vector3(p[0],0,p[1])}),false,'centripetal');
  appr=new T.CatmullRomCurve3([new T.Vector3(0,0,44.8),new T.Vector3(0,0,51),new T.Vector3(.3,0,58.6)],false,'centripetal');
  LSAMP=loop.getSpacedPoints(Math.round(loop.getLength()/.5));
  ASAMP=appr.getSpacedPoints(Math.round(appr.getLength()/.5));
@@ -4112,18 +4112,18 @@ safe('road',function(){
   for(j=0;j<ASAMP.length;j++){dx=x-ASAMP[j].x;dz=z-ASAMP[j].z;if(dx*dx+dz*dz<m2)return 1}return 0};
  scene.children.slice().forEach(function(o){
   if(!o.isMesh||o.userData.r1||!o.visible||!o.geometry)return;
-  var x=o.position.x,z=o.position.z;if(x<-42||x>42||z<44||z>114||o.position.y>5)return;
+  var x=o.position.x,z=o.position.z;if(x<-760||x>42||z<44||z>760||o.position.y>5)return;
   var g=o.geometry;if(!g.boundingSphere)g.computeBoundingSphere();
   var r=g.boundingSphere.radius*Math.max(o.scale.x,o.scale.y,o.scale.z);if(r>3.2)return;
   if(near(x,z))o.visible=false});
  for(i=cols.length-1;i>=0;i--){var c=cols[i];if(c[0]>1e5)continue;
   if(c[1]-c[0]>2.6||c[3]-c[2]>2.6)continue;var cx=(c[0]+c[1])/2,cz=(c[2]+c[3])/2;
-  if(cx<-42||cx>42||cz<44||cz>114)continue;if(near(cx,cz))cols.splice(i,1)}
+  if(cx<-760||cx>42||cz<44||cz>760)continue;if(near(cx,cz))cols.splice(i,1)}
  /* road lamps */
  var pm=M(0x2a2d31,.5,.6),hm=new T.MeshBasicMaterial({color:0xffe4b0}),gc=document.createElement('canvas');gc.width=gc.height=64;
  var gg=gc.getContext('2d'),gr=gg.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(255,230,170,1)');gr.addColorStop(1,'rgba(255,200,120,0)');gg.fillStyle=gr;gg.fillRect(0,0,64,64);
  var glow=new T.CanvasTexture(gc),k2=0;
- for(i=10;i<LSAMP.length-2;i+=36){
+ for(i=10;i<Math.min(LSAMP.length-2,320);i+=36){
   var p0=LSAMP[i-1],p1=LSAMP[i+1],tx=p1.x-p0.x,tz=p1.z-p0.z,l=Math.hypot(tx,tz)||1,sd=(k2++%2?1:-1)*(HW+1.4),lx=LSAMP[i].x+(-tz/l)*sd,lz=LSAMP[i].z+(tx/l)*sd;
   box(.12,3.4,.12,pm,lx,1.7,lz);box(.4,.1,.4,pm,lx,3.42,lz);box(.3,.14,.3,hm,lx,3.32,lz);cols.push([lx-.12,lx+.12,lz-.12,lz+.12]);
   var sp=new T.Sprite(new T.SpriteMaterial({map:glow,blending:T.AdditiveBlending,depthWrite:false,transparent:true,opacity:.75}));sp.scale.set(3,3,1);sp.position.set(lx,3.3,lz);sp.userData.r1=1;scene.add(sp)}
@@ -4194,13 +4194,13 @@ function place(c,u,off){
  c.x=p.x+(-tg.z)*off;c.z=p.z+tg.x*off;parkIt(c)}
 safe('cars',function(){
  if(!loop)return;
- [[0xb3262b,.0],[0x2a7f9a,.53]].forEach(function(d){
+ [[0xb3262b,.035],[0x2a7f9a,.085]].forEach(function(d){
   var c=mkCar(d[0]);cols.push(c.col);
   for(var k=0;k<4;k++){(function(){var it={x:1e5,z:1e5,t:'DRIVE',keep:1,f:function(){enter(c)}};c.it.push(it);items.push(it)})()}
   place(c,d[1],1.7);cars.push(c)})});
 var OFS=[[0,1.0],[1.35,.95],[-1.35,.95],[2.05,.7],[-2.05,.7]];
 function carHit(c,x,z,h){
- if(x<-42||x>42||z<47.8||z>146)return 1;
+ if(x<-760||x>34||z<47.8||z>760)return 1;
  var s=Math.sin(h),co=Math.cos(h),k,j,col,cx,cz,r,qx,qz;
  for(k=0;k<5;k++){cx=x+s*OFS[k][0];cz=z+co*OFS[k][0];r=OFS[k][1];
   for(j=0;j<cols.length;j++){col=cols[j];if(col===c.col||col[0]>1e5)continue;
@@ -4316,7 +4316,7 @@ try{bestLap=+localStorage.pzbestlap||0}catch(e){}
 function fmt(s){if(!s)return '--:--.--';return Math.floor(s/60)+':'+('0'+(s%60).toFixed(2)).slice(-5)}
 function spr(p,v,tg,w,dt){v+=(-w*w*(p-tg)-2*w*v)*dt;return[p+v*dt,v]}
 function trackIx(c){var N=LSAMP.length,best=0,bd=1e18,i,j,d,k;
- if(c.ix<0){for(i=0;i<N;i+=2){d=(c.x-LSAMP[i].x)*(c.x-LSAMP[i].x)+(c.z-LSAMP[i].z)*(c.z-LSAMP[i].z);if(d<bd){bd=d;best=i}}}
+ if(c.ix<0||c.ed>15){for(i=0;i<N;i+=2){d=(c.x-LSAMP[i].x)*(c.x-LSAMP[i].x)+(c.z-LSAMP[i].z)*(c.z-LSAMP[i].z);if(d<bd){bd=d;best=i}}}
  else for(k=-80;k<=80;k+=2){j=(c.ix+k+N)%N;d=(c.x-LSAMP[j].x)*(c.x-LSAMP[j].x)+(c.z-LSAMP[j].z)*(c.z-LSAMP[j].z);if(d<bd){bd=d;best=j}}
  c.ix=best}
 function hudEnsure(){if(hx||!hudCar)return;hx=1;
@@ -4336,10 +4336,10 @@ safe('roadx',function(){
  var kt=new T.CanvasTexture(kc);kt.wrapS=kt.wrapT=T.RepeatWrapping;
  var kM=new T.MeshStandardMaterial({map:kt,roughness:.8,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-7,polygonOffsetUnits:-7}),rM=new T.MeshStandardMaterial({color:0x9aa0a6,roughness:.35,metalness:.8,side:T.DoubleSide});
  var A=Array(),B=[];A={pos:[],uv:[],idx:[]};var kA={pos:[],uv:[],idx:[]},rA={pos:[],uv:[],idx:[]};
- addStrip(LSAMP,HW+.15,.3,.046,kA,1/1.6);addStrip(LSAMP,-(HW+.15),.3,.046,kA,1/1.6);mkMesh(kA,kM);
+ 
  var run=[],i,j,nj;
  function flush(){if(run.length>3){[.7,.35].forEach(function(y){addStrip(run,HW+1.0,.05,y,rA,0);addStrip(run,-(HW+1.0),.05,y,rA,0)})}run=[]}
- for(i=0;i<LSAMP.length;i+=4){nj=0;for(j=0;j<ASAMP.length;j++)if(Math.hypot(LSAMP[i].x-ASAMP[j].x,LSAMP[i].z-ASAMP[j].z)<AH+5){nj=1;break}if(nj)flush();else run.push(LSAMP[i])}flush();mkMesh(rA,rM)});
+ for(i=0;i<LSAMP.length;i+=4){nj=0;for(j=0;j<ASAMP.length;j++)if(Math.hypot(LSAMP[i].x-ASAMP[j].x,LSAMP[i].z-ASAMP[j].z)<AH+5){nj=1;break}if(nj)flush();else run.push(LSAMP[i])}flush()});
 function carCam(c,dt,t){
  var R=RACE,sp=Math.hypot(c.vx,c.vz),kmh=sp*3.6,va=sp>3?Math.atan2(c.vx,c.vz):c.rh,d=Math.atan2(Math.sin(va-c.rh),Math.cos(va-c.rh));
  d=Math.max(-1.2,Math.min(1.2,d))*R.camVelFollow*Math.max(0,Math.min(1,(sp-3)/6));
@@ -4348,7 +4348,7 @@ function carCam(c,dt,t){
  if(hood){tx=c.rx+Math.sin(c.rh)*.4;tz=c.rz+Math.cos(c.rh)*.4;ty=1.15;w=40}
  if(!camInit){camP.set(tx,ty,tz);camV.set(0,0,0);camInit=1}
  var q;q=spr(camP.x,camV.x,tx,w,dt);camP.x=q[0];camV.x=q[1];q=spr(camP.y,camV.y,ty,w,dt);camP.y=q[0];camV.y=q[1];q=spr(camP.z,camV.z,tz,w,dt);camP.z=q[0];camV.z=q[1];
- var sh=kmh/220*.025+c.hit*.12;cam.position.set(camP.x+Math.sin(t*41)*sh,camP.y+Math.sin(t*53)*sh,camP.z+Math.sin(t*47)*sh);
+ var sh=kmh/220*.025+c.hit*.12+(window.__pzBump||0)*Math.min(1,kmh/50);cam.position.set(camP.x+Math.sin(t*41)*sh,camP.y+Math.sin(t*53)*sh,camP.z+Math.sin(t*47)*sh);
  var la=hood?c.rh:camAng;cam.lookAt(c.rx+Math.sin(la)*R.camAhead,hood?1.1:1.1,c.rz+Math.cos(la)*R.camAhead);
  rollC+=(-c.ays*.005-rollC)*(1-Math.exp(-5*dt));
  fovC+=((R.fovLow+(R.fovHigh-R.fovLow)*Math.min(1,kmh/220))-fovC)*(1-Math.exp(-4*dt));cam.fov=fovC;cam.near=.3;cam.updateProjectionMatrix()}
@@ -4363,8 +4363,8 @@ function driveStep(dt,t){
  var sn=Math.sin(c.h),cs=Math.cos(c.h);c.vx=c.v*sn+c.w*cs;c.vz=c.v*cs-c.w*sn;
  trackIx(c);var S=LSAMP[c.ix],ed=Math.hypot(c.x-S.x,c.z-S.z),ja=0;
  for(i=0;i<ASAMP.length;i++)if(Math.hypot(c.x-ASAMP[i].x,c.z-ASAMP[i].z)<AH+3){ja=1;break}
- if(!ja&&ed>R.roadHalf+.9){var k=(ed-R.roadHalf-.9)/ed;c.x-=(c.x-S.x)*k;c.z-=(c.z-S.z)*k;c.px=c.rx=c.x;c.pz=c.rz=c.z;c.v*=.9;c.w*=-.3;c.hit=Math.max(c.hit,Math.min(1,Math.abs(c.v)/10))}
- var kmh=Math.abs(c.v)*3.6;
+ if(0&&!ja&&ed>R.roadHalf+.9){var k=(ed-R.roadHalf-.9)/ed;c.x-=(c.x-S.x)*k;c.z-=(c.z-S.z)*k;c.px=c.rx=c.x;c.pz=c.rz=c.z;c.v*=.9;c.w*=-.3;c.hit=Math.max(c.hit,Math.min(1,Math.abs(c.v)/10))}
+ var kmh=Math.abs(c.v)*3.6;c.ed=ed;window.__pzSurf&&window.__pzSurf(c,R,ed);
  /* body spring-damper: dip under braking, squat accelerating, roll to outside */
  var pt=Math.max(-.06,Math.min(.06,-c.axs*R.pitchPerAcc)),rt=Math.max(-.07,Math.min(.07,c.ays*R.rollPerAcc)),q;
  q=spr(c.pit[0],c.pit[1],pt,12,dt);c.pit=q;q=spr(c.rol[0],c.rol[1],rt,12,dt);c.rol=q;c.kick=Math.max(0,c.kick-dt*4);
@@ -4390,7 +4390,7 @@ function driveStep(dt,t){
  /* HUD */
  if(kmh!==lastKm&&spB){lastKm=Math.round(kmh);spB.textContent=lastKm;spI.style.width=Math.min(100,kmh/220*100)+'%'}
  hE.r.style.width=Math.max(0,Math.min(100,(c.rpm-R.idleRpm)/(R.redRpm-R.idleRpm)*100))+'%';hE.g.textContent=c.v<-.5?'R':(kmh<1&&!thr?'N':(c.gear+1));
- hE.l.textContent='LAP '+(lapT0?fmt(now-lapT0):'--:--.--')+'   BEST '+fmt(bestLap);
+ hE.l.textContent=(window.__pzsurf||'ASPHALT')+'  \u00b7  '+(c.ix*.5/1000).toFixed(2)+' km';
  var sl=Math.max(0,Math.min(1,(kmh-120)/80));hE.v.style.opacity=sl*.8;
  var mg=hE.m.getContext('2d');mg.clearRect(0,0,96,96);mg.drawImage(mini,0,0);mg.fillStyle='#ff5a4a';mg.beginPath();mg.arc(mb.ox+(c.x-mb.x0)*mb.sc,96-(mb.oz+(c.z-mb.z0)*mb.sc),4,0,7);mg.fill();
  /* camera + audio */
@@ -4601,6 +4601,7 @@ extra=function(dt,t){_x(dt,t);try{
 }catch(e){console.log('PS2-CHAR load error',e)}})();
 </script></body></html>
 
+
 <!--PZP-START--><script>
 /*PZP-PATCH-V1*/
 (function(){try{
@@ -4744,6 +4745,59 @@ setInterval(function(){nl();paint();hoodSync()},500);
 nl();paint();
 }catch(e){console.log('PZP patch error',e)}})();
 </script><!--PZP-END-->
+<!--PZR-START--><script>window.__PZROAD={"pts":[[0.3,58.6],[-0.5,63],[-7,67.5],[-20,68.5],[-45,66],[-80,63],[-120,64],[-155,72],[-185,90],[-208,118],[-240,141],[-282,146],[-325,138],[-362,150],[-388,180],[-398,222],[-392,265],[-370,300],[-336,322],[-300,350],[-290,392],[-310,430],[-352,452],[-398,458],[-440,478],[-455,520],[-440,562],[-405,590],[-360,600],[-315,628],[-300,672],[-322,712]],"dirt":[[-120,64],[-119,92],[-136,126],[-164,160],[-200,186],[-242,184],[-270,164],[-282,146]]};
+/*PZR-ROAD-V1*/
+(function(){try{
+if(window.__pzr)return;window.__pzr=1;
+var T=THREE,RD=window.__PZROAD,R=function(a,b){return a+Math.random()*(b-a)},gp=new T.Group(),i;
+scene.add(gp);
+function cv(p){return new T.CatmullRomCurve3(p.map(function(a){return new T.Vector3(a[0],0,a[1])}),false,'centripetal')}
+var mc=cv(RD.pts),M0=mc.getSpacedPoints(Math.round(mc.getLength()/.5)),dc=cv(RD.dirt),DS=dc.getSpacedPoints(Math.round(dc.getLength()/1.5));
+function dd(x,z){var b=1e9,d,k;for(k=0;k<DS.length;k++){d=(x-DS[k].x)*(x-DS[k].x)+(z-DS[k].z)*(z-DS[k].z);if(d<b)b=d}return Math.sqrt(b)}
+function off(P,o){return P.map(function(p,k){var a=P[Math.max(0,k-1)],b=P[Math.min(P.length-1,k+1)],tx=b.x-a.x,tz=b.z-a.z,l=Math.hypot(tx,tz)||1;return new T.Vector3(p.x-tz/l*o,0,p.z+tx/l*o)})}
+function rib(P,half,y,m){var pos=[],uv=[],nr=[],ix=[],n=P.length,L=0,k;
+ for(k=0;k<n;k++){var a=P[Math.max(0,k-1)],b=P[Math.min(n-1,k+1)],tx=b.x-a.x,tz=b.z-a.z,l=Math.hypot(tx,tz)||1,p=P[k];tx/=l;tz/=l;if(k)L+=Math.hypot(p.x-P[k-1].x,p.z-P[k-1].z);
+  pos.push(p.x+tz*half,y,p.z-tx*half,p.x-tz*half,y,p.z+tx*half);uv.push(0,L/6,1,L/6);nr.push(0,1,0,0,1,0)}
+ for(k=0;k<n-1;k++)ix.push(k*2,k*2+1,k*2+2,k*2+1,k*2+3,k*2+2);
+ var g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setAttribute('normal',new T.Float32BufferAttribute(nr,3));g.setIndex(ix);
+ var o=new T.Mesh(g,m);o.frustumCulled=false;gp.add(o);return o}
+/* endless grass under everything, below the old ground */
+var gt=tex(128,128,function(g,w,h){g.fillStyle='#1b2b1a';g.fillRect(0,0,w,h);for(var k=0;k<900;k++){g.fillStyle='rgba('+(k%3?'18,46,18':'62,70,30')+','+R(.05,.22)+')';g.fillRect(R(0,w),R(0,h),2,2)}},300,300);
+var gr=new T.Mesh(new T.PlaneGeometry(1800,1800),new T.MeshStandardMaterial({map:gt,roughness:1}));gr.rotation.x=-Math.PI/2;gr.position.set(-250,-.07,400);gp.add(gr);
+/* dirt off-road track with ruts */
+var dt=tex(128,128,function(g,w,h){g.fillStyle='#4a3a28';g.fillRect(0,0,w,h);for(var k=0;k<700;k++){g.fillStyle='rgba('+(k%2?'20,14,8':'96,74,46')+','+R(.1,.35)+')';g.fillRect(R(0,w),R(0,h),2,2)}},1,1);
+rib(DS,3.6,.03,new T.MeshStandardMaterial({map:dt,roughness:1,side:2,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}));
+var rm=new T.MeshStandardMaterial({color:0x241a10,roughness:1,side:2,polygonOffset:true,polygonOffsetFactor:-5,polygonOffsetUnits:-5});
+[-1.2,1.2].forEach(function(o){rib(off(DS,o),.32,.032,rm)});
+/* trees, rocks, bushes, reflector posts (instanced, so it stays fast) */
+var tr=[],cr=[],rk=[],bs=[],ps=[];
+for(i=8;i<M0.length-8;i+=10){var p=M0[i],q=M0[i+2],tx=q.x-p.x,tz=q.z-p.z,l=Math.hypot(tx,tz)||1;tx/=l;tz/=l;
+ if(p.x>-45&&p.z<175)continue;
+ if(i%40===0)[-1,1].forEach(function(s){ps.push([p.x-tz*5.9*s,.45,p.z+tx*5.9*s,0,1,1])});
+ [-1,1].forEach(function(s){if(Math.random()<.5){var d=R(9,55),x=p.x-tz*d*s,z=p.z+tx*d*s,r=Math.random(),k;if(dd(x,z)<7)return;
+  if(r<.6){k=R(.8,1.6);tr.push([x,1.2*k,z,R(0,6),k,k]);cr.push([x,4*k,z,0,k,k]);cols.push([x-.3*k,x+.3*k,z-.3*k,z+.3*k])}
+  else if(r<.82){k=R(.6,2.2);rk.push([x,.4*k,z,R(0,6),k,k*.7]);if(k>1.3)cols.push([x-k*.8,x+k*.8,z-k*.8,z+k*.8])}
+  else{k=R(.5,1.1);bs.push([x,.35*k,z,0,k,k*.7])}}})}
+function inst(geo,m,arr,h){if(!arr.length)return;var im=new T.InstancedMesh(geo,m,arr.length),d=new T.Object3D(),c=new T.Color();
+ arr.forEach(function(a,k){d.position.set(a[0],a[1],a[2]);d.rotation.set(0,a[3],0);d.scale.set(a[4],a[5],a[4]);d.updateMatrix();im.setMatrixAt(k,d.matrix);im.setColorAt(k,c.setHSL(h[0]+R(-.03,.03),h[1],h[2]+R(-.04,.05)))});
+ im.frustumCulled=false;gp.add(im)}
+var sm=new T.MeshStandardMaterial({color:0xffffff,roughness:.95});
+inst(new T.ConeGeometry(.22,2.4,6),sm,tr,[.07,.4,.14]);
+inst(new T.ConeGeometry(1.5,3.6,7),sm,cr,[.32,.5,.14]);
+inst(new T.DodecahedronGeometry(1,0),sm,rk,[.6,.04,.28]);
+inst(new T.SphereGeometry(1,6,5),sm,bs,[.28,.5,.12]);
+inst(new T.ConeGeometry(.07,.9,4),new T.MeshStandardMaterial({color:0xffffff,emissive:0x555544,roughness:.6}),ps,[.12,.1,.85]);
+/* curve warning signs */
+var last=-999;
+for(i=120;i<M0.length-100;i+=10){var a=M0[i],b=M0[i+4],c2=M0[i+64],d2=M0[i+68],ax=b.x-a.x,az=b.z-a.z,bx=d2.x-c2.x,bz=d2.z-c2.z,la=Math.hypot(ax,az)||1,lb=Math.hypot(bx,bz)||1;ax/=la;az/=la;bx/=lb;bz/=lb;
+ if(Math.acos(Math.max(-1,Math.min(1,ax*bx+az*bz)))>.5&&i-last>200){last=i;
+  var sx=a.x-az*6.8,sz=a.z+ax*6.8;box(.08,2.2,.08,M(0x666a70,.6),sx,1.1,sz);
+  sign(ax*bz-az*bx>0?'\u2192 CURVE':'CURVE \u2190',sx,2.25,sz,Math.atan2(-ax,-az),1.7,.5,'#111','#f2c230',40)}}
+/* surface: grip, drag and bumps change with what is under the car */
+var NM=['ASPHALT','GRAVEL','DIRT TRACK','OFF-ROAD'],MU=[1.05,.85,.78,.58],RL=[150,420,520,950],BP=[0,.012,.03,.05];
+window.__pzSurf=function(c,Rr,ed){var s=ed<5.2?0:ed<6.8?1:dd(c.x,c.z)<3.8?2:3;Rr.gripMu=MU[s];Rr.roll=RL[s];window.__pzBump=BP[s];window.__pzsurf=NM[s]};
+}catch(e){console.log('PZR road error',e)}})();
+</script><!--PZR-END-->
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
