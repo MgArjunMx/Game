@@ -4010,7 +4010,7 @@ var T=THREE,PI=Math.PI,$=function(i){return document.getElementById(i)};
 var R=function(a,b){return a+Math.random()*(b-a)};
 var CFG={walk:2.7,run:4.6,slow:.6};
 /*RACE-SIM-V1*/
-var RACE={roadHalf:5,step:1/120,mass:1300,wheelbase:2.7,cgA:1.25,iz:2100,cgH:.5,wheelR:.33,gears:[3.6,2.3,1.65,1.25,1.0],finalDrive:3.4,peakTorque:400,idleRpm:1000,redRpm:6800,shiftUp:6300,shiftDn:2600,driveEff:.9,drag:.78,roll:150,brakeF:9000,revF:2800,revMax:5,throttleRamp:4,gripMu:1.05,peakSlip:9,steerLow:32,steerHigh:6,steerHighSpeed:61,kIn:6,kOut:10,driftMinKmh:60,driftHold:.25,driftRearGrip:.55,driftSlipMin:15,driftSlipMax:35,driftAssist:30,camBack:4.2,camHigh:1.5,camAhead:6,fovLow:70,fovHigh:70,camOmega:8,camVelFollow:0,skidLife:12,pitchPerAcc:.0053,rollPerAcc:.0071};
+var RACE=window.__RACE={roadHalf:5,step:1/120,mass:1300,wheelbase:2.7,cgA:1.25,iz:2100,cgH:.5,wheelR:.33,gears:[3.6,2.3,1.65,1.25,1.0],finalDrive:3.4,peakTorque:400,idleRpm:1000,redRpm:6800,shiftUp:6300,shiftDn:2600,driveEff:.9,drag:.78,roll:150,brakeF:9000,revF:2800,revMax:5,throttleRamp:4,gripMu:1.05,peakSlip:9,steerLow:32,steerHigh:6,steerHighSpeed:61,kIn:6,kOut:10,driftMinKmh:60,driftHold:.25,driftRearGrip:.55,driftSlipMin:15,driftSlipMax:35,driftAssist:30,camBack:4.2,camHigh:1.5,camAhead:6,fovLow:70,fovHigh:70,camOmega:8,camVelFollow:0,skidLife:12,pitchPerAcc:.0053,rollPerAcc:.0071};
 
 window.__SPW=CFG.walk;window.__SPR=CFG.run;
 var DR={on:0,car:null},ctl={G:0,B:0,L:0,R:0},kb={u:0,d:0,l:0,r:0},WK=0,eng=null,cars=[],loop=null,appr=null,LSAMP=[],ASAMP=[],bcn=null;
@@ -4613,10 +4613,14 @@ function q(i){return D.getElementById(i)}
 function el(t,c,h){var e=D.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e}
 function ev(e,n){e.dispatchEvent(new Event(n,{bubbles:true}))}
 var MV='n',isOpen=0,open='Camera';
+var CC=Object.assign({back:4.2,high:1.5,ahead:6,fov:70},(function(){try{return JSON.parse(localStorage.getItem('pzp.car'))||{}}catch(e){return {}}})());
+function applyCar(){var R=window.__RACE;if(!R)return;R.camBack=CC.back;R.camHigh=CC.high;R.camAhead=CC.ahead;R.fovLow=CC.fov;R.fovHigh=CC.fov+6}
+function carSave(){try{localStorage.setItem('pzp.car',JSON.stringify(CC))}catch(e){}applyCar()}
+applyCar();
 
 /* ---------- styles ---------- */
 var css=el('style');css.textContent=[
-'#ge,#pzs{display:none!important}',
+'#ge,#pzs{display:none!important}','#bSpr,#pzW{pointer-events:auto!important;touch-action:none!important}',
 '#pzsp{pointer-events:none!important}',
 '#bSpr.pzon,#pzW.pzon{background:linear-gradient(145deg,rgba(76,201,160,.85),rgba(20,60,50,.85))!important;box-shadow:0 0 14px rgba(76,201,160,.6)!important}',
 '#pzSb{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 12px);z-index:30;width:52px;height:52px;border-radius:16px;border:1px solid rgba(255,255,255,.18);background:rgba(20,23,34,.85);color:#eceef6;display:grid;place-items:center;padding:0;touch-action:manipulation}',
@@ -4648,7 +4652,7 @@ function nl(){['bSpr','pzW'].forEach(function(i){var b=q(i);if(b&&b.onpointerdow
 D.addEventListener('pointerdown',function(e){
  if(B.classList.contains('pzedit'))return;
  var b=e.target.closest&&e.target.closest('#bSpr,#pzW');if(!b)return;
- e.preventDefault();var m=b.id==='bSpr'?'run':'walk';MV=MV===m?'n':m;paint();
+ e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();var nw=performance.now();if(nw-(window.__mvT||0)<220)return;window.__mvT=nw;var m=b.id==='bSpr'?'run':'walk';MV=MV===m?'n':m;paint();
  try{navigator.vibrate&&navigator.vibrate(8)}catch(x){}},true);
 
 /* ---------- camera ---------- */
@@ -4699,6 +4703,12 @@ function CAT(){return[
  {k:'s',l:'Angle (tilt)',min:0,max:60,st:1,u:'\u00b0',g:function(){return S.ang},s:function(v){S.ang=+v;sv()}},
  {k:'s',l:'Distance (near / far)',min:1.5,max:6,st:.1,u:' m',g:function(){return S.dist},s:function(v){S.dist=+v;sv()}},
  {k:'b',l:'Reset camera',f:function(){S.ang=22;S.dist=3;sv();render()}}]],
+['Car camera',[
+ {k:'s',l:'Car distance (near / far)',min:2,max:14,st:.1,u:' m',g:function(){return CC.back},s:function(v){CC.back=+v;carSave()}},
+ {k:'s',l:'Car angle (low / high)',min:.5,max:5,st:.1,u:' m',g:function(){return CC.high},s:function(v){CC.high=+v;carSave()}},
+ {k:'s',l:'Look ahead',min:2,max:14,st:.5,u:' m',g:function(){return CC.ahead},s:function(v){CC.ahead=+v;carSave()}},
+ {k:'s',l:'Car field of view',min:50,max:100,st:1,u:'',g:function(){return CC.fov},s:function(v){CC.fov=+v;carSave()}},
+ {k:'b',l:'Reset car camera',f:function(){CC.back=4.2;CC.high=1.5;CC.ahead=6;CC.fov=70;carSave();render()}}]],
 ['Movement',[
  {k:'g',l:'Mode',o:[['n','Normal'],['walk','Walk'],['run','Run']],g:function(){return MV},s:function(v){MV=v;paint()}},
  {k:'s',l:'Walk speed',min:.8,max:2.4,st:.1,u:' m/s',g:function(){return S.ws},s:function(v){S.ws=+v;sv()}},
@@ -4741,8 +4751,17 @@ B.append(gear,bk,pn);
 
 /* ---------- car view only changes when chosen ---------- */
 function hoodSync(){if(window.__carHood)window.__carHood(S.hood)}
-setInterval(function(){nl();paint();hoodSync()},500);
+setInterval(function(){nl();paint();hoodSync();applyCar()},500);
 nl();paint();
+/*PZ-DTAP*/
+(function(){var t=0,x=0,y=0;
+function go(){if(parent!==window){parent.postMessage({t:'pz-fs'},'*')}else{try{if(D.fullscreenElement){D.exitFullscreen()}else{D.documentElement.requestFullscreen({navigationUI:'hide'})}}catch(e){}}}
+D.addEventListener('pointerdown',function(e){
+ if(e.clientY>innerHeight*.16)return;
+ if(e.target.closest&&e.target.closest('button,input,select,a'))return;
+ var n=performance.now();
+ if(n-t<350&&Math.hypot(e.clientX-x,e.clientY-y)<50){t=0;go()}else{t=n;x=e.clientX;y=e.clientY}
+},true)})();
 }catch(e){console.log('PZP patch error',e)}})();
 </script><!--PZP-END-->
 <!--PZR-START--><script>window.__PZROAD={"pts":[[0.3,58.6],[-0.5,63],[-7,67.5],[-20,68.5],[-45,66],[-80,63],[-120,64],[-155,72],[-185,90],[-208,118],[-240,141],[-282,146],[-325,138],[-362,150],[-388,180],[-398,222],[-392,265],[-370,300],[-336,322],[-300,350],[-290,392],[-310,430],[-352,452],[-398,458],[-440,478],[-455,520],[-440,562],[-405,590],[-360,600],[-315,628],[-300,672],[-322,712]],"dirt":[[-120,64],[-119,92],[-136,126],[-164,160],[-200,186],[-242,184],[-270,164],[-282,146]]};
@@ -4825,6 +4844,16 @@ function loadTo(t,cb){show('loading');const b=$('#lb'),L=[t,t,t,t];L.forEach((q,
 $$('[data-x]').forEach(b=>b.onclick=()=>b.closest('.sheet').classList.remove('on'));
 $$('.sheet').forEach(s=>s.onclick=e=>{if(e.target==s)s.classList.remove('on')});
 
+function pzFs(){try{if(document.fullscreenElement||document.webkitFullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document)}else{var h=document.documentElement,f=h.requestFullscreen||h.webkitRequestFullscreen;if(f)f.call(h,{navigationUI:'hide'})}}catch(e){}}
+window.pzFs=pzFs;
+(function(){var t=0,x=0,y=0;
+addEventListener('pointerdown',function(e){
+ if(e.clientY>innerHeight*.16)return;
+ if(e.target.closest&&e.target.closest('button,input,select,a'))return;
+ var n=performance.now();
+ if(n-t<350&&Math.hypot(e.clientX-x,e.clientY-y)<50){t=0;pzFs()}else{t=n;x=e.clientX;y=e.clientY}
+},true)})();
+addEventListener('message',function(e){if(e.data&&e.data.t==='pz-fs')pzFs()});
 // ----- auth -----
 (async()=>{loadTo('Loading',async()=>{const {data:{session}}=await sb.auth.getSession();if(session){me=session.user;afterAuth()}else show('login')})})();
 $('#guest').onclick=async e=>{fs();fresh=1;e.target.disabled=true;const {data,error}=await sb.auth.signInAnonymously();e.target.disabled=false;
