@@ -915,7 +915,7 @@ update=function(dt,t){
  const n=el('note'),kp=el('kp');
  if(n.style.display=='block'){if(!nt){nt=performance.now();nx=P.pos.x;nz=P.pos.z}else if(Math.hypot(P.pos.x-nx,P.pos.z-nz)>1.3)n.style.display='none'}else nt=0;
  if(kp.style.display=='block'&&Math.hypot(P.pos.x-1,P.pos.z-5)>2.6)kp.style.display='none';
- if(RUN.on){if(jid!==null)tch=1;else if(tch){tch=0;setRun(0)}else{joy.x=0;joy.y=1}}else tch=0;
+ tch=0;
  const px=P.pos.x,pz=P.pos.z;
  _u(dt,t);
  const mv=Math.hypot(P.pos.x-px,P.pos.z-pz),want=P.vel.length()*dt;
@@ -4086,538 +4086,10 @@ for(var z=30;z<400;z+=40)draw(43,H(z),z,[0,Math.PI],-1);
 WG.forEach(function(w,i){draw(w.ox+w.n*(w.rw||7)/2,WGR[i].position.y+1.6,w.cz,[Math.PI/2,-Math.PI/2],i)});
 WGR.forEach(function(g,i){g.visible=vis[i]});cam.position.copy(sp);cam.quaternion.copy(sq);
 }catch(e){console.log('warmup',e)}})();
-</script><!--ANIM-START--><script>
-/* ============================================================================
-   HUMAN MOTION ENGINE  (replaces the old walk/run/jump/idle animation)
-   - ONE gait phase drives every limb; it advances with real ground speed
-   - 2-bone leg IK + foot locking: a planted foot stays fixed on the ground
-   - sine / ease curves, critically damped springs, fixed sub-steps, crossfades
-   Everything you may want to tweak is in CFG and BODIES below.
-   ============================================================================ */
-(function(){
-if(window.__ANIMENG)return;
-
-/* ============================== SETTINGS ============================== */
-var CFG={
- BODY_TYPE:'average',            /* average | tall | short | heavy | muscular | child | elderly */
- DT_CLAMP:0.05,                   /* longest frame simulated (s): lag never causes jumps */
- STEP:1/90,                       /* fixed physics sub-step (s) */
- SPEED_SMOOTH:12,                 /* speed smoothing rate (1/s) */
- SPEED_SCALE:1,                   /* 1 = feet exactly match ground speed (no foot sliding) */
- IDLE_ENTER:0.09, IDLE_EXIT:0.16, /* speed (m/s) to start / stop standing */
- /* skeleton of your rig (model units) */
- THIGH:0.42, SHANK:0.40, HIP_DROP:0.03, ANKLE_H:0.08, HEEL_BACK:0.095, TOE_FWD:0.175, STAND:0.935,
- /* gait vs speed [speed, value]: strides per second (one stride = 2 steps) and ground-contact fraction */
- STRIDE_RATE:[[0,0.55],[0.6,0.62],[1.4,0.92],[2.2,1.2],[3.25,1.5],[4.5,1.9],[5.5,2.25],[7,2.6]],
- CONTACT:[[0,0.70],[0.6,0.68],[1.4,0.62],[2.2,0.52],[3.25,0.38],[4.5,0.32],[5.5,0.27],[7,0.24]],
- RUN_FROM:2.3, RUN_TO:3.6,        /* walk -> run blend range (m/s) */
- KNEE_STRAIGHT:[0.99,0.975,0.945],/* leg extension idle / walk / run (lower = more knee bend) */
- HEEL_PITCH:[0.18,0.0],           /* foot pitch at heel strike (rad) walk / run (run = midfoot) */
- TOE_PITCH:[-0.45,-0.62],         /* push-off foot pitch (rad) */
- FLAT_START:0.10, FLAT_END:[0.62,0.5],
- CLEAR:[0.07,0.20], TOE_UP:[0.12,0.20], /* swing foot clearance (m) and toe lift (rad) */
- BOB:0.85, FLIGHT_LIFT:0.045,     /* vertical bob strength; extra lift in running flight phase */
- SWAY:[0.022,0.014],              /* pelvis side shift toward standing leg (m) walk / run */
- ROLL:[0.06,0.035],               /* pelvis drop on swinging side (rad) */
- PEL_YAW:[0.09,0.17],             /* pelvis rotation (rad) */
- TWIST:[0.12,0.24],               /* extra shoulder counter-rotation (rad) */
- LEAN:[0.03,0.20],                /* forward torso lean walk / run (rad) */
- LEAN_ACC:0.012, LEAN_ACC_MIN:-0.10, LEAN_ACC_MAX:0.14, /* lean forward when starting, back when braking */
- ARM_SWING:[0.30,0.75], ELBOW:[0.20,1.05], ELBOW_EXTRA:[0.15,0.35], ARM_OUT:0.07, ARM_LAG:26,
- HEAD_STABLE:0.8, HEAD_LEAD:0.12, TURN_LEAN:0.011,
- BREATH_PERIOD:3.6, BREATH_CHEST:0.012,
- AIR_TUCK:0.62,                   /* knee tuck at jump peak (rad) */
- LAND_DIP:0.04, LAND_PER_SPEED:0.02, LAND_MAX:0.15, LAND_TIME:0.20, LAND_TIME_PER_SPEED:0.015
-};
-
-/* body types: multipliers on top of "average" */
-var AV={cad:1,duty:0,arm:1,sway:1,bob:1,twist:1,lean:1,out:0,wide:0,stoop:0,land:1,recov:1,tuck:1,spring:1,clear:1,accel:1,headAct:1,soft:0};
-var DEF={
- tall:{cad:0.93,arm:1.2,twist:1.15,bob:0.95,sway:1.05,tuck:0.95},
- short:{cad:1.12,bob:1.3,spring:1.35,tuck:1.15,arm:1.05},
- heavy:{cad:1.06,wide:0.05,sway:1.7,accel:0.55,land:1.4,recov:1.4,arm:0.85,bob:0.9,spring:0.6,clear:0.85,duty:0.03,soft:0.01},
- muscular:{out:0.2,arm:0.65,twist:0.55,wide:0.025},
- child:{cad:1.22,bob:1.5,headAct:1.8,arm:1.35,spring:1.4,tuck:1.1,land:0.7,recov:0.7},
- elderly:{cad:1.06,arm:0.4,bob:0.6,stoop:0.16,sway:1.3,tuck:0.5,land:0.8,recov:1.2,clear:0.55,soft:0.025,spring:0.3,lean:0.6,twist:0.6,duty:0.04}
-};
-var BODIES={average:AV},k,p;
-for(k in DEF){var o={};for(p in AV)o[p]=AV[p];for(p in DEF[k])o[p]=DEF[k][p];BODIES[k]=o}
-
-/* ============================== MATH HELPERS ============================== */
-var PI=Math.PI,PI2=PI*2;
-function lerp(a,b,t){return a+(b-a)*t}
-function clamp(x,a,b){return x<a?a:(x>b?b:x)}
-function sstep(a,b,x){var t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)}
-function easeIO(u){return 0.5-0.5*Math.cos(PI*u)}
-function easeIn(u){return 1-Math.cos(0.5*PI*u)}
-function easeOut(u){return Math.sin(0.5*PI*u)}
-function tbl(t,x){var n=t.length;if(x<=t[0][0])return t[0][1];for(var i=1;i<n;i++){if(x<=t[i][0]){var a=t[i-1],b=t[i];return lerp(a[1],b[1],(x-a[0])/(b[0]-a[0]))}}return t[n-1][1]}
-function wrap(a){while(a>PI)a-=PI2;while(a<-PI)a+=PI2;return a}
-function spr(s,tg,w,h){var a=-w*w*(s.x-tg)-2*w*s.v;s.v+=a*h;s.x+=s.v*h;return s.x}  /* critically damped spring */
-function wscale(g){var s=1,o=g,n=0;while(o&&n<6){s*=o.scale.x;o=o.parent;n++}return s||1}
-function wyaw(g){var y=0,o=g,n=0;while(o&&n<6){y+=o.rotation.y;o=o.parent;n++}return y}
-
-/* two-bone leg IK. target = ankle relative to hip (z forward, y up). Rig convention: +x rotation swings leg BACK */
-var IKo={T:0,K:0};
-function ik(tz,ty){
- var a=CFG.THIGH,b=CFG.SHANK,d=Math.sqrt(tz*tz+ty*ty),dmax=(a+b)*0.999,dmin=Math.abs(a-b)+0.03;
- if(d>dmax){tz*=dmax/d;ty*=dmax/d;d=dmax}
- else if(d<dmin){if(d<1e-4){tz=0;ty=-dmin}else{tz*=dmin/d;ty*=dmin/d}d=dmin}
- var al=Math.acos(clamp((a*a+d*d-b*b)/(2*a*d),-1,1)),be=Math.acos(clamp((b*b+d*d-a*a)/(2*b*d),-1,1)),line=Math.atan2(-tz,-ty);
- IKo.T=line-al;IKo.K=al+be;
-}
-
-/* ============================== PER-CHARACTER CONTROLLER ============================== */
-function attach(rig,fallback){
- var LG=rig.legs,AR=rig.arms,pel=rig.pel,tor=rig.tor,head=rig.head,lids=rig.lids,curl=rig.curl,g=rig.g,broken=false;
- var HB=CFG.HEEL_BACK,TF=CFG.TOE_FWD,AH=CFG.ANKLE_H,HD=CFG.HIP_DROP,BD=BODIES.average;
- function mkLeg(off){return{off:off,phi:off,prevPhi:off,stance:true,H:-HB,x0:0,y0:AH,th0:0}}
- var st={S:0,vin:0,vs:0,acc:0,idle:true,frozen:true,wIdle:0,phi:0,fs:0.6,D:0.7,T:1.6,rb:0,wm:0,
-  fp:{hs:0.18,to:-0.45,fe:0.62,clr:0.07,dor:0.12},leg:[mkLeg(0),mkLeg(0.5)],
-  pelY:0.92,pelYs:0.92,init:0,yaw:null,yawRate:0,
-  sLean:{x:0,v:0},sArm:[{x:0,v:0},{x:0,v:0}],sHead:{x:0,v:0},sTw:{x:0,v:0},sRoll:{x:0,v:0},
-  air:false,airT:0,fallV:0,wAir:0,landT:99,landDur:0.3,landAmp:0,blinkT:2.5,blinkP:-1};
- var pf=[{x:0,y:0,th:0},{x:0,y:0,th:0}],tmp={x:0,y:0,th:0};
- var V={pelY:0,legT:[0,0],legK:[0,0],legA:[0,0],legRz:[0,0],armX:[0,0],armZ:[0,0],elb:[0,0],torX:0,headX:0};
-
- /* ankle position of one foot in "distance travelled" coordinates (planted foot has fixed x) */
- function foot(L,o){
-  var D=st.D,fp=st.fp,s,u,th;
-  if(L.stance){
-   s=clamp(L.phi/D,0,1);
-   if(s<CFG.FLAT_START){u=s/CFG.FLAT_START;th=fp.hs*(1-easeIO(u));o.th=th;o.x=L.H+HB*Math.cos(th)-AH*Math.sin(th);o.y=HB*Math.sin(th)+AH*Math.cos(th)}   /* heel rocker */
-   else if(s<fp.fe){o.th=0;o.x=L.H+HB;o.y=AH}                                                                                               /* foot flat */
-   else{u=(s-fp.fe)/(1-fp.fe);th=fp.to*easeIn(u);o.th=th;var Tx=L.H+HB+TF;o.x=Tx-TF*Math.cos(th)-AH*Math.sin(th);o.y=-TF*Math.sin(th)+AH*Math.cos(th)} /* toe-off */
-  }else{
-   u=clamp((L.phi-D)/(1-D),0,1);
-   var rem=(1-u)*(1-D)*st.T,Hn=st.S+st.vs*rem+st.vs*0.5*D*st.T-HB,
-    xe=Hn+HB*Math.cos(fp.hs)-AH*Math.sin(fp.hs),ye=HB*Math.sin(fp.hs)+AH*Math.cos(fp.hs),e=easeIO(u),sn=Math.sin(PI*u);
-   o.x=lerp(L.x0,xe,e);o.y=lerp(L.y0,ye,e)+fp.clr*sn;o.th=lerp(L.th0,fp.hs,easeOut(u))+fp.dor*sn;
-  }
- }
-
- function reinit(){
-  st.phi=0;
-  for(var i=0;i<2;i++){var L=st.leg[i];L.phi=(st.phi+L.off)%1;L.prevPhi=L.phi;L.stance=L.phi<st.D;L.H=st.S-HB;L.x0=st.S;L.y0=AH;L.th0=0}
- }
-
- /* one fixed sub-step of the simulation */
- function sim(h){
-  var vo=st.vs;
-  st.vs+=(st.vin-st.vs)*(1-Math.exp(-CFG.SPEED_SMOOTH*h));
-  var vs=st.vs;
-  st.acc+=(((vs-vo)/h)-st.acc)*(1-Math.exp(-8*h));
-  st.S+=st.vin*h;
-  if(st.idle){if(vs>CFG.IDLE_EXIT)st.idle=false}else if(vs<CFG.IDLE_ENTER)st.idle=true;
-  var rb=sstep(CFG.RUN_FROM,CFG.RUN_TO,vs),wm=sstep(0.1,1.1,vs);
-  st.rb=rb;st.wm=wm;
-  var fs=tbl(CFG.STRIDE_RATE,vs)*BD.cad,D=clamp(tbl(CFG.CONTACT,vs)+BD.duty,0.2,0.76),len=vs/fs,fp=st.fp;
-  st.fs=fs;st.D=D;st.T=1/fs;
-  fp.hs=lerp(CFG.HEEL_PITCH[0],CFG.HEEL_PITCH[1],rb);fp.to=lerp(CFG.TOE_PITCH[0],CFG.TOE_PITCH[1],rb);fp.fe=lerp(CFG.FLAT_END[0],CFG.FLAT_END[1],rb);
-  fp.clr=lerp(CFG.CLEAR[0],CFG.CLEAR[1],rb)*BD.clear*clamp(len/0.9,0.2,1.15);fp.dor=lerp(CFG.TOE_UP[0],CFG.TOE_UP[1],rb)*clamp(len/0.9,0.2,1);
-  /* freeze the gait when standing with both feet planted under the body */
-  var l0=st.leg[0],l1=st.leg[1],frozen=false;
-  if(st.idle&&l0.stance&&l1.stance)frozen=Math.abs(l0.H+HB-st.S)<0.09&&Math.abs(l1.H+HB-st.S)<0.09;
-  st.frozen=frozen;
-  if(!frozen){
-   st.phi=(st.phi+(st.idle?Math.max(fs,0.8):fs)*h)%1;
-   for(var i=0;i<2;i++){var L=st.leg[i];L.prevPhi=L.phi;L.phi=(st.phi+L.off)%1;
-    if(L.phi<L.prevPhi){L.stance=true;L.H=st.S+vs*0.5*D*st.T-HB}                                   /* heel strike: plant foot */
-    else if(L.stance&&L.phi>=D){foot(L,tmp);L.x0=tmp.x;L.y0=tmp.y;L.th0=tmp.th;L.stance=false}}   /* toe-off: start swing */
-  }
-  st.wIdle+=((frozen?1:0)-st.wIdle)*(1-Math.exp(-7*h));
-  /* springs: arms follow with delay, lean, head leads turns */
-  var amp=lerp(CFG.ARM_SWING[0],CFG.ARM_SWING[1],rb)*BD.arm*wm,c=Math.cos(PI2*st.phi),wA=(frozen||st.idle)?14:clamp(CFG.ARM_LAG*fs,14,50);
-  spr(st.sArm[0],amp*c,wA,h);spr(st.sArm[1],-amp*c,wA,h);
-  var leanT=lerp(CFG.LEAN[0],CFG.LEAN[1],rb)*BD.lean*wm+BD.stoop+clamp(st.acc*CFG.LEAN_ACC*BD.accel,CFG.LEAN_ACC_MIN,CFG.LEAN_ACC_MAX)*sstep(0,0.3,Math.max(vs,st.vin));
-  spr(st.sLean,leanT,9,h);
-  spr(st.sHead,clamp(st.yawRate*CFG.HEAD_LEAD,-0.6,0.6)*(1+(BD.headAct-1)*0.5),12,h);
-  spr(st.sTw,clamp(st.yawRate*0.05,-0.3,0.3),7,h);
-  spr(st.sRoll,-clamp(st.yawRate*vs*CFG.TURN_LEAN,-0.25,0.25)*(0.2+0.8*rb)*BD.lean,8,h);
-  st.landT+=h;
- }
-
- /* turn the simulation state into joint angles */
- function pose(dt,t,q){
-  var vs=st.vs,rb=st.rb,wm=st.wm,D=st.D,fs=st.fs,phi=st.phi,S=st.S,wI=st.wIdle,idle=1-wm,ga=1-st.wAir,i,L,pp;
-  for(i=0;i<2;i++){L=st.leg[i];pp=pf[i];foot(L,pp);
-   if(L.stance&&wI>0.001){pp.x=lerp(pp.x,L.H+HB,wI);pp.y=lerp(pp.y,AH,wI);pp.th=lerp(pp.th,0,wI)}}
-  /* pelvis height: highest leg extension that still lets planted feet reach the ground */
-  var kf=lerp(CFG.KNEE_STRAIGHT[0],lerp(CFG.KNEE_STRAIGHT[1],CFG.KNEE_STRAIGHT[2],rb),wm)-BD.soft,
-   Rm=(CFG.THIGH+CFG.SHANK)*kf,capNom=AH+Rm+HD,base=capNom,ns=0;
-  for(i=0;i<2;i++){L=st.leg[i];if(L.stance){var tz0=pf[i].x-S,c0=pf[i].y+Math.sqrt(Math.max(1e-4,Rm*Rm-tz0*tz0))+HD;if(c0<base)base=c0;ns++}}
-  var Xe=Math.min(0.5,0.5*D*(vs/fs)*0.95),capLow=Math.min(capNom,AH+Math.sqrt(Math.max(1e-4,Rm*Rm-Xe*Xe))+HD),bobK=CFG.BOB*BD.bob,tgt;
-  if(ns>0)tgt=base>capLow?capLow+bobK*(base-capLow):base;
-  else{var w5=phi>=0.5?phi-0.5:phi,f=clamp((w5-D)/Math.max(0.02,0.5-D),0,1);tgt=capLow+(bobK*(capNom-capLow)*0.7+CFG.FLIGHT_LIFT*BD.spring*rb)*Math.sin(PI*f)}
-  /* landing absorb: hips drop, knees fold, ease back up */
-  var env=0;
-  if(st.landT<st.landDur){var u=st.landT/st.landDur;env=u<0.3?Math.sin(0.5*PI*u/0.3):Math.cos(0.5*PI*(u-0.3)/0.7)}
-  tgt=Math.min(tgt-st.landAmp*env,CFG.STAND);
-  if(!st.init){st.pelY=tgt;st.pelYs=tgt;st.init=1}
-  st.pelY+=(tgt-st.pelY)*(1-Math.exp(-45*dt));st.pelYs+=(st.pelY-st.pelYs)*(1-Math.exp(-3*dt));
-  if(!isFinite(st.pelY)||!isFinite(S))throw new Error('NaN in gait');
-  /* body oscillators, all from the single gait phase */
-  var cA=Math.cos(PI2*phi),cS=Math.cos(PI2*(phi-D*0.5)),br=Math.sin(PI2*t/CFG.BREATH_PERIOD),ws=Math.sin(t*0.9)*Math.sin(t*0.37),
-   swayX=(lerp(CFG.SWAY[0],CFG.SWAY[1],rb)*BD.sway*cS*wm+0.012*ws*idle*BD.sway)*ga,
-   roll=(lerp(CFG.ROLL[0],CFG.ROLL[1],rb)*cS*wm+0.01*ws*idle)*ga,
-   yawAmp=lerp(CFG.PEL_YAW[0],CFG.PEL_YAW[1],rb),yawP=-yawAmp*cA*wm*ga,
-   twist=(lerp(CFG.TWIST[0],CFG.TWIST[1],rb)*BD.twist+yawAmp)*cA*wm*ga;
-  /* ---- ground pose ---- */
-  V.pelY=st.pelY;
-  var hipY=st.pelY-HD;
-  for(i=0;i<2;i++){
-   var tz=pf[i].x-S,ty=pf[i].y-hipY;ik(tz,ty);
-   V.legT[i]=IKo.T;V.legK[i]=IKo.K;V.legA[i]=-pf[i].th-(IKo.T+IKo.K);
-   var dd=Math.max(0.4,Math.sqrt(tz*tz+ty*ty)),sd=i?-1:1;
-   V.legRz[i]=Math.asin(clamp((-swayX+sd*BD.wide)/dd,-0.5,0.5));      /* keeps planted feet fixed sideways while pelvis sways */
-  }
-  var ampN=Math.max(0.05,lerp(CFG.ARM_SWING[0],CFG.ARM_SWING[1],rb)*BD.arm);
-  for(i=0;i<2;i++){
-   var ax=st.sArm[i].x,fw=clamp(-ax/ampN,0,1);
-   V.armX[i]=ax+0.02*Math.sin(t*0.8+i*2)*idle-env*0.8;
-   V.armZ[i]=AR[i].sd*(CFG.ARM_OUT+BD.out);
-   V.elb[i]=-lerp(0.15,lerp(CFG.ELBOW[0],CFG.ELBOW[1],rb)+lerp(CFG.ELBOW_EXTRA[0],CFG.ELBOW_EXTRA[1],rb)*fw,wm)-env*0.3;
-  }
-  V.torX=st.sLean.x+0.01*br*idle+env*0.3;
-  /* ---- air pose (jump) crossfaded over the ground pose ---- */
-  var wa=st.wAir;
-  if(wa>0.002){
-   var vy=(window.JJ&&typeof window.JJ.v==='number')?window.JJ.v:(st.airT<0.25?3:(st.airT<0.4?0:-3));
-   var asc=sstep(0.3,3,vy),desc=sstep(0.3,3,-vy),tk=Math.exp(-vy*vy/3.5)*BD.tuck;
-   var w1=asc*(1-tk),w2=tk,w3=desc*(1-tk),sm=w1+w2+w3;if(sm<0.01){w2=1;sm=1}w1/=sm;w2/=sm;w3/=sm;
-   var tuck=CFG.AIR_TUCK;
-   for(i=0;i<2;i++){
-    var T2=w1*0.06+w2*(-tuck)+w3*(-0.28)+(i?-0.08:0.08),K2=w1*0.05+w2*(tuck+0.03)+w3*0.22,S2=w1*0.9+w2*0.12+w3*(-0.1);
-    V.legT[i]=lerp(V.legT[i],T2,wa);V.legK[i]=lerp(V.legK[i],K2,wa);V.legA[i]=lerp(V.legA[i],S2-(T2+K2),wa);V.legRz[i]=lerp(V.legRz[i],0,wa);
-    V.armX[i]=lerp(V.armX[i],w1*(-2.6)+w2*(-0.5)+w3*(-1.3),wa);
-    V.armZ[i]=lerp(V.armZ[i],AR[i].sd*(w1*0.1+w2*0.95+w3*0.2),wa);
-    V.elb[i]=lerp(V.elb[i],-(w1*0.3+w2*0.6+w3*0.4),wa);
-   }
-   V.pelY=lerp(V.pelY,0.9,wa);V.torX=lerp(V.torX,0.12+0.1*tk,wa);
-  }
-  /* ---- write to the rig ---- */
-  pel.position.y=V.pelY;pel.position.x=swayX;pel.rotation.y=yawP;pel.rotation.z=roll;
-  for(i=0;i<2;i++){LG[i].t.rotation.x=V.legT[i];LG[i].t.rotation.z=V.legRz[i];LG[i].k.rotation.x=V.legK[i];LG[i].a.rotation.x=V.legA[i]}
-  tor.rotation.x=V.torX;tor.rotation.y=twist+st.sTw.x*ga;tor.rotation.z=-roll*0.6+st.sRoll.x*ga;
-  tor.position.y=-0.4*(st.pelY-st.pelYs)*ga;tor.position.x=-0.5*swayX;
-  tor.scale.set(1+0.006*br,1+CFG.BREATH_CHEST*br,1+0.016*br);
-  head.rotation.x=-tor.rotation.x*CFG.HEAD_STABLE+Math.sin(t*0.37)*0.02*idle*BD.headAct;
-  head.rotation.y=-(tor.rotation.y+yawP)*0.85+st.sHead.x+Math.sin(t*0.45)*0.07*idle*BD.headAct;
-  head.rotation.z=-(tor.rotation.z+roll)*0.9;
-  var ck=0.35+0.25*wm+0.5*rb;
-  for(i=0;i<2;i++){AR[i].a.rotation.x=V.armX[i];AR[i].a.rotation.z=V.armZ[i];AR[i].e.rotation.x=V.elb[i];if(curl)curl(AR[i],ck,t)}
-  if(q.hold){   /* right hand carries the torch */
-   AR[1].a.rotation.x=-1.1+Math.sin(t*2)*0.02+Math.sin(PI2*phi*2)*0.012*wm;AR[1].e.rotation.x=-0.55;AR[1].a.rotation.z=-0.05;if(curl)curl(AR[1],1.25,t);
-  }
-  /* blinking */
-  if(lids&&lids.length>1){
-   st.blinkT-=dt;if(st.blinkT<=0&&st.blinkP<0)st.blinkP=0;
-   var lv=-0.9;
-   if(st.blinkP>=0){st.blinkP+=dt/0.15;var uu=st.blinkP<1?st.blinkP:2-st.blinkP;lv=-0.9+2.1*clamp(uu,0,1);if(st.blinkP>=2){st.blinkP=-1;st.blinkT=2+Math.random()*4}}
-   lids[0].rotation.x=lids[1].rotation.x=lv;
-  }
- }
-
- function run(dt,t,q){
-  dt=clamp(isFinite(dt)?dt:0.016,0.0001,CFG.DT_CLAMP);
-  BD=BODIES[CFG.BODY_TYPE]||BODIES.average;
-  st.vin=clamp((q.v||0)/wscale(g)*CFG.SPEED_SCALE,0,12);
-  /* turning rate (head leads, then shoulders) */
-  var yw=wyaw(g);if(st.yaw===null)st.yaw=yw;
-  var rate=clamp(wrap(yw-st.yaw)/dt,-9,9);st.yaw=yw;st.yawRate+=(rate-st.yawRate)*(1-Math.exp(-10*dt));
-  /* jump state machine */
-  var air=!!q.air,vy=(window.JJ&&typeof window.JJ.v==='number')?window.JJ.v:0;
-  if(air&&!st.air){st.air=true;st.airT=0;st.fallV=0}
-  else if(air){st.airT+=dt;if(vy<0)st.fallV=Math.max(st.fallV,-vy)}
-  else if(!air&&st.air){
-   st.air=false;st.landAmp=clamp((CFG.LAND_DIP+CFG.LAND_PER_SPEED*st.fallV)*BD.land,0.05,CFG.LAND_MAX);
-   st.landDur=(CFG.LAND_TIME+CFG.LAND_TIME_PER_SPEED*st.fallV)*BD.recov;st.landT=0;reinit();
-  }
-  st.wAir+=((air?1:0)-st.wAir)*(1-Math.exp(-(air?22:16)*dt));
-  var n=Math.max(1,Math.ceil(dt/CFG.STEP)),h=dt/n;
-  for(var i=0;i<n;i++)sim(h);
-  pose(dt,t,q);
- }
-
- reinit();
- return function(dt,t,q){
-  if(broken)return fallback(dt,t,q);
-  try{run(dt,t,q||{})}catch(e){broken=true;if(window.console)console.error('[ANIMENG] failed, old animation restored',e);return fallback(dt,t,q||{})}
- };
-}
-
-window.__ANIMENG={attach:attach,CFG:CFG,BODIES:BODIES,setBody:function(n){if(BODIES[n])CFG.BODY_TYPE=n}};
-window.__ANIM=window.__ANIMENG;
-})();
-</script><!--ANIM-END-->
-<!--CHAR3-START--><script>/*PZ-CURVY-V3*/window.__MKN2=(function MKN(o){
-var T=THREE,S0=1.45/1.75,SG=new T.SphereGeometry(1,20,14),PI=Math.PI;
-function M(c,r,m){return new T.MeshStandardMaterial({color:c,roughness:r==null?.8:r,metalness:m||0})}
-function S(r,m,p,x,y,z,a,b,c){var q=new T.Mesh(SG,m);q.scale.set(r*(a||1),r*(b||1),r*(c||1));q.position.set(x||0,y||0,z||0);p.add(q);return q}
-function C(r0,r1,h,m,p,x,y,z,n){var q=new T.Mesh(new T.CylinderGeometry(r0,r1,h,n||14),m);q.position.set(x||0,y||0,z||0);p.add(q);return q}
-function B(w,h,d,m,p,x,y,z){var q=new T.Mesh(new T.BoxGeometry(w,h,d),m);q.position.set(x||0,y||0,z||0);p.add(q);return q}
-function G(p,x,y,z){var q=new T.Group();q.position.set(x||0,y||0,z||0);p.add(q);return q}
-function L(len,pts,m,p,sc,x,y,z){var v=new T.SplineCurve(pts.map(function(a){return new T.Vector2(a[1]*(sc||1),-a[0]*len)})).getPoints(18).reverse(),q=new T.Mesh(new T.LatheGeometry(v,18),m);q.position.set(x||0,y||0,z||0);p.add(q);return q}
-var cv=document.createElement('canvas');cv.width=cv.height=64;var cx=cv.getContext('2d');cx.fillStyle='#d19b79';cx.fillRect(0,0,64,64);
-for(var i=0;i<260;i++){cx.fillStyle=i%2?'rgba(130,80,60,.08)':'rgba(255,205,175,.08)';cx.fillRect(Math.random()*64,Math.random()*64,3,3)}
-var sc=o.shirt==null?0xf3f3f5:o.shirt,
-skin=new T.MeshStandardMaterial({map:new T.CanvasTexture(cv),roughness:.5,emissive:0x2a1408}),skinD=M(0x935c46,.6),lip=M(0xa35a4e,.4),nail=M(0xeab9a8,.25),
-shirt=M(sc,.9),fold=M(new T.Color(sc).multiplyScalar(.9),.95),pant=M(0x1b1713,.92),pantD=M(0x0c0a08,.9),
-shoe=M(0x2a2b30,.55),sole=M(0xcfcfd3,.7),dark=M(0x050505,.4),hair=M(0x15100c,.75),white=M(0xf6f4f0,.25),iris=M(0x3a2214,.25),steel=M(0xbfc3c9,.3,.8),hl=new T.MeshBasicMaterial({color:0xffffff});
-var g=new T.Group(),pel=G(g,0,.93,0),tor=G(pel,0,0,0);
-S(.17,pant,pel,0,-.03,0,1.1,.85,.78);
-var P=[[-.1,.15],[-.04,.136],[.06,.14],[.16,.158],[.26,.175],[.34,.18],[.41,.178],[.46,.14],[.5,.085],[.54,.05]];
-var sh=new T.Mesh(new T.LatheGeometry(new T.SplineCurve(P.map(function(a){return new T.Vector2(a[1],a[0])})).getPoints(30),32),shirt);sh.scale.z=.68;tor.add(sh);
-function rad(y){for(var i=1;i<P.length;i++)if(y<=P[i][0]){var a=P[i-1],b=P[i],u=(y-a[0])/(b[0]-a[0]);return a[1]+(b[1]-a[1])*u}return .05}
-C(.158,.158,.035,pantD,tor,0,-.05,0,24).scale.z=.7;B(.04,.028,.01,steel,tor,0,-.05,.111);
-for(var k=0;k<7;k++){var fy=-.06+k*.05,fx=(k%2?1:-1)*(.02+k*.011),R=rad(fy),f=S(.04,fold,tor,fx,fy,.68*Math.sqrt(Math.max(.001,R*R-fx*fx))-.004,.9,.18,.22);f.rotation.z=k%2?.5:-.5}
-for(k=0;k<6;k++)S(.007,white,tor,0,.44-k*.09,rad(.44-k*.09)*.68+.004);
-C(.042,.05,.17,skin,tor,0,.62,0);
-var col=new T.Mesh(new T.TorusGeometry(.06,.016,8,20),fold);col.rotation.x=PI/2;col.position.set(0,.575,0);tor.add(col);
-[-1,1].forEach(function(s){var f=B(.06,.09,.012,shirt,tor,s*.05,.565,.05);f.rotation.set(.3,0,-s*.45)});
-var head=G(tor,0,.71,0),lids=[];
-S(1,skin,head,0,.012,0,.088,.108,.098);S(1,skin,head,0,-.05,.012,.072,.07,.078);S(.026,skin,head,0,-.098,.056,1.3,.75,.9);
-nose();
-function nose(){var b=C(.011,.016,.05,skin,head,0,-.006,.099,10);b.rotation.x=-.4;S(.015,skin,head,0,-.038,.112,1,.9,1);
-[-1,1].forEach(function(s){S(.009,skin,head,s*.014,-.04,.105);S(.005,skinD,head,s*.008,-.046,.113,1,.6,.8)})}
-[-1,1].forEach(function(s){var x=s*.036;
- S(.0165,white,head,x,.014,.0835,1.3,.8,.42);S(.0098,iris,head,x,.014,.0905,1,1,.35);S(.005,dark,head,x,.014,.0945,1,1,.35);S(.0018,hl,head,x+s*.003,.018,.0968);
- var lg=G(head,x,.014,.083),lm=new T.Mesh(new T.SphereGeometry(1,14,8,0,PI*2,0,PI/2),skin);lm.scale.set(.0235,.0175,.0125);lg.add(lm);lg.rotation.x=-.9;lids.push(lg);
- 
- var b1=B(.026,.008,.01,hair,head,s*.03,.046,.094);b1.rotation.z=s*.15;var b2=B(.024,.008,.01,hair,head,s*.06,.05,.088);b2.rotation.z=-s*.25;
- S(1,skin,head,s*.089,-.004,0,.012,.03,.021);S(.01,skinD,head,s*.092,-.004,.002,.5,1.5,.9);S(.007,skin,head,s*.09,-.032,.004);
- S(.012,hair,head,s*.083,-.01,.03,.6,2.2,.8)});
-S(1,lip,head,0,-.066,.088,.019,.0045,.011);S(1,lip,head,0,-.077,.087,.017,.0055,.011);B(.034,.0018,.006,dark,head,0,-.0715,.092);
-var cap=new T.Mesh(new T.SphereGeometry(1,28,16,0,PI*2,0,PI*.56),hair);cap.scale.set(.096,.12,.112);cap.position.set(0,.045,-.014);cap.rotation.x=-.28;head.add(cap);
-S(1,hair,head,0,0,-.05,.092,.104,.07);
-function lock(x,y,z,rx,rz,len,r){var gm=new T.ConeGeometry(r,len,6);gm.translate(0,len/2,0);var q=new T.Mesh(gm,hair);q.position.set(x,y,z);q.rotation.set(rx,0,rz);head.add(q)}
-S(1,hair,head,0,.095,.05,.075,.022,.05);S(1,hair,head,0,-.07,-.05,.07,.05,.05);
-
-function finger(h,len,z,sd){var r=.0086,a=G(h,0,-.082,z),b=G(a,0,-len*.42,0),c=G(b,0,-len*.33,0);
- C(r,r*.9,len*.42,skin,a,0,-len*.21,0,8);S(r*.95,skin,a,0,-len*.42,0);C(r*.9,r*.8,len*.33,skin,b,0,-len*.165,0,8);S(r*.85,skin,b,0,-len*.33,0);
- C(r*.8,r*.7,len*.25,skin,c,0,-len*.125,0,8);S(r*.72,skin,c,0,-len*.25,0);S(r*.55,nail,c,sd*r*.6,-len*.2,0,.5,1.2,.9);return[a,b,c]}
-function thumb(h,sd){var a=G(h,-sd*.016,-.032,.028),b=G(a,0,-.026,0);a.rotation.z=-sd*.3;
- C(.0105,.0095,.026,skin,a,0,-.013,0,8);S(.0105,skin,a,0,-.026,0);C(.0095,.008,.024,skin,b,0,-.012,0,8);S(.0088,skin,b,0,-.024,0);S(.005,nail,b,sd*.006,-.021,0,.6,1.1,.9);return[a,b]}
-function arm(sd){var a=G(tor,sd*.215,.46,0);S(.052,shirt,a);L(.29,[[0,.05],[.2,.058],[.6,.05],[1,.042]],shirt,a);
- var e=G(a,0,-.29,0);S(.047,shirt,e);L(.27,[[0,.042],[.2,.047],[.6,.036],[1,.027]],skin,e);C(.056,.056,.07,shirt,e,0,-.05,0);C(.059,.059,.02,fold,e,0,-.088,0);
- var h=G(e,0,-.27,0);h.scale.setScalar(1.25);S(.026,skin,h);S(1,skin,h,0,-.045,0,.019,.048,.036);
- var F=[[.043,.022],[.047,.008],[.043,-.008],[.034,-.022]].map(function(d){return finger(h,d[0],d[1],sd)});
- return{a:a,e:e,h:h,F:F,th:thumb(h,sd),sd:sd}}
-var arms=[arm(1),arm(-1)];
-function curl(r,k,t){r.F.forEach(function(f,i){var q=k*(.9+.1*i)+Math.sin(t*1.3+i)*.02;f[0].rotation.z=-r.sd*q*.55;f[1].rotation.z=-r.sd*q*.95;f[2].rotation.z=-r.sd*q*.65});r.th[0].rotation.z=-r.sd*(.3+k*.25);r.th[1].rotation.z=-r.sd*k*.5}
-var torch=new T.Group(),tb=C(.022,.026,.2,dark,torch,0,0,0);tb.rotation.x=PI/2;
-var th2=C(.036,.025,.05,M(0x777a80,.3),torch,0,0,.12);th2.rotation.x=PI/2;
-var lens=new T.Mesh(new T.CircleGeometry(.034,12),new T.MeshBasicMaterial({color:0xfff2c0}));lens.position.z=.147;torch.add(lens);
-torch.position.set(0,-.15,0);torch.rotation.x=PI/2;torch.scale.setScalar(1.4);torch.visible=!!o.torchOn;arms[1].h.add(torch);
-function leg(sd){var t=G(pel,sd*.09,-.03,0);S(.108,pant,t);L(.42,[[0,.108],[.15,.108],[.5,.092],[1,.066]],pant,t);
- var k=G(t,0,-.42,0);S(.067,pant,k);L(.4,[[0,.066],[.2,.074],[.65,.05],[1,.038]],pant,k);C(.04,.04,.03,pantD,k,0,-.385,0);
- var an=G(k,0,-.4,0);S(.04,skin,an,0,.02,0);B(.1,.036,.27,sole,an,0,-.065,.04);S(1,shoe,an,0,-.035,.04,.05,.042,.12);S(.042,shoe,an,0,-.043,.135,1.1,.65,1.1);S(.045,shoe,an,0,-.04,-.04,1,.9,1);C(.05,.05,.05,shoe,an,0,-.01,-.005);
- for(var i=0;i<3;i++)B(.06,.006,.012,white,an,0,-.002-i*.004,.06+i*.03);
- return{t:t,k:k,a:an}}
-var legs=[leg(1),leg(-1)],ph=0,sm=0,bl={t:2,on:0,p:0};
-function animOld(dt,t,q){
- var v=(q.v||0)/S0;sm+=(v-sm)*Math.min(1,dt*10);if(sm<.05)sm=0;
- var u=Math.min(sm/3.2,1),r=Math.max(0,Math.min(1,(sm-3.4)/2)),w=Math.min(1,sm),idle=1-w;
- ph+=dt*6.2832*sm/(1.2+.35*Math.min(sm,5.3));
- var s=Math.sin(ph),c=Math.cos(ph),A=(.28+.14*u+.3*r)*w,K=(.5+.4*u+.55*r)*w,at=[A*s,-A*s],ak=[K*Math.max(0,-c)+.05*w,K*Math.max(0,c)+.05*w],dr=[0,0],pi=[0,0],i;
- if(q.air){at=[-.7,-.15];ak=[1.1,.6]}
- pi[0]=w*(.5*Math.max(0,s)-.25*Math.max(0,-s));pi[1]=w*(.5*Math.max(0,-s)-.25*Math.max(0,s));
- for(i=0;i<2;i++){legs[i].t.rotation.x=at[i];legs[i].k.rotation.x=ak[i];legs[i].a.rotation.x=-(at[i]+ak[i])+(q.air?0:pi[i]);dr[i]=.03+.42*Math.cos(at[i])+.4*Math.cos(at[i]+ak[i])}
- pel.position.y=q.air?.93:.08+Math.max(dr[0],dr[1]);
- pel.position.x=s*.018*w+Math.sin(t*.5)*.006*idle;pel.rotation.y=-s*.12*w;pel.rotation.z=c*.025*w;
- var br=Math.sin(t*1.6);
- tor.rotation.x=.03+(.05+.22*r)*w;tor.rotation.y=s*.2*w*(.5+u);tor.rotation.z=-pel.rotation.z*.8;
- tor.scale.set(1+.006*br,1+.01*br,1+.014*br);
- head.rotation.x=-tor.rotation.x*.7+Math.sin(t*.37)*.02*idle;head.rotation.y=-tor.rotation.y*.85+Math.sin(t*.45)*.07*idle;head.rotation.z=-tor.rotation.z;
- var k2=1+.5*r,el=-(.12+.35*u*w+.9*r),sw=Math.sin(t*1.6)*.02*idle;
- arms[0].a.rotation.x=at[1]*k2+sw;arms[0].e.rotation.x=el;arms[0].a.rotation.z=.07;
- arms[1].a.rotation.x=at[0]*k2-sw;arms[1].e.rotation.x=el;arms[1].a.rotation.z=-.07;
- curl(arms[0],.35+.2*w,t);curl(arms[1],.35+.2*w,t);
- if(q.hold){arms[1].a.rotation.x=-1.1+Math.sin(t*2)*.02;arms[1].e.rotation.x=-.55;curl(arms[1],1.25,t)}
- if(q.air){arms[0].a.rotation.x=-1;arms[0].e.rotation.x=-.3;if(!q.hold)arms[1].a.rotation.x=-1}
- bl.t-=dt;if(bl.t<=0&&!bl.on){bl.on=1;bl.p=0}
- var lv=-.9;if(bl.on){bl.p+=dt/.15;var uu=bl.p<1?bl.p:2-bl.p;lv=-.9+2.1*Math.max(0,Math.min(1,uu));if(bl.p>=2){bl.on=0;bl.t=2+Math.random()*4}}
- lids[0].rotation.x=lids[1].rotation.x=lv}
-/*R1-ANIM*/var ST3={a:0,l:0,pq:0};function anim2(dt,t,q){
- var SC=.83,i,v=(q.v||0)/SC;
- sm+=(v-sm)*Math.min(1,dt*9);if(sm<.05)sm=0;
- var w=Math.min(1,sm/.45),idle=1-w;
- var r0=Math.max(0,Math.min(1,(sm-3.7)/1.8)),r=r0*r0*(3-2*r0);
- var A=Math.min(.9,.15+.15*sm)*w,Ls=Math.max(.2,1.5*Math.sin(Math.max(.05,A))*.95);
- ph+=dt*6.2832*(sm/(2*Ls));if(ph>628.32)ph-=628.32;
- var s=Math.sin(ph),c=Math.cos(ph),tr=Math.asin(.9*s)/1.1198;
- var K=(.35+.8*r)*w,pk=Math.pow(Math.max(0,-c),.85),pk2=Math.pow(Math.max(0,c),.85);
- var th=[A*tr,-A*tr],kn=[K*pk+.06*w,K*pk2+.06*w];
- var pu=[w*(.42*Math.max(0,tr)-.15*Math.max(0,-tr)),w*(.42*Math.max(0,-tr)-.15*Math.max(0,tr))];
- var tg=q.air?1:0;ST3.a+=(tg-ST3.a)*Math.min(1,dt*(tg?16:11));
- if(ST3.pq&&!q.air)ST3.l=1;ST3.pq=!!q.air;
- ST3.l=Math.max(0,ST3.l-dt*3);
- var dip=ST3.l>0?Math.sin(Math.PI*(1-ST3.l)):0,a=ST3.a;
- var ta=[-.75,-.15],ka=[1.15,.65],mx=0;
- for(i=0;i<2;i++){
-  var T1=th[i]*(1-a)+ta[i]*a-dip*.4,K1=kn[i]*(1-a)+ka[i]*a+dip*.85;
-  legs[i].t.rotation.x=T1;legs[i].k.rotation.x=K1;
-  legs[i].a.rotation.x=-(T1+K1)+pu[i]*(1-a);
-  mx=Math.max(mx,.03+.42*Math.cos(T1)+.4*Math.cos(T1+K1));
- }
- pel.position.y=.93-(1-a)*Math.max(0,Math.min(.3,.85-mx));
- var lean=(.03+(.04*Math.min(1,sm/3)+.2*r)*w)*(1-a)-.05*a+dip*.3,br=Math.sin(t*1.6);
- pel.position.x=s*.014*w+Math.sin(t*.5)*.006*idle;
- pel.rotation.y=-s*(.08+.1*r)*w*(1-a);pel.rotation.z=c*.028*w*(1-a);
- tor.rotation.x=lean;tor.rotation.y=s*(.12+.2*r)*w*(1-a);tor.rotation.z=-pel.rotation.z*.7;
- tor.scale.set(1+.006*br,1+.01*br,1+.014*br);
- head.rotation.x=-tor.rotation.x*.8+Math.sin(t*.37)*.02*idle;
- head.rotation.y=-tor.rotation.y*.85+Math.sin(t*.45)*.07*idle;
- head.rotation.z=-tor.rotation.z;
- var Aa=(.3+.18*Math.min(1,sm/3)+.55*r)*w,el=-(.15+.28*w+1.0*r*w),sw=Math.sin(t*1.6)*.02*idle;
- arms[0].a.rotation.x=(-Aa*s+sw)*(1-a)-1.0*a;
- arms[1].a.rotation.x=(Aa*s-sw)*(1-a)-1.0*a;
- arms[0].e.rotation.x=el*(1-a)-.3*a;arms[1].e.rotation.x=el*(1-a)-.3*a;
- arms[0].a.rotation.z=.07+.05*r;arms[1].a.rotation.z=-.07-.05*r;
- var ck=.35+.25*w+.5*r;curl(arms[0],ck,t);curl(arms[1],ck,t);
- if(q.hold){arms[1].a.rotation.x=-1.1+Math.sin(t*2)*.02+Math.sin(ph*2)*.012*w;arms[1].e.rotation.x=-.55;arms[1].a.rotation.z=-.05;curl(arms[1],1.25,t)}
- bl.t-=dt;if(bl.t<=0&&!bl.on){bl.on=1;bl.p=0}
- var lv=-.9;if(bl.on){bl.p+=dt/.15;var uu=bl.p<1?bl.p:2-bl.p;lv=-.9+2.1*Math.max(0,Math.min(1,uu));if(bl.p>=2){bl.on=0;bl.t=2+Math.random()*4}}
- lids[0].rotation.x=lids[1].rotation.x=lv;
-}
-function anim2_old(dt,t,q){
-var v=q.v||0;sm+=(v-sm)*Math.min(1,dt*7);if(sm<.08)sm=0;
-var w=Math.min(1,sm/.6),r0=Math.max(0,Math.min(1,(sm-3.6)/1.8)),r=r0*r0*(3-2*r0),idle=1-w,fr=Math.min(.65+.27*sm,1.6)+.5*r,A=Math.min(.6+.25*r,Math.asin(Math.min(.95,sm/(fr*2.72))));
-ph+=dt*6.2832*fr*w;
-var s=Math.sin(ph),c=Math.cos(ph),K=(.35+.9*r)*w,at=[A*s,-A*s],ak=[K*Math.max(0,-c)+.06*w,K*Math.max(0,c)+.06*w],pi=[w*(.45*Math.max(0,s)-.2*Math.max(0,-s)),w*(.45*Math.max(0,-s)-.2*Math.max(0,s))],dr=[0,0],i;
-if(q.air){at=[-.7,-.15];ak=[1.1,.6]}
-for(i=0;i<2;i++){legs[i].t.rotation.x=at[i];legs[i].k.rotation.x=ak[i];legs[i].a.rotation.x=-(at[i]+ak[i])+(q.air?0:pi[i]);dr[i]=.03+.42*Math.cos(at[i])+.4*Math.cos(at[i]+ak[i])}
-var mx=Math.max(dr[0],dr[1]),br=Math.sin(t*1.6);
-pel.position.y=q.air?.93:.93-Math.max(0,Math.min(.1+.04*r,(.85-mx)*.8));
-pel.position.x=s*.016*w+Math.sin(t*.5)*.006*idle;pel.rotation.y=-s*(.1+.1*r)*w;pel.rotation.z=c*.03*w;
-tor.rotation.x=.03+(.04+.24*r)*w;tor.rotation.y=s*(.15+.2*r)*w;tor.rotation.z=-pel.rotation.z*.7;
-tor.scale.set(1+.006*br,1+.01*br,1+.014*br);
-head.rotation.x=-tor.rotation.x*.8+Math.sin(t*.37)*.02*idle;head.rotation.y=-tor.rotation.y*.85+Math.sin(t*.45)*.07*idle;head.rotation.z=-tor.rotation.z;
-var ar=.8+.5*r,el=-(.15+.25*w+.95*r*w),sw=Math.sin(t*1.6)*.02*idle;
-arms[0].a.rotation.x=at[1]*ar+sw;arms[0].e.rotation.x=el;arms[0].a.rotation.z=.07+.05*r;
-arms[1].a.rotation.x=at[0]*ar-sw;arms[1].e.rotation.x=el;arms[1].a.rotation.z=-.07-.05*r;
-curl(arms[0],.35+.25*w+.5*r,t);curl(arms[1],.35+.25*w+.5*r,t);
-if(q.hold){arms[1].a.rotation.x=-1.1+Math.sin(t*2)*.02;arms[1].e.rotation.x=-.55;arms[1].a.rotation.z=-.05;curl(arms[1],1.25,t)}
-if(q.air){arms[0].a.rotation.x=-1;arms[0].e.rotation.x=-.3;if(!q.hold)arms[1].a.rotation.x=-1}
-bl.t-=dt;if(bl.t<=0&&!bl.on){bl.on=1;bl.p=0}
-var lv=-.9;if(bl.on){bl.p+=dt/.15;var uu=bl.p<1?bl.p:2-bl.p;lv=-.9+2.1*Math.max(0,Math.min(1,uu));if(bl.p>=2){bl.on=0;bl.t=2+Math.random()*4}}
-lids[0].rotation.x=lids[1].rotation.x=lv}
-anim2(.016,0,{v:0,hold:!!o.torchOn});return{g:g,tor:tor,aL:arms[0].a,aR:arms[1].a,torch:torch,anim:(window.__ANIMENG?window.__ANIMENG.attach({g:g,pel:pel,tor:tor,head:head,legs:legs,arms:arms,lids:lids,curl:curl},anim2):anim2)}});</script>
-<script>
-window.__MK=window.__MKN2||function(o){
-var T=THREE,SPG=new T.SphereGeometry(1,20,14),S0=1.45/1.75;
-function M(c,r){return new T.MeshStandardMaterial({color:c,roughness:r==null?.8:r})}
-var sc=o.shirt==null?0xf3f3f5:o.shirt;
-var skin=M(0xc58f6c,.6),shirt=M(sc,.88),shirt2=M(new T.Color(sc).multiplyScalar(.82),.9),pant=M(0x15110f,.9),sole=M(0xe4e4e6,.7),shoe=M(0xf7f7f8,.55),hair=M(0x0a0a10,.95),eyeW=M(0xf4f4f4,.3),iris=M(0x4a2a18,.3),dark=M(0x050505,.4),lip=M(0x9a5a4c,.6),lace=M(0xdcdcde,.8);
-function S(r,m,p,x,y,z,sx,sy,sz){var q=new T.Mesh(SPG,m);q.scale.set(r*(sx||1),r*(sy||1),r*(sz||1));q.position.set(x,y,z);p.add(q);return q}
-function C(r0,r1,h,m,p,x,y,z){var q=new T.Mesh(new T.CylinderGeometry(r0,r1,h,14),m);q.position.set(x,y,z);p.add(q);return q}
-function B(w,h,d,m,p,x,y,z){var q=new T.Mesh(new T.BoxGeometry(w,h,d),m);q.position.set(x,y,z);p.add(q);return q}
-function G(p,x,y,z){var g=new T.Group();g.position.set(x,y,z);p.add(g);return g}
-var g=new T.Group(),pel=G(g,0,.93,0),tor=G(pel,0,0,0);
-S(.16,pant,pel,0,-.02,0,1.05,.8,.72);
-var P=[[-.14,.17],[-.1,.168],[0,.152],[.15,.158],[.3,.185],[.43,.2],[.5,.17],[.54,.075],[.56,.05]];
-var sh=new T.Mesh(new T.LatheGeometry(P.map(function(a){return new T.Vector2(a[1],a[0])}),28),shirt);sh.scale.z=.68;tor.add(sh);
-var belt=C(.156,.156,.04,pant,tor,0,-.045,0);belt.scale.z=.7;
-function rad(y){for(var i=1;i<P.length;i++)if(y<=P[i][0]){var a=P[i-1],b=P[i],u=(y-a[0])/(b[0]-a[0]);return a[1]+(b[1]-a[1])*u}return .05}
-for(var k=0;k<6;k++){var by=.44-k*.09;S(.008,shirt2,tor,0,by,rad(by)*.68+.004)}
-C(.04,.046,.17,skin,tor,0,.62,0);
-var col=new T.Mesh(new T.TorusGeometry(.058,.016,8,18),shirt2);col.rotation.x=Math.PI/2;col.position.set(0,.575,0);tor.add(col);
-[-1,1].forEach(function(s){var f=B(.06,.09,.012,shirt,tor,s*.048,.565,.048);f.rotation.set(.3,0,-s*.45)});
-var head=G(tor,0,.71,0);
-S(1,skin,head,0,.015,0,.088,.108,.098);S(1,skin,head,0,-.045,.01,.074,.075,.08);S(.03,skin,head,0,-.1,.04,1,.8,.9);S(.014,skin,head,0,-.02,.098,.8,1.3,1.2);
-[-1,1].forEach(function(s){
- S(1,skin,head,s*.088,0,0,.012,.028,.02);
- S(.0165,eyeW,head,s*.036,.012,.094,1.2,.8,.6);S(.0105,iris,head,s*.036,.012,.1);S(.005,dark,head,s*.036,.012,.104);
- var br=B(.042,.008,.01,hair,head,s*.037,.042,.096);br.rotation.z=s*.18});
-B(.03,.004,.006,lip,head,0,-.062,.088);
-var cap=new T.Mesh(new T.SphereGeometry(1,28,16,0,Math.PI*2,0,Math.PI*.56),hair);cap.scale.set(.096,.12,.112);cap.position.set(0,.045,-.014);cap.rotation.x=-.28;head.add(cap);
-S(1,hair,head,0,0,-.05,.092,.104,.07);
-function lock(x,y,z,rx,rz,len,r){var gm=new T.ConeGeometry(r,len,6);gm.translate(0,len/2,0);var q=new T.Mesh(gm,hair);q.position.set(x,y,z);q.rotation.set(rx,0,rz);head.add(q)}
-for(var i=0;i<14;i++){var a=i*2.4,rd=.03+(i%4)*.018;lock(Math.cos(a)*rd,.1+(i%3)*.004,Math.sin(a)*rd-.012,Math.sin(a)*.8,-Math.cos(a)*.8,.075+(i%3)*.02,.026)}
-[-.065,-.033,0,.033,.065].forEach(function(x,j){lock(x,.098,.07,2.4+(j%2)*.15,-x*3,.075,.022)});
-var torch=new T.Group(),hands=[];
-function arm(sd){var a=G(tor,sd*.215,.46,0);
- S(.06,shirt,a,0,0,0);C(.052,.046,.29,shirt,a,0,-.145,0);
- var e=G(a,0,-.29,0);S(.046,shirt,e,0,0,0);C(.043,.032,.27,skin,e,0,-.135,0);
- C(.054,.054,.065,shirt,e,0,-.05,0);C(.057,.057,.02,shirt2,e,0,-.085,0);
- var h=G(e,0,-.27,0);S(.04,skin,h,0,-.045,0,.9,1.25,.5);
- for(var f=0;f<4;f++)C(.009,.007,.06,skin,h,-.026+f*.017,-.1,0);
- var th=C(.01,.008,.05,skin,h,-sd*.035,-.055,.02);th.rotation.z=sd*.5;
- hands.push(h);return{a:a,e:e}}
-var arms=[arm(1),arm(-1)];
-var tb=C(.022,.026,.2,dark,torch,0,0,0);tb.rotation.x=Math.PI/2;
-var th2=C(.036,.025,.05,M(0x777a80,.3),torch,0,0,.12);th2.rotation.x=Math.PI/2;
-var lens=new T.Mesh(new T.CircleGeometry(.034,12),new T.MeshBasicMaterial({color:0xfff2c0}));lens.position.z=.147;torch.add(lens);
-torch.position.set(0,-.055,.02);torch.scale.setScalar(1.4);torch.visible=!!o.torchOn;hands[1].add(torch);
-function leg(sd){var t=G(pel,sd*.09,-.03,0);S(.092,pant,t,0,0,0);C(.088,.066,.42,pant,t,0,-.21,0);
- var k=G(t,0,-.42,0);S(.067,pant,k,0,0,0);C(.064,.05,.4,pant,k,0,-.2,0);
- var an=G(k,0,-.4,0);
- B(.095,.035,.27,sole,an,0,-.0625,.04);S(1,shoe,an,0,-.035,.05,.046,.04,.115);S(.04,shoe,an,0,-.045,.13,1.1,.7,1.1);C(.05,.05,.045,shoe,an,0,-.01,-.005);
- for(var i=0;i<3;i++)B(.05,.006,.012,lace,an,0,-.003-i*.004,.06+i*.03);
- return{t:t,k:k,a:an}}
-var legs=[leg(1),leg(-1)];
-var ph=0,sm=0;
-function anim(dt,t,q){
- var v=(q.v||0)/S0;sm+=(v-sm)*Math.min(1,dt*10);if(sm<.05)sm=0;
- var u=Math.min(sm/3.2,1),r=Math.max(0,Math.min(1,(sm-3.4)/2)),w=Math.min(1,sm/1.0);
- ph+=dt*6.2832*sm/(1.2+.35*Math.min(sm,5.3));
- var A=(.26+.14*u+.3*r)*w,K=(.45+.4*u+.55*r)*w,at=[A*Math.sin(ph),-A*Math.sin(ph)],ak=[0,0],dr=[0,0],i;
- for(i=0;i<2;i++)ak[i]=K*Math.max(0,-Math.cos(ph+(i?Math.PI:0)))+.04*w;
- if(q.air){at=[-.7,-.15];ak=[1.1,.6]}
- for(i=0;i<2;i++){legs[i].t.rotation.x=at[i];legs[i].k.rotation.x=ak[i];legs[i].a.rotation.x=-(at[i]+ak[i]);dr[i]=.03+.42*Math.cos(at[i])+.4*Math.cos(at[i]+ak[i])}
- pel.position.y=q.air?.93:.08+Math.max(dr[0],dr[1]);
- pel.rotation.y=-Math.sin(ph)*.1*w;
- tor.rotation.x=.03+(.05+.2*r)*w;tor.rotation.y=Math.sin(ph)*.18*w*(.5+u);tor.rotation.z=Math.sin(ph)*.03*w;
- tor.scale.set(1,1+.007*Math.sin(t*1.8),1+.005*Math.sin(t*1.8));
- head.rotation.x=-tor.rotation.x*.6;head.rotation.y=Math.sin(t*.6)*.05*(1-w)-tor.rotation.y;
- var k2=1+.5*r,el=-(.12+.35*u*w+.9*r);
- arms[0].a.rotation.x=at[1]*k2;arms[0].e.rotation.x=el;arms[0].a.rotation.z=.07;
- arms[1].a.rotation.x=at[0]*k2;arms[1].e.rotation.x=el;arms[1].a.rotation.z=-.07;
- if(q.hold){arms[1].a.rotation.x=-1.1+Math.sin(t*2)*.02;arms[1].e.rotation.x=-.55}
- if(q.air){arms[0].a.rotation.x=-1;arms[0].e.rotation.x=-.3;if(!q.hold)arms[1].a.rotation.x=-1}
-}
-return{g:g,tor:tor,aL:arms[0].a,aR:arms[1].a,torch:torch,anim:anim}};
-
-/*CHAR-V3*/
-(function(){try{
-if(window.__chr3)return;window.__chr3=1;
-var T=THREE,me=__MK({shirt:0xf3f3f5}),ch=me.g,wk=0,tm=0,hd=0,PE=[];
-aarav.g.add(ch);
-function hasSkin(k){var s=0;k.traverse(function(o){if(o.isSkinnedMesh)s=1});return s}
-function label(n){var c=document.createElement('canvas');c.width=256;c.height=64;var x=c.getContext('2d');x.font='700 30px Georgia';x.textAlign='center';x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,8,256,48);x.fillStyle='#d8d2c8';x.fillText(n,128,44);
- var s=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),transparent:true,depthTest:false}));s.scale.set(1.4,.35,1);s.position.y=2.1;return s}
-HB.peer=function(name){var h=0,n=String(name),i;for(i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))>>>0;h%=360;
- var c=__MK({shirt:new T.Color('hsl('+h+',22%,92%)')});c.g.scale.setScalar(1.45/1.75);c.g.add(label(n));scene.add(c.g);
- var o={g:c.g,t:c.torch,tg:new T.Vector3(),yaw:0,seen:0};PE.push({o:o,c:c,x:null,z:null,v:0});return o};
-var rb=document.getElementById('bSpr'),wb=document.createElement('button');
-wb.textContent='WALK';
-wb.style.cssText='position:fixed;z-index:8;width:72px;height:72px;border-radius:50%;border:2px solid rgba(255,255,255,.35);background:rgba(20,20,20,.6);color:#d8d2c8;font:13px Georgia,serif;touch-action:none;pointer-events:auto';
-document.body.appendChild(wb);
-function setWalk(on){wk=on?1:0;wb.textContent=wk?'WALK \u2713':'WALK';wb.style.background=wk?'rgba(40,120,90,.65)':'rgba(20,20,20,.6)';if(wk&&window.RUN&&RUN.on&&window.setRun)window.setRun(0)}
-wb.onpointerdown=function(e){e.preventDefault();e.stopPropagation();setWalk(!wk)};
-addEventListener('keydown',function(e){if(e.code==='KeyV')setWalk(!wk)});
-function tick(dt,t){
- aarav.s.visible=false;
- ch.rotation.x=P.fall||0;me.torch.visible=!!P.has;
- me.anim(dt,t,{v:P.vel.length(),air:!!(window.JJ&&JJ.y>0),hold:!!P.has});
- hd-=dt;if(hd<=0){hd=.5;aarav.g.children.forEach(function(c){if(c!==ch&&c!==aarav.s&&c.visible&&hasSkin(c))c.visible=false})}
- for(var i=PE.length-1;i>=0;i--){var r=PE[i],p=r.o.g.position;if(!r.o.g.parent){PE.splice(i,1);continue}
-  if(r.x==null){r.x=p.x;r.z=p.z}
-  var s=Math.hypot(p.x-r.x,p.z-r.z)/Math.max(dt,.001);r.x=p.x;r.z=p.z;r.v+=(Math.min(s,8)-r.v)*Math.min(1,dt*8);
-  r.c.anim(dt,t,{v:r.v,hold:r.o.t.visible})}}
-var _u=update;
-update=function(dt,t){var jx=joy.x,jy=joy.y;
- if(wk&&window.RUN&&RUN.on)setWalk(0);
- if(wk){joy.x=jx*.75;joy.y=jy*.75}
- _u(dt,t);
- if(wk){joy.x=jx;joy.y=jy}};
-var _x=extra;
-extra=function(dt,t){_x(dt,t);try{tick(dt,t)}catch(e){console.log('CHAR-V3',e)}
- tm-=dt;if(tm<=0){tm=.3;var r=rb&&rb.getBoundingClientRect();if(r&&r.width){wb.style.left=(r.right+8)+'px';wb.style.top=r.top+'px';wb.style.width=r.width+'px';wb.style.height=r.height+'px'}}};
-}catch(e){console.log('CHAR-V3 error',e)}})();
-</script><!--CHAR3-END--><script>(function CLN(){try{
+</script><!--REMOVED ANIM (__ANIMENG)-->
+<!--REMOVED CHAR3 (PZ-CURVY-V3 rig, __MK, CHAR-V3, second WALK button)--><script>(function CLN(){try{
 [aarav.s,kabir.s].forEach(function(o){Object.defineProperty(o,'visible',{get:function(){return false},set:function(){},configurable:true})});
-var kb=window.__MKN2({shirt:0x8a6f66});kabir.g.add(kb.g);
+var kb={anim:function(){}};
 var n=0,_x=extra;extra=function(dt,t){_x(dt,t);try{kb.anim(dt,t,{v:0});n-=dt;if(n<=0){n=3;scene.traverse(function(o){if(o.isSkinnedMesh&&o.visible)o.visible=false})}}catch(e){}}
 }catch(e){console.log('CLN',e)}})();</script><!--R1-GAME-START--><script>(function __R1game(){
 if(window.__r1)return;window.__r1=1;
@@ -4675,7 +4147,7 @@ safe('walk',function(){
  var rb=$('bSpr');
  setInterval(function(){if(!rb||!wb)return;var r=rb.getBoundingClientRect();if(r.width){wb.style.left=(r.right+8)+'px';wb.style.top=r.top+'px';wb.style.width=r.width+'px';wb.style.height=r.height+'px'}},300);
  var pr=$('prompt');if(pr){pr.style.pointerEvents='auto';pr.style.cursor='pointer';pr.onpointerdown=function(e){e.preventDefault();e.stopPropagation();interact()}}});
-function setWalk(on){WK=on?1:0;if(wb){wb.textContent=WK?'WALK \u2713':'WALK';wb.classList.toggle('on',!!WK)}if(WK&&window.RUN&&RUN.on&&window.setRun)window.setRun(0)}
+window.__setWalk=function(v){setWalk(v)};window.__isWalk=function(){return WK};function setWalk(on){WK=on?1:0;if(wb){wb.textContent=WK?'WALK \u2713':'WALK';wb.classList.toggle('on',!!WK)}if(WK&&window.RUN&&RUN.on&&window.setRun)window.setRun(0)}
 
 /* ---------- ROAD ---------- */
 function addStrip(P,off,half,y,acc,vs){
@@ -5026,8 +4498,8 @@ update=function(dt,t){
   try{_u(dt,t)}finally{KS.forEach(function(k){keys[k]=sv[k]});joy.x=jx;joy.y=jy}
   try{driveStep(dt,t)}catch(e){console.log('R1 drive',e)}
   return}
- if(WK&&window.RUN&&RUN.on)setWalk(0);
- if(WK){joy.x=jx*CFG.slow;joy.y=jy*CFG.slow}
+ 
+ 
  try{_u(dt,t)}finally{joy.x=jx;joy.y=jy}
  if(window.JJ&&JJ.y>.01){var cp=Math.cos(P.pitch);cam.position.y-=JJ.y*.5;cam.lookAt(cam.position.x+Math.sin(P.yaw)*cp,cam.position.y+Math.sin(P.pitch),cam.position.z+Math.cos(P.yaw)*cp)}};
 var _x=extra;
@@ -5076,7 +4548,145 @@ safe('tower',function(){
 
 /* ---------- reset car on first frame if safe house etc. ---------- */
 console.log('R1 patch loaded');
-})();</script><!--R1-GAME-END--></body></html>
+})();</script><!--R1-GAME-END--><script>
+/*PS2-CHAR-V1*/
+(function(){try{
+if(window.__ps2c)return;window.__ps2c=1;
+var T=THREE;
+/* ===================== CONFIG: every tweakable number ===================== */
+var CONFIG={
+ height:1.45,               /* character height in metres (world) */
+ walk:2.7, run:4.6,         /* the ONLY place speeds are defined (m/s) */
+ speedSmooth:14,            /* speed smoothing for animation (1/s) */
+ fade:.18,                  /* idle/walk/run crossfade time (s) */
+ strideA0:.2, strideA1:.15, strideAmax:.8,  /* leg swing angle = A0 + A1*speed (rad) */
+ dutyWalk:.6, dutyRun:.4,   /* fraction of cycle the foot is on the ground */
+ leanWalk:.05, leanRun:.22, /* torso lean (rad) */
+ twist:.14, armSwing:.85, elbowWalk:.25, elbowRun:1.0,
+ landTime:.25, landDip:.1,  /* landing absorb */
+ texSize:32, faceSize:64,   /* PS2 textures (nearest filtered) */
+ ps2:true, ps2Scale:.7,     /* low internal resolution look; toggle in Settings > GAME */
+ hideFpDist:.45,            /* camera closer than this = first person, body hidden */
+ palette:[0xe5484d,0x3e8ef7,0x30c48d,0xf5b83d,0xa66cff],
+ skin:0xb89478, pants:0x3a3d44, shoes:0x1c1a18, hair:0x15100c
+};
+window.PS2CFG=CONFIG;
+function sstep(a,b,x){var t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)}
+function hexS(h){return '#'+('000000'+h.toString(16)).slice(-6)}
+function mkTex(c){var t=new T.CanvasTexture(c);t.magFilter=T.NearestFilter;t.minFilter=T.NearestFilter;t.generateMipmaps=false;return t}
+/* ---------- shared PS2 textures and materials ---------- */
+var n=CONFIG.texSize,dc=document.createElement('canvas');dc.width=dc.height=n;
+var dg=dc.getContext('2d'),i,v;for(i=0;i<n*n;i++){v=185+Math.random()*65|0;dg.fillStyle='rgb('+v+','+v+','+v+')';dg.fillRect(i%n,(i/n)|0,1,1)}
+var dirt=mkTex(dc);
+var fs=CONFIG.faceSize,fc=document.createElement('canvas');fc.width=fc.height=fs;
+var fg=fc.getContext('2d'),F=fs/16;
+fg.fillStyle=hexS(CONFIG.skin);fg.fillRect(0,0,fs,fs);
+fg.fillStyle=hexS(CONFIG.hair);fg.fillRect(0,0,fs,3*F);fg.fillRect(0,0,1.5*F,7*F);fg.fillRect(fs-1.5*F,0,1.5*F,7*F);
+fg.fillStyle='#d8d4cc';fg.fillRect(3*F,6*F,3*F,2*F);fg.fillRect(10*F,6*F,3*F,2*F);
+fg.fillStyle='#1a1410';fg.fillRect(4*F,6*F,1.4*F,2*F);fg.fillRect(11*F,6*F,1.4*F,2*F);fg.fillRect(3*F,4.8*F,3*F,F);fg.fillRect(10*F,4.8*F,3*F,F);
+fg.fillStyle='rgba(60,30,40,.35)';fg.fillRect(3*F,8*F,3*F,.8*F);fg.fillRect(10*F,8*F,3*F,.8*F);
+fg.fillStyle='#8a6a52';fg.fillRect(7.4*F,8.2*F,1.2*F,2.2*F);
+fg.fillStyle='#5a2e2c';fg.fillRect(6*F,12*F,4*F,F);
+var faceM=new T.MeshLambertMaterial({map:mkTex(fc)});
+function lam(c){return new T.MeshLambertMaterial({color:c,map:dirt})}
+var skinM=lam(CONFIG.skin),pantM=lam(CONFIG.pants),shoeM=lam(CONFIG.shoes),hairM=lam(CONFIG.hair),darkM=new T.MeshLambertMaterial({color:0x202226}),lensM=new T.MeshBasicMaterial({color:0xfff2c0}),topC={};
+function topMat(h){return topC[h]||(topC[h]=lam(h))}
+var GE={};
+function B(w,h,d,m,x,y,z,p){var k=w+'_'+h+'_'+d,g=GE[k]||(GE[k]=new T.BoxGeometry(w,h,d)),o=new T.Mesh(g,m);o.position.set(x,y,z);p.add(o);return o}
+function J(p,x,y,z){var g=new T.Group();g.position.set(x,y,z);p.add(g);return g}
+function tint(i){return new T.Color(CONFIG.palette[i%CONFIG.palette.length]).lerp(new T.Color(0x808080),.55).getHex()}
+function hashI(s){var h=7,k;s=String(s);for(k=0;k<s.length;k++)h=(h*31+s.charCodeAt(k))>>>0;return h%5}
+/* ---------- PS2 low poly rig: pelvis > spine > chest > neck > head, arms, legs ---------- */
+function makeChar(topHex){
+ var top=topMat(topHex),root=new T.Group(),pel=J(root,0,.91,0),spine=J(pel,0,.02,0),chest=J(spine,0,.16,0),neck=J(chest,0,.32,0),head=J(neck,0,.04,0);
+ B(.30,.14,.19,pantM,0,-.04,0,pel);B(.33,.22,.21,top,0,-.1,0,pel);B(.30,.16,.18,top,0,.06,0,spine);B(.38,.34,.21,top,0,.15,0,chest);
+ B(.07,.08,.07,skinM,0,.03,0,neck);
+ B(.18,.24,.2,skinM,0,.12,0,head);B(.19,.07,.21,hairM,0,.235,-.005,head);B(.19,.17,.05,hairM,0,.13,-.1,head);
+ var fp=new T.Mesh(new T.PlaneGeometry(.18,.24),faceM);fp.position.set(0,.12,.1015);head.add(fp);
+ function arm(s){var a=J(chest,s*.235,.3,0),e=J(a,0,-.28,0),h=J(e,0,-.26,0);B(.085,.28,.085,top,0,-.14,0,a);B(.07,.26,.07,skinM,0,-.13,0,e);B(.08,.09,.05,skinM,0,-.045,0,h);return{a:a,e:e,h:h}}
+ function leg(s){var t=J(pel,s*.09,0,0),k=J(t,0,-.44,0),f=J(k,0,-.4,0);B(.13,.44,.14,pantM,0,-.22,0,t);B(.11,.4,.12,pantM,0,-.2,0,k);B(.1,.07,.26,shoeM,0,-.035,.06,f);return{t:t,k:k,f:f}}
+ var L=arm(1),R=arm(-1),lL=leg(1),lR=leg(-1);
+ var torch=J(R.h,0,-.07,.06);B(.045,.045,.2,darkM,0,0,0,torch);B(.06,.06,.05,darkM,0,0,.11,torch);var ln=new T.Mesh(new T.PlaneGeometry(.05,.05),lensM);ln.position.set(0,0,.137);torch.add(ln);torch.visible=false;
+ return{root:root,pel:pel,spine:spine,chest:chest,head:head,aL:L,aR:R,lL:lL,lR:lR,torch:torch,vs:0,wm:0,rb:0,ph:0,wa:0,hw:0,land:0,pAir:false,t0:Math.random()*10,lx:null,lz:null}}
+/* ---------- gait: ONE phase driven by real ground speed, linear stance sweep = no foot sliding ---------- */
+var LL=.44,LS=.40,FH=.07,oL={f:0,k:0,x:0},oR={f:0,k:0,x:0};
+function legH(a,k){return LL*Math.cos(a)+LS*Math.cos(a+k)+FH}
+function legp(p,A,D,rb,o){var s,e;
+ if(p<D){s=p/D;o.f=A-2*A*(s-.15*Math.sin(6.2832*s)/6.2832);o.k=.1+.18*Math.sin(3.1416*s);o.x=.45*sstep(.75,1,s)-.15*(1-sstep(0,.2,s))}
+ else{s=(p-D)/(1-D);e=.5-.5*Math.cos(3.1416*s);o.f=-A+2*A*e;o.k=.1+((.8+.7*rb)-.1)*Math.sin(3.1416*s);o.x=.45*Math.max(0,1-3*s)-.3*Math.sin(3.1416*s)-.15*Math.pow(s,4)}}
+function pose(c,dt,t,spd,air,vy,hold){
+ var C=CONFIG,kf=1-Math.exp(-dt/(C.fade/3)),ks=1-Math.exp(-C.speedSmooth*dt);
+ c.vs+=(spd-c.vs)*ks;var v=c.vs;
+ c.wm+=(sstep(.12,.7,v)-c.wm)*kf;c.rb+=(sstep(3,4,v)-c.rb)*kf;c.wa+=((air?1:0)-c.wa)*(1-Math.exp(-dt*18));c.hw+=((hold?1:0)-c.hw)*(1-Math.exp(-dt*10));
+ if(c.pAir&&!air)c.land=1;c.pAir=air;c.land=Math.max(0,c.land-dt/C.landTime);
+ var wm=c.wm,rb=c.rb,wa=c.wa,A=Math.min(C.strideAmax,C.strideA0+C.strideA1*Math.max(v,1)),D=C.dutyWalk+(C.dutyRun-C.dutyWalk)*rb,Lw=.91*C.height/1.75;
+ if(v>.05)c.ph=(c.ph+dt*v*D/(2*A*Lw))%1;
+ legp(c.ph,A,D,rb,oL);legp((c.ph+.5)%1,A,D,rb,oR);
+ var br=Math.sin(t*1.7+c.t0),sw=Math.sin(t*.5+c.t0),lw=c.land>0?Math.sin(3.1416*(1-c.land)):0,cp=Math.cos(6.2832*c.ph),sp=Math.sin(6.2832*c.ph),iw=1-wm;
+ var aL=-oL.f*wm+(.02+.02*sw)*iw-lw*.45,aR=-oR.f*wm+(.02-.02*sw)*iw-lw*.45,kL=oL.k*wm+.05*iw+lw,kR=oR.k*wm+.05*iw+lw;
+ var xL=oL.x*wm,xR=oR.x*wm,y=Math.max(legH(aL,kL),legH(aR,kR))-lw*C.landDip;
+ var lean=.03+(C.leanWalk+(C.leanRun-C.leanWalk)*rb-.03)*wm+lw*.25;
+ var amL=oL.f*C.armSwing*wm,amR=oR.f*C.armSwing*wm,elb=.12+(C.elbowWalk+(C.elbowRun-C.elbowWalk)*rb)*wm,eL=elb+.25*Math.max(0,-amL)*wm,eR=elb+.25*Math.max(0,-amR)*wm;
+ if(c.hw>.01){amR=amR*(1-c.hw)+(-1.15+.03*Math.sin(t*2.1))*c.hw;eR=eR*(1-c.hw)+.5*c.hw}
+ var fL=-(aL+kL)+xL,fR=-(aR+kR)+xR;
+ if(wa>.002){var as=sstep(.5,2.5,vy),ds=sstep(.5,2.5,-vy),tk=Math.max(0,1-as-ds),
+  tl=-.45*as-.9*tk-.25*ds,kl=.8*as+1.35*tk+.35*ds,tr=.4*as-.8*tk-.15*ds,kr=.35*as+1.3*tk+.3*ds,aa=-1.7*as-.8*tk-1.1*ds,u=1-wa;
+  aL=aL*u+tl*wa;aR=aR*u+tr*wa;kL=kL*u+kl*wa;kR=kR*u+kr*wa;fL=fL*u+.3*wa;fR=fR*u+.3*wa;y=y*u+.88*wa;
+  amL=amL*u+aa*wa;if(c.hw<.5)amR=amR*u+aa*wa;eL=eL*u+.4*wa;eR=eR*u+.4*wa;lean=lean*u-.05*wa}
+ var P=c.pel;P.position.y=y;P.position.x=.012*sp*wm+.008*sw*iw;P.rotation.z=-.03*sp*wm+.012*sw*iw;P.rotation.y=-C.twist*.5*(.5+rb)*cp*wm*(1-wa);
+ c.spine.rotation.y=C.twist*(.5+rb)*cp*wm*(1-wa);c.spine.rotation.x=lean;c.chest.scale.y=1+.012*br*(1-wm*.5);
+ c.head.rotation.x=-lean*.6+.03*Math.sin(t*.37+c.t0)*iw;c.head.rotation.y=-c.spine.rotation.y*.8+.08*sw*iw;
+ c.lL.t.rotation.x=aL;c.lR.t.rotation.x=aR;c.lL.k.rotation.x=kL;c.lR.k.rotation.x=kR;c.lL.f.rotation.x=fL;c.lR.f.rotation.x=fR;
+ c.aL.a.rotation.x=amL;c.aR.a.rotation.x=amR;c.aL.e.rotation.x=-eL;c.aR.e.rotation.x=-eR;c.aL.a.rotation.z=.07;c.aR.a.rotation.z=-.07}
+/* ---------- owners: player, Kabir NPC, remote players ---------- */
+var me=null,kb=null,PEERS=[],CL={},ERR=0,PAL=CONFIG.palette;
+addEventListener('message',function(e){var m=e.data||{};if(m.t==='peer'&&m.p&&m.p.c!=null)CL[String(m.p.n).slice(0,16)]=m.p.c});
+var _hp=HB.peer;
+HB.peer=function(name){var o=_hp.apply(this,arguments),c=makeChar(tint(hashI(name)));
+ o.g.traverse(function(m){if(m.isMesh)m.visible=false});o.g.add(c.root);c.peer=o;c.nm=String(name).slice(0,16);PEERS.push(c);return o};
+function sizeS(){return CONFIG.height/1.75}
+function speedOf(c,x,z,dt){var s=0;if(c.lx!==null&&dt>0){s=Math.hypot(x-c.lx,z-c.lz)/dt;if(s>12)s=0}c.lx=x;c.lz=z;return Math.min(s,8)}
+function tick(dt,t){
+ var C=CONFIG,S=sizeS(),g=aarav.g,pos=g.position;
+ if(!me){me=makeChar(tint(+localStorage.pzcol||0));me.root.scale.setScalar(S);scene.add(me.root);kb=makeChar(0xb8b8b0);kb.root.scale.setScalar(S);scene.add(kb.root);kb.root.position.copy(kabir.g.position)}
+ /* player */
+ var air=!!(window.JJ&&JJ.y>.02),vy=window.JJ?JJ.v:0,dx=cam.position.x-pos.x,dz=cam.position.z-pos.z,fp=Math.hypot(dx,dz)<C.hideFpDist;
+ me.root.scale.setScalar(S);me.root.position.set(pos.x,pos.y,pos.z);me.root.rotation.y=g.rotation.y;me.root.rotation.x=(typeof P!=='undefined'&&P.fall)||0;
+ me.root.visible=g.visible&&!fp;me.torch.visible=!!(typeof P!=='undefined'&&P.has);
+ pose(me,dt,t,speedOf(me,pos.x,pos.z,dt),air,vy,me.torch.visible);
+ /* Kabir (idle NPC) */
+ kb.root.position.copy(kabir.g.position);kb.root.rotation.y=kabir.g.rotation.y;pose(kb,dt,t,0,false,0,false);
+ /* remote players */
+ for(var i=PEERS.length-1;i>=0;i--){var c=PEERS[i],o=c.peer;
+  if(!o.g.parent){PEERS.splice(i,1);continue}
+  var ps=Math.max(.01,o.g.scale.x),cc=CL[c.nm];c.root.scale.setScalar(S/ps);
+  c.torch.visible=!!(o.t&&o.t.visible);
+  pose(c,dt,t,speedOf(c,o.g.position.x,o.g.position.z,dt),false,0,c.torch.visible)}}
+/* ---------- ONE input owner: speeds live in CONFIG, WALK/RUN are exclusive ---------- */
+var prevRun=false,_u=update;
+update=function(dt,t){
+ window.__SPW=CONFIG.walk;window.__SPR=CONFIG.run;
+ var run=!!(window.RUN&&RUN.on),walk=!!(window.__isWalk&&window.__isWalk());
+ if(run&&walk&&window.__setWalk)window.__setWalk(0);
+ if(window.__isWalk&&window.__isWalk())keys.ShiftLeft=0;
+ prevRun=run;_u(dt,t)};
+/* ---------- PS2 render scale (Settings > GAME) ---------- */
+var PR=T.WebGLRenderer.prototype,ps2=localStorage.getItem('pzps2');ps2=ps2===null?CONFIG.ps2:ps2==='1';
+function res(r){PR.setPixelRatio.call(renderer,r);PR.setSize.call(renderer,innerWidth,innerHeight,true)}
+function applyPS2(){renderer.domElement.style.imageRendering=ps2?'pixelated':'';if(!ps2)res(Math.min(window.devicePixelRatio||1,1.25))}
+var uiT=0,uiDone=0;
+function addUI(){var z=document.getElementById('z50s'),h=z?z.parentNode.parentNode:document.getElementById('pzs');if(!h)return;uiDone=1;
+ var l=document.createElement('label');l.className='z38t';l.innerHTML='PS2 look (low resolution)<span><input type="checkbox" id="ps2c"><i></i></span>';h.appendChild(l);
+ var c=document.getElementById('ps2c');c.checked=ps2;c.onchange=function(){ps2=c.checked;try{localStorage.setItem('pzps2',ps2?'1':'0')}catch(e){}applyPS2()}}
+applyPS2();
+var _x=extra;
+extra=function(dt,t){_x(dt,t);try{
+ tick(dt,t);
+ if(ps2&&Math.abs(renderer.getPixelRatio()-CONFIG.ps2Scale)>.01)res(CONFIG.ps2Scale);
+ if(!uiDone){uiT-=dt;if(uiT<=0){uiT=1;addUI()}}
+}catch(e){if(!ERR){ERR=1;console.log('PS2-CHAR error',e)}}};
+}catch(e){console.log('PS2-CHAR load error',e)}})();
+</script></body></html>
 
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
