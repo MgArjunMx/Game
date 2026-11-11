@@ -4010,7 +4010,7 @@ var T=THREE,PI=Math.PI,$=function(i){return document.getElementById(i)};
 var R=function(a,b){return a+Math.random()*(b-a)};
 var CFG={walk:2.7,run:4.6,slow:.6};
 /*RACE-SIM-V1*/
-var RACE=window.__RACE={roadHalf:5,step:1/120,mass:1300,wheelbase:2.7,cgA:1.25,iz:2100,cgH:.5,wheelR:.33,gears:[3.6,2.3,1.65,1.25,1.0],finalDrive:3.4,peakTorque:400,idleRpm:1000,redRpm:6800,shiftUp:6300,shiftDn:2600,driveEff:.9,drag:.78,roll:150,brakeF:9000,revF:2800,revMax:5,throttleRamp:4,gripMu:1.05,peakSlip:9,steerLow:26,steerHigh:3,steerHighSpeed:45,kIn:3.2,kOut:6,driftMinKmh:95,driftHold:1.1,driftRearGrip:.7,driftSlipMin:10,driftSlipMax:22,driftAssist:18,camBack:4.2,camHigh:1.5,camAhead:6,fovLow:70,fovHigh:70,camOmega:8,camVelFollow:0,skidLife:12,pitchPerAcc:.0053,rollPerAcc:.0071};
+var RACE=window.__RACE={roadHalf:5,step:1/120,mass:1300,wheelbase:2.7,cgA:1.25,iz:2100,cgH:.5,wheelR:.33,gears:[3.6,2.3,1.65,1.25,1.0],finalDrive:3.4,peakTorque:400,idleRpm:1000,redRpm:6800,shiftUp:6300,shiftDn:2600,driveEff:.9,drag:.78,roll:150,brakeF:9000,revF:2800,revMax:5,throttleRamp:4,gripMu:1.05,peakSlip:9,steerLow:26,steerHigh:3,steerHighSpeed:45,kIn:3.2,kOut:6,driftMinKmh:99999,driftHold:1.1,driftRearGrip:.7,driftSlipMin:10,driftSlipMax:22,driftAssist:18,camBack:4.2,camHigh:1.5,camAhead:6,fovLow:70,fovHigh:70,camOmega:8,camVelFollow:0,skidLife:12,pitchPerAcc:.0053,rollPerAcc:.0071};
 
 window.__SPW=CFG.walk;window.__SPR=CFG.run;
 var DR={on:0,car:null},ctl={G:0,B:0,L:0,R:0},kb={u:0,d:0,l:0,r:0},WK=0,eng=null,cars=[],loop=null,appr=null,LSAMP=[],ASAMP=[],bcn=null;
@@ -4373,7 +4373,7 @@ function driveStep(dt,t){
  c.tlm.emissiveIntensity=(thr<0&&c.v>.3)?2.2:.6;
  P.pos.set(c.x,0,c.z);P.vel.set(0,0,0);P.yaw=c.rh;P.face=c.rh;aarav.g.position.set(c.x,0,c.z);G.prot=Math.max(G.prot,2);
  /* smoke + skid marks + sparks */
- var fx=Math.sin(c.rh),fz=Math.cos(c.rh),lx=Math.cos(c.rh),lz=-Math.sin(c.rh),slipping=kmh>8&&(c.slip>.12||(c.th>.8&&kmh<30)),bx=c.rx-fx*1.35,bz=c.rz-fz*1.35;
+ var fx=Math.sin(c.rh),fz=Math.cos(c.rh),lx=Math.cos(c.rh),lz=-Math.sin(c.rh),slipping=kmh>8&&c.slip>.28,bx=c.rx-fx*1.35,bz=c.rz-fz*1.35;
  [1,-1].forEach(function(s,j){var wx=bx+lx*.9*s,wz=bz+lz*.9*s;wheelFx(c,j,wx,wz,slipping&&c.slip>.1,dt);
   if(slipping){c.sm+=dt*30;while(c.sm>=1){c.sm--;puff(wx,.25,wz,-c.vx*.15+(Math.random()-.5),.7+Math.random()*.6,-c.vz*.15+(Math.random()-.5),.7,3.2,1.1+Math.random()*.5,.5,0xdedede,0)}}});
  if(c.hit>.05)for(i=0;i<10;i++)puff(c.x+fx*1.5+lx*(Math.random()-.5)*2,.5,c.z+fz*1.5+lz*(Math.random()-.5)*2,(Math.random()-.5)*6,2+Math.random()*3,(Math.random()-.5)*6,.22,.2,.5,1,0xffa030,12);
@@ -4830,6 +4830,111 @@ var NM=['ASPHALT','GRAVEL','DIRT TRACK','OFF-ROAD'],MU=[1.05,.85,.78,.58],RL=[15
 window.__pzSurf=function(c,Rr,ed){var s=ed<5.2?0:ed<6.8?1:dd(c.x,c.z)<3.8?2:3;Rr.gripMu=MU[s];Rr.roll=RL[s];window.__pzBump=BP[s];window.__pzsurf=NM[s]};
 }catch(e){console.log('PZR road error',e)}})();
 </script><!--PZR-END-->
+<!--PZPATCH-START--><script>(function PATCH(){try{
+if(window.__pzpa)return;window.__pzpa=1;
+var T=THREE,D=document,B=D.body,PI=Math.PI;
+function R(a,b){return a+Math.random()*(b-a)}
+
+/* ---------- 1. MOVEMENT BUTTONS: remove old, make new ---------- */
+var css=D.createElement('style');
+css.textContent='#bSpr,#pzW,#pzRunB,#pzWalkB{display:none!important}'
++'#pzd{display:none!important}'
++'#mvBox{position:fixed;left:calc(24px + env(safe-area-inset-left,0px));bottom:calc(164px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;z-index:40;pointer-events:auto}'
++'#mvBox button{width:62px;height:62px;border-radius:50%;border:2px solid rgba(255,255,255,.4);background:rgba(20,23,34,.82);color:#fff;font:700 12px system-ui,sans-serif;letter-spacing:.06em;padding:0;touch-action:none;-webkit-tap-highlight-color:transparent;transition:transform .12s,background .15s}'
++'#mvBox button:active{transform:scale(.92)}'
++'#mvBox button.on{background:linear-gradient(145deg,rgba(76,201,160,.95),rgba(20,60,50,.95));border-color:#7fffc8;box-shadow:0 0 14px rgba(76,201,160,.7)}'
++'body.pzdrive #mvBox,body.pzedit #mvBox{display:none!important}';
+D.head.appendChild(css);
+['bSpr','pzW','pzRunB','pzWalkB'].forEach(function(i){var e=D.getElementById(i);if(e&&e.parentNode)e.parentNode.removeChild(e)});
+
+var MODE='n',prev;
+var box=D.createElement('div');box.id='mvBox';
+box.innerHTML='<button type="button" id="mvRun">RUN</button><button type="button" id="mvWalk">WALK</button>';
+B.appendChild(box);
+var bR=D.getElementById('mvRun'),bW=D.getElementById('mvWalk'),ck=String.fromCharCode(10003);
+function paint(){
+ bR.classList.toggle('on',MODE==='run');bW.classList.toggle('on',MODE==='walk');
+ bR.textContent=MODE==='run'?'RUN '+ck:'RUN';bW.textContent=MODE==='walk'?'WALK '+ck:'WALK'}
+var lastT=0;
+function bind(b,m){
+ b.addEventListener('pointerdown',function(e){
+  e.preventDefault();e.stopPropagation();
+  var n=performance.now();if(n-lastT<180)return;lastT=n;
+  MODE=(MODE===m)?'n':m;paint();
+  try{navigator.vibrate&&navigator.vibrate(8)}catch(x){}});
+ b.addEventListener('contextmenu',function(e){e.preventDefault()})}
+bind(bR,'run');bind(bW,'walk');paint();
+
+var _u=update;
+update=function(dt,t){
+ if(B.classList.contains('pzdrive')){if(MODE!=='n'){MODE='n';paint()}}
+ else{
+  if(typeof window.__pzMV!=='undefined'&&window.__pzMV!==prev&&window.__pzMV!==MODE){MODE=window.__pzMV||'n';paint()}
+  if(window.RUN)window.RUN.on=(MODE==='run');
+  keys.Spr=(MODE==='run')?1:0;
+ }
+ window.__pzMV=MODE;prev=MODE;
+ _u(dt,t);
+};
+
+/* ---------- 2. CAR: no drift, smoother ---------- */
+function tune(){var r=window.__RACE;if(!r)return;
+ r.driftMinKmh=99999;r.driftHold=99;r.driftAssist=0;
+ r.steerLow=19;r.steerHigh=3.4;r.kIn=2.4;r.kOut=4.5;
+ r.throttleRamp=3;r.camOmega=6.5}
+tune();setInterval(tune,1000);
+
+/* ---------- 3. REALISTIC HEADLIGHTS ---------- */
+var CAR=null,was=false,HL=[],i;
+for(i=0;i<2;i++){
+ var s=new T.SpotLight(0xfff1d6,0,60,.46,.72,1.2);
+ s.castShadow=false;scene.add(s);scene.add(s.target);HL.push(s)}
+var gc=D.createElement('canvas');gc.width=gc.height=64;
+var gg=gc.getContext('2d'),gr=gg.createRadialGradient(32,32,0,32,32,32);
+gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.35,'rgba(255,255,255,.35)');gr.addColorStop(1,'rgba(255,255,255,0)');
+gg.fillStyle=gr;gg.fillRect(0,0,64,64);
+var gtex=new T.CanvasTexture(gc);
+function flare(col,sz){
+ var f=new T.Sprite(new T.SpriteMaterial({map:gtex,color:col,blending:T.AdditiveBlending,depthWrite:false,transparent:true,opacity:.85}));
+ f.scale.set(sz,sz,1);f.visible=false;scene.add(f);return f}
+var FF=[flare(0xfff2cc,1.4),flare(0xfff2cc,1.4)],FT=[flare(0xff2a1a,.9),flare(0xff2a1a,.9)];
+var pool=new T.Mesh(new T.PlaneGeometry(1,1),new T.MeshBasicMaterial({map:gtex,color:0xffeccc,transparent:true,opacity:.2,blending:T.AdditiveBlending,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-9,polygonOffsetUnits:-9}));
+pool.rotation.order='YXZ';pool.scale.set(8,16,1);pool.visible=false;scene.add(pool);
+
+function findCar(){
+ var b=null,d=1e9;
+ scene.children.forEach(function(o){
+  if(o.isGroup&&o.userData&&o.userData.r1&&o.children.length&&o.children[0].isGroup){
+   var dx=o.position.x-P.pos.x,dz=o.position.z-P.pos.z,q=dx*dx+dz*dz;
+   if(q<d){d=q;b=o}}});
+ return b}
+function hideCones(){
+ scene.children.forEach(function(o){
+  if(o.isGroup&&o.userData&&o.userData.r1)o.traverse(function(m){
+   if(m.isMesh&&m.geometry&&m.geometry.type==='ConeGeometry'&&m.material&&m.material.blending===T.AdditiveBlending)m.visible=false})})}
+
+var _x=extra;
+extra=function(dt,t){_x(dt,t);try{
+ var drv=B.classList.contains('pzdrive');
+ if(drv&&!was){CAR=findCar();hideCones()}
+ was=drv;
+ var on=drv&&!!CAR,k=Math.min(1,dt*6),I=on?4.6:0,j;
+ for(j=0;j<2;j++)HL[j].intensity+=(I-HL[j].intensity)*k;
+ if(on){
+  spot.visible=false;
+  var h=CAR.rotation.y,sn=Math.sin(h),cs=Math.cos(h),px=CAR.position.x,pz=CAR.position.z;
+  [-1,1].forEach(function(sd,n){
+   var L=HL[n],lx=cs*sd*.66,lz=-sn*sd*.66;
+   L.position.set(px+sn*1.95+lx,.78,pz+cs*1.95+lz);
+   L.target.position.set(px+sn*20+cs*sd*.9,-.4,pz+cs*20-sn*sd*.9);
+   L.target.updateMatrixWorld();
+   FF[n].position.set(px+sn*2.2+lx,.78,pz+cs*2.2+lz);
+   FT[n].position.set(px-sn*2.25+lx*1.05,.82,pz-cs*2.25+lz*1.05)});
+  pool.position.set(px+sn*9,.06,pz+cs*9);pool.rotation.set(-PI/2,h,0)}
+ FF.concat(FT).forEach(function(f){f.visible=on});
+ pool.visible=on;
+}catch(e){}};
+}catch(e){console.log('PZPATCH error',e)}})();</script><!--PZPATCH-END-->
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
