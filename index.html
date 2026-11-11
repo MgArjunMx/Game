@@ -4086,7 +4086,271 @@ for(var z=30;z<400;z+=40)draw(43,H(z),z,[0,Math.PI],-1);
 WG.forEach(function(w,i){draw(w.ox+w.n*(w.rw||7)/2,WGR[i].position.y+1.6,w.cz,[Math.PI/2,-Math.PI/2],i)});
 WGR.forEach(function(g,i){g.visible=vis[i]});cam.position.copy(sp);cam.quaternion.copy(sq);
 }catch(e){console.log('warmup',e)}})();
-</script><!--CHAR3-START--><script>/*PZ-CURVY-V3*/window.__MKN2=(function MKN(o){
+</script><!--ANIM-START--><script>
+/* ============================================================================
+   HUMAN MOTION ENGINE  (replaces the old walk/run/jump/idle animation)
+   - ONE gait phase drives every limb; it advances with real ground speed
+   - 2-bone leg IK + foot locking: a planted foot stays fixed on the ground
+   - sine / ease curves, critically damped springs, fixed sub-steps, crossfades
+   Everything you may want to tweak is in CFG and BODIES below.
+   ============================================================================ */
+(function(){
+if(window.__ANIMENG)return;
+
+/* ============================== SETTINGS ============================== */
+var CFG={
+ BODY_TYPE:'average',            /* average | tall | short | heavy | muscular | child | elderly */
+ DT_CLAMP:0.05,                   /* longest frame simulated (s): lag never causes jumps */
+ STEP:1/90,                       /* fixed physics sub-step (s) */
+ SPEED_SMOOTH:12,                 /* speed smoothing rate (1/s) */
+ SPEED_SCALE:1,                   /* 1 = feet exactly match ground speed (no foot sliding) */
+ IDLE_ENTER:0.09, IDLE_EXIT:0.16, /* speed (m/s) to start / stop standing */
+ /* skeleton of your rig (model units) */
+ THIGH:0.42, SHANK:0.40, HIP_DROP:0.03, ANKLE_H:0.08, HEEL_BACK:0.095, TOE_FWD:0.175, STAND:0.935,
+ /* gait vs speed [speed, value]: strides per second (one stride = 2 steps) and ground-contact fraction */
+ STRIDE_RATE:[[0,0.55],[0.6,0.62],[1.4,0.92],[2.2,1.2],[3.25,1.5],[4.5,1.9],[5.5,2.25],[7,2.6]],
+ CONTACT:[[0,0.70],[0.6,0.68],[1.4,0.62],[2.2,0.52],[3.25,0.38],[4.5,0.32],[5.5,0.27],[7,0.24]],
+ RUN_FROM:2.3, RUN_TO:3.6,        /* walk -> run blend range (m/s) */
+ KNEE_STRAIGHT:[0.99,0.975,0.945],/* leg extension idle / walk / run (lower = more knee bend) */
+ HEEL_PITCH:[0.18,0.0],           /* foot pitch at heel strike (rad) walk / run (run = midfoot) */
+ TOE_PITCH:[-0.45,-0.62],         /* push-off foot pitch (rad) */
+ FLAT_START:0.10, FLAT_END:[0.62,0.5],
+ CLEAR:[0.07,0.20], TOE_UP:[0.12,0.20], /* swing foot clearance (m) and toe lift (rad) */
+ BOB:0.85, FLIGHT_LIFT:0.045,     /* vertical bob strength; extra lift in running flight phase */
+ SWAY:[0.022,0.014],              /* pelvis side shift toward standing leg (m) walk / run */
+ ROLL:[0.06,0.035],               /* pelvis drop on swinging side (rad) */
+ PEL_YAW:[0.09,0.17],             /* pelvis rotation (rad) */
+ TWIST:[0.12,0.24],               /* extra shoulder counter-rotation (rad) */
+ LEAN:[0.03,0.20],                /* forward torso lean walk / run (rad) */
+ LEAN_ACC:0.012, LEAN_ACC_MIN:-0.10, LEAN_ACC_MAX:0.14, /* lean forward when starting, back when braking */
+ ARM_SWING:[0.30,0.75], ELBOW:[0.20,1.05], ELBOW_EXTRA:[0.15,0.35], ARM_OUT:0.07, ARM_LAG:26,
+ HEAD_STABLE:0.8, HEAD_LEAD:0.12, TURN_LEAN:0.011,
+ BREATH_PERIOD:3.6, BREATH_CHEST:0.012,
+ AIR_TUCK:0.62,                   /* knee tuck at jump peak (rad) */
+ LAND_DIP:0.04, LAND_PER_SPEED:0.02, LAND_MAX:0.15, LAND_TIME:0.20, LAND_TIME_PER_SPEED:0.015
+};
+
+/* body types: multipliers on top of "average" */
+var AV={cad:1,duty:0,arm:1,sway:1,bob:1,twist:1,lean:1,out:0,wide:0,stoop:0,land:1,recov:1,tuck:1,spring:1,clear:1,accel:1,headAct:1,soft:0};
+var DEF={
+ tall:{cad:0.93,arm:1.2,twist:1.15,bob:0.95,sway:1.05,tuck:0.95},
+ short:{cad:1.12,bob:1.3,spring:1.35,tuck:1.15,arm:1.05},
+ heavy:{cad:1.06,wide:0.05,sway:1.7,accel:0.55,land:1.4,recov:1.4,arm:0.85,bob:0.9,spring:0.6,clear:0.85,duty:0.03,soft:0.01},
+ muscular:{out:0.2,arm:0.65,twist:0.55,wide:0.025},
+ child:{cad:1.22,bob:1.5,headAct:1.8,arm:1.35,spring:1.4,tuck:1.1,land:0.7,recov:0.7},
+ elderly:{cad:1.06,arm:0.4,bob:0.6,stoop:0.16,sway:1.3,tuck:0.5,land:0.8,recov:1.2,clear:0.55,soft:0.025,spring:0.3,lean:0.6,twist:0.6,duty:0.04}
+};
+var BODIES={average:AV},k,p;
+for(k in DEF){var o={};for(p in AV)o[p]=AV[p];for(p in DEF[k])o[p]=DEF[k][p];BODIES[k]=o}
+
+/* ============================== MATH HELPERS ============================== */
+var PI=Math.PI,PI2=PI*2;
+function lerp(a,b,t){return a+(b-a)*t}
+function clamp(x,a,b){return x<a?a:(x>b?b:x)}
+function sstep(a,b,x){var t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)}
+function easeIO(u){return 0.5-0.5*Math.cos(PI*u)}
+function easeIn(u){return 1-Math.cos(0.5*PI*u)}
+function easeOut(u){return Math.sin(0.5*PI*u)}
+function tbl(t,x){var n=t.length;if(x<=t[0][0])return t[0][1];for(var i=1;i<n;i++){if(x<=t[i][0]){var a=t[i-1],b=t[i];return lerp(a[1],b[1],(x-a[0])/(b[0]-a[0]))}}return t[n-1][1]}
+function wrap(a){while(a>PI)a-=PI2;while(a<-PI)a+=PI2;return a}
+function spr(s,tg,w,h){var a=-w*w*(s.x-tg)-2*w*s.v;s.v+=a*h;s.x+=s.v*h;return s.x}  /* critically damped spring */
+function wscale(g){var s=1,o=g,n=0;while(o&&n<6){s*=o.scale.x;o=o.parent;n++}return s||1}
+function wyaw(g){var y=0,o=g,n=0;while(o&&n<6){y+=o.rotation.y;o=o.parent;n++}return y}
+
+/* two-bone leg IK. target = ankle relative to hip (z forward, y up). Rig convention: +x rotation swings leg BACK */
+var IKo={T:0,K:0};
+function ik(tz,ty){
+ var a=CFG.THIGH,b=CFG.SHANK,d=Math.sqrt(tz*tz+ty*ty),dmax=(a+b)*0.999,dmin=Math.abs(a-b)+0.03;
+ if(d>dmax){tz*=dmax/d;ty*=dmax/d;d=dmax}
+ else if(d<dmin){if(d<1e-4){tz=0;ty=-dmin}else{tz*=dmin/d;ty*=dmin/d}d=dmin}
+ var al=Math.acos(clamp((a*a+d*d-b*b)/(2*a*d),-1,1)),be=Math.acos(clamp((b*b+d*d-a*a)/(2*b*d),-1,1)),line=Math.atan2(-tz,-ty);
+ IKo.T=line-al;IKo.K=al+be;
+}
+
+/* ============================== PER-CHARACTER CONTROLLER ============================== */
+function attach(rig,fallback){
+ var LG=rig.legs,AR=rig.arms,pel=rig.pel,tor=rig.tor,head=rig.head,lids=rig.lids,curl=rig.curl,g=rig.g,broken=false;
+ var HB=CFG.HEEL_BACK,TF=CFG.TOE_FWD,AH=CFG.ANKLE_H,HD=CFG.HIP_DROP,BD=BODIES.average;
+ function mkLeg(off){return{off:off,phi:off,prevPhi:off,stance:true,H:-HB,x0:0,y0:AH,th0:0}}
+ var st={S:0,vin:0,vs:0,acc:0,idle:true,frozen:true,wIdle:0,phi:0,fs:0.6,D:0.7,T:1.6,rb:0,wm:0,
+  fp:{hs:0.18,to:-0.45,fe:0.62,clr:0.07,dor:0.12},leg:[mkLeg(0),mkLeg(0.5)],
+  pelY:0.92,pelYs:0.92,init:0,yaw:null,yawRate:0,
+  sLean:{x:0,v:0},sArm:[{x:0,v:0},{x:0,v:0}],sHead:{x:0,v:0},sTw:{x:0,v:0},sRoll:{x:0,v:0},
+  air:false,airT:0,fallV:0,wAir:0,landT:99,landDur:0.3,landAmp:0,blinkT:2.5,blinkP:-1};
+ var pf=[{x:0,y:0,th:0},{x:0,y:0,th:0}],tmp={x:0,y:0,th:0};
+ var V={pelY:0,legT:[0,0],legK:[0,0],legA:[0,0],legRz:[0,0],armX:[0,0],armZ:[0,0],elb:[0,0],torX:0,headX:0};
+
+ /* ankle position of one foot in "distance travelled" coordinates (planted foot has fixed x) */
+ function foot(L,o){
+  var D=st.D,fp=st.fp,s,u,th;
+  if(L.stance){
+   s=clamp(L.phi/D,0,1);
+   if(s<CFG.FLAT_START){u=s/CFG.FLAT_START;th=fp.hs*(1-easeIO(u));o.th=th;o.x=L.H+HB*Math.cos(th)-AH*Math.sin(th);o.y=HB*Math.sin(th)+AH*Math.cos(th)}   /* heel rocker */
+   else if(s<fp.fe){o.th=0;o.x=L.H+HB;o.y=AH}                                                                                               /* foot flat */
+   else{u=(s-fp.fe)/(1-fp.fe);th=fp.to*easeIn(u);o.th=th;var Tx=L.H+HB+TF;o.x=Tx-TF*Math.cos(th)-AH*Math.sin(th);o.y=-TF*Math.sin(th)+AH*Math.cos(th)} /* toe-off */
+  }else{
+   u=clamp((L.phi-D)/(1-D),0,1);
+   var rem=(1-u)*(1-D)*st.T,Hn=st.S+st.vs*rem+st.vs*0.5*D*st.T-HB,
+    xe=Hn+HB*Math.cos(fp.hs)-AH*Math.sin(fp.hs),ye=HB*Math.sin(fp.hs)+AH*Math.cos(fp.hs),e=easeIO(u),sn=Math.sin(PI*u);
+   o.x=lerp(L.x0,xe,e);o.y=lerp(L.y0,ye,e)+fp.clr*sn;o.th=lerp(L.th0,fp.hs,easeOut(u))+fp.dor*sn;
+  }
+ }
+
+ function reinit(){
+  st.phi=0;
+  for(var i=0;i<2;i++){var L=st.leg[i];L.phi=(st.phi+L.off)%1;L.prevPhi=L.phi;L.stance=L.phi<st.D;L.H=st.S-HB;L.x0=st.S;L.y0=AH;L.th0=0}
+ }
+
+ /* one fixed sub-step of the simulation */
+ function sim(h){
+  var vo=st.vs;
+  st.vs+=(st.vin-st.vs)*(1-Math.exp(-CFG.SPEED_SMOOTH*h));
+  var vs=st.vs;
+  st.acc+=(((vs-vo)/h)-st.acc)*(1-Math.exp(-8*h));
+  st.S+=st.vin*h;
+  if(st.idle){if(vs>CFG.IDLE_EXIT)st.idle=false}else if(vs<CFG.IDLE_ENTER)st.idle=true;
+  var rb=sstep(CFG.RUN_FROM,CFG.RUN_TO,vs),wm=sstep(0.1,1.1,vs);
+  st.rb=rb;st.wm=wm;
+  var fs=tbl(CFG.STRIDE_RATE,vs)*BD.cad,D=clamp(tbl(CFG.CONTACT,vs)+BD.duty,0.2,0.76),len=vs/fs,fp=st.fp;
+  st.fs=fs;st.D=D;st.T=1/fs;
+  fp.hs=lerp(CFG.HEEL_PITCH[0],CFG.HEEL_PITCH[1],rb);fp.to=lerp(CFG.TOE_PITCH[0],CFG.TOE_PITCH[1],rb);fp.fe=lerp(CFG.FLAT_END[0],CFG.FLAT_END[1],rb);
+  fp.clr=lerp(CFG.CLEAR[0],CFG.CLEAR[1],rb)*BD.clear*clamp(len/0.9,0.2,1.15);fp.dor=lerp(CFG.TOE_UP[0],CFG.TOE_UP[1],rb)*clamp(len/0.9,0.2,1);
+  /* freeze the gait when standing with both feet planted under the body */
+  var l0=st.leg[0],l1=st.leg[1],frozen=false;
+  if(st.idle&&l0.stance&&l1.stance)frozen=Math.abs(l0.H+HB-st.S)<0.09&&Math.abs(l1.H+HB-st.S)<0.09;
+  st.frozen=frozen;
+  if(!frozen){
+   st.phi=(st.phi+(st.idle?Math.max(fs,0.8):fs)*h)%1;
+   for(var i=0;i<2;i++){var L=st.leg[i];L.prevPhi=L.phi;L.phi=(st.phi+L.off)%1;
+    if(L.phi<L.prevPhi){L.stance=true;L.H=st.S+vs*0.5*D*st.T-HB}                                   /* heel strike: plant foot */
+    else if(L.stance&&L.phi>=D){foot(L,tmp);L.x0=tmp.x;L.y0=tmp.y;L.th0=tmp.th;L.stance=false}}   /* toe-off: start swing */
+  }
+  st.wIdle+=((frozen?1:0)-st.wIdle)*(1-Math.exp(-7*h));
+  /* springs: arms follow with delay, lean, head leads turns */
+  var amp=lerp(CFG.ARM_SWING[0],CFG.ARM_SWING[1],rb)*BD.arm*wm,c=Math.cos(PI2*st.phi),wA=(frozen||st.idle)?14:clamp(CFG.ARM_LAG*fs,14,50);
+  spr(st.sArm[0],amp*c,wA,h);spr(st.sArm[1],-amp*c,wA,h);
+  var leanT=lerp(CFG.LEAN[0],CFG.LEAN[1],rb)*BD.lean*wm+BD.stoop+clamp(st.acc*CFG.LEAN_ACC*BD.accel,CFG.LEAN_ACC_MIN,CFG.LEAN_ACC_MAX)*sstep(0,0.3,Math.max(vs,st.vin));
+  spr(st.sLean,leanT,9,h);
+  spr(st.sHead,clamp(st.yawRate*CFG.HEAD_LEAD,-0.6,0.6)*(1+(BD.headAct-1)*0.5),12,h);
+  spr(st.sTw,clamp(st.yawRate*0.05,-0.3,0.3),7,h);
+  spr(st.sRoll,-clamp(st.yawRate*vs*CFG.TURN_LEAN,-0.25,0.25)*(0.2+0.8*rb)*BD.lean,8,h);
+  st.landT+=h;
+ }
+
+ /* turn the simulation state into joint angles */
+ function pose(dt,t,q){
+  var vs=st.vs,rb=st.rb,wm=st.wm,D=st.D,fs=st.fs,phi=st.phi,S=st.S,wI=st.wIdle,idle=1-wm,ga=1-st.wAir,i,L,pp;
+  for(i=0;i<2;i++){L=st.leg[i];pp=pf[i];foot(L,pp);
+   if(L.stance&&wI>0.001){pp.x=lerp(pp.x,L.H+HB,wI);pp.y=lerp(pp.y,AH,wI);pp.th=lerp(pp.th,0,wI)}}
+  /* pelvis height: highest leg extension that still lets planted feet reach the ground */
+  var kf=lerp(CFG.KNEE_STRAIGHT[0],lerp(CFG.KNEE_STRAIGHT[1],CFG.KNEE_STRAIGHT[2],rb),wm)-BD.soft,
+   Rm=(CFG.THIGH+CFG.SHANK)*kf,capNom=AH+Rm+HD,base=capNom,ns=0;
+  for(i=0;i<2;i++){L=st.leg[i];if(L.stance){var tz0=pf[i].x-S,c0=pf[i].y+Math.sqrt(Math.max(1e-4,Rm*Rm-tz0*tz0))+HD;if(c0<base)base=c0;ns++}}
+  var Xe=Math.min(0.5,0.5*D*(vs/fs)*0.95),capLow=Math.min(capNom,AH+Math.sqrt(Math.max(1e-4,Rm*Rm-Xe*Xe))+HD),bobK=CFG.BOB*BD.bob,tgt;
+  if(ns>0)tgt=base>capLow?capLow+bobK*(base-capLow):base;
+  else{var w5=phi>=0.5?phi-0.5:phi,f=clamp((w5-D)/Math.max(0.02,0.5-D),0,1);tgt=capLow+(bobK*(capNom-capLow)*0.7+CFG.FLIGHT_LIFT*BD.spring*rb)*Math.sin(PI*f)}
+  /* landing absorb: hips drop, knees fold, ease back up */
+  var env=0;
+  if(st.landT<st.landDur){var u=st.landT/st.landDur;env=u<0.3?Math.sin(0.5*PI*u/0.3):Math.cos(0.5*PI*(u-0.3)/0.7)}
+  tgt=Math.min(tgt-st.landAmp*env,CFG.STAND);
+  if(!st.init){st.pelY=tgt;st.pelYs=tgt;st.init=1}
+  st.pelY+=(tgt-st.pelY)*(1-Math.exp(-45*dt));st.pelYs+=(st.pelY-st.pelYs)*(1-Math.exp(-3*dt));
+  if(!isFinite(st.pelY)||!isFinite(S))throw new Error('NaN in gait');
+  /* body oscillators, all from the single gait phase */
+  var cA=Math.cos(PI2*phi),cS=Math.cos(PI2*(phi-D*0.5)),br=Math.sin(PI2*t/CFG.BREATH_PERIOD),ws=Math.sin(t*0.9)*Math.sin(t*0.37),
+   swayX=(lerp(CFG.SWAY[0],CFG.SWAY[1],rb)*BD.sway*cS*wm+0.012*ws*idle*BD.sway)*ga,
+   roll=(lerp(CFG.ROLL[0],CFG.ROLL[1],rb)*cS*wm+0.01*ws*idle)*ga,
+   yawAmp=lerp(CFG.PEL_YAW[0],CFG.PEL_YAW[1],rb),yawP=-yawAmp*cA*wm*ga,
+   twist=(lerp(CFG.TWIST[0],CFG.TWIST[1],rb)*BD.twist+yawAmp)*cA*wm*ga;
+  /* ---- ground pose ---- */
+  V.pelY=st.pelY;
+  var hipY=st.pelY-HD;
+  for(i=0;i<2;i++){
+   var tz=pf[i].x-S,ty=pf[i].y-hipY;ik(tz,ty);
+   V.legT[i]=IKo.T;V.legK[i]=IKo.K;V.legA[i]=-pf[i].th-(IKo.T+IKo.K);
+   var dd=Math.max(0.4,Math.sqrt(tz*tz+ty*ty)),sd=i?-1:1;
+   V.legRz[i]=Math.asin(clamp((-swayX+sd*BD.wide)/dd,-0.5,0.5));      /* keeps planted feet fixed sideways while pelvis sways */
+  }
+  var ampN=Math.max(0.05,lerp(CFG.ARM_SWING[0],CFG.ARM_SWING[1],rb)*BD.arm);
+  for(i=0;i<2;i++){
+   var ax=st.sArm[i].x,fw=clamp(-ax/ampN,0,1);
+   V.armX[i]=ax+0.02*Math.sin(t*0.8+i*2)*idle-env*0.8;
+   V.armZ[i]=AR[i].sd*(CFG.ARM_OUT+BD.out);
+   V.elb[i]=-lerp(0.15,lerp(CFG.ELBOW[0],CFG.ELBOW[1],rb)+lerp(CFG.ELBOW_EXTRA[0],CFG.ELBOW_EXTRA[1],rb)*fw,wm)-env*0.3;
+  }
+  V.torX=st.sLean.x+0.01*br*idle+env*0.3;
+  /* ---- air pose (jump) crossfaded over the ground pose ---- */
+  var wa=st.wAir;
+  if(wa>0.002){
+   var vy=(window.JJ&&typeof window.JJ.v==='number')?window.JJ.v:(st.airT<0.25?3:(st.airT<0.4?0:-3));
+   var asc=sstep(0.3,3,vy),desc=sstep(0.3,3,-vy),tk=Math.exp(-vy*vy/3.5)*BD.tuck;
+   var w1=asc*(1-tk),w2=tk,w3=desc*(1-tk),sm=w1+w2+w3;if(sm<0.01){w2=1;sm=1}w1/=sm;w2/=sm;w3/=sm;
+   var tuck=CFG.AIR_TUCK;
+   for(i=0;i<2;i++){
+    var T2=w1*0.06+w2*(-tuck)+w3*(-0.28)+(i?-0.08:0.08),K2=w1*0.05+w2*(tuck+0.03)+w3*0.22,S2=w1*0.9+w2*0.12+w3*(-0.1);
+    V.legT[i]=lerp(V.legT[i],T2,wa);V.legK[i]=lerp(V.legK[i],K2,wa);V.legA[i]=lerp(V.legA[i],S2-(T2+K2),wa);V.legRz[i]=lerp(V.legRz[i],0,wa);
+    V.armX[i]=lerp(V.armX[i],w1*(-2.6)+w2*(-0.5)+w3*(-1.3),wa);
+    V.armZ[i]=lerp(V.armZ[i],AR[i].sd*(w1*0.1+w2*0.95+w3*0.2),wa);
+    V.elb[i]=lerp(V.elb[i],-(w1*0.3+w2*0.6+w3*0.4),wa);
+   }
+   V.pelY=lerp(V.pelY,0.9,wa);V.torX=lerp(V.torX,0.12+0.1*tk,wa);
+  }
+  /* ---- write to the rig ---- */
+  pel.position.y=V.pelY;pel.position.x=swayX;pel.rotation.y=yawP;pel.rotation.z=roll;
+  for(i=0;i<2;i++){LG[i].t.rotation.x=V.legT[i];LG[i].t.rotation.z=V.legRz[i];LG[i].k.rotation.x=V.legK[i];LG[i].a.rotation.x=V.legA[i]}
+  tor.rotation.x=V.torX;tor.rotation.y=twist+st.sTw.x*ga;tor.rotation.z=-roll*0.6+st.sRoll.x*ga;
+  tor.position.y=-0.4*(st.pelY-st.pelYs)*ga;tor.position.x=-0.5*swayX;
+  tor.scale.set(1+0.006*br,1+CFG.BREATH_CHEST*br,1+0.016*br);
+  head.rotation.x=-tor.rotation.x*CFG.HEAD_STABLE+Math.sin(t*0.37)*0.02*idle*BD.headAct;
+  head.rotation.y=-(tor.rotation.y+yawP)*0.85+st.sHead.x+Math.sin(t*0.45)*0.07*idle*BD.headAct;
+  head.rotation.z=-(tor.rotation.z+roll)*0.9;
+  var ck=0.35+0.25*wm+0.5*rb;
+  for(i=0;i<2;i++){AR[i].a.rotation.x=V.armX[i];AR[i].a.rotation.z=V.armZ[i];AR[i].e.rotation.x=V.elb[i];if(curl)curl(AR[i],ck,t)}
+  if(q.hold){   /* right hand carries the torch */
+   AR[1].a.rotation.x=-1.1+Math.sin(t*2)*0.02+Math.sin(PI2*phi*2)*0.012*wm;AR[1].e.rotation.x=-0.55;AR[1].a.rotation.z=-0.05;if(curl)curl(AR[1],1.25,t);
+  }
+  /* blinking */
+  if(lids&&lids.length>1){
+   st.blinkT-=dt;if(st.blinkT<=0&&st.blinkP<0)st.blinkP=0;
+   var lv=-0.9;
+   if(st.blinkP>=0){st.blinkP+=dt/0.15;var uu=st.blinkP<1?st.blinkP:2-st.blinkP;lv=-0.9+2.1*clamp(uu,0,1);if(st.blinkP>=2){st.blinkP=-1;st.blinkT=2+Math.random()*4}}
+   lids[0].rotation.x=lids[1].rotation.x=lv;
+  }
+ }
+
+ function run(dt,t,q){
+  dt=clamp(isFinite(dt)?dt:0.016,0.0001,CFG.DT_CLAMP);
+  BD=BODIES[CFG.BODY_TYPE]||BODIES.average;
+  st.vin=clamp((q.v||0)/wscale(g)*CFG.SPEED_SCALE,0,12);
+  /* turning rate (head leads, then shoulders) */
+  var yw=wyaw(g);if(st.yaw===null)st.yaw=yw;
+  var rate=clamp(wrap(yw-st.yaw)/dt,-9,9);st.yaw=yw;st.yawRate+=(rate-st.yawRate)*(1-Math.exp(-10*dt));
+  /* jump state machine */
+  var air=!!q.air,vy=(window.JJ&&typeof window.JJ.v==='number')?window.JJ.v:0;
+  if(air&&!st.air){st.air=true;st.airT=0;st.fallV=0}
+  else if(air){st.airT+=dt;if(vy<0)st.fallV=Math.max(st.fallV,-vy)}
+  else if(!air&&st.air){
+   st.air=false;st.landAmp=clamp((CFG.LAND_DIP+CFG.LAND_PER_SPEED*st.fallV)*BD.land,0.05,CFG.LAND_MAX);
+   st.landDur=(CFG.LAND_TIME+CFG.LAND_TIME_PER_SPEED*st.fallV)*BD.recov;st.landT=0;reinit();
+  }
+  st.wAir+=((air?1:0)-st.wAir)*(1-Math.exp(-(air?22:16)*dt));
+  var n=Math.max(1,Math.ceil(dt/CFG.STEP)),h=dt/n;
+  for(var i=0;i<n;i++)sim(h);
+  pose(dt,t,q);
+ }
+
+ reinit();
+ return function(dt,t,q){
+  if(broken)return fallback(dt,t,q);
+  try{run(dt,t,q||{})}catch(e){broken=true;if(window.console)console.error('[ANIMENG] failed, old animation restored',e);return fallback(dt,t,q||{})}
+ };
+}
+
+window.__ANIMENG={attach:attach,CFG:CFG,BODIES:BODIES,setBody:function(n){if(BODIES[n])CFG.BODY_TYPE=n}};
+window.__ANIM=window.__ANIMENG;
+})();
+</script><!--ANIM-END-->
+<!--CHAR3-START--><script>/*PZ-CURVY-V3*/window.__MKN2=(function MKN(o){
 var T=THREE,S0=1.45/1.75,SG=new T.SphereGeometry(1,20,14),PI=Math.PI;
 function M(c,r,m){return new T.MeshStandardMaterial({color:c,roughness:r==null?.8:r,metalness:m||0})}
 function S(r,m,p,x,y,z,a,b,c){var q=new T.Mesh(SG,m);q.scale.set(r*(a||1),r*(b||1),r*(c||1));q.position.set(x||0,y||0,z||0);p.add(q);return q}
@@ -4238,7 +4502,7 @@ if(q.air){arms[0].a.rotation.x=-1;arms[0].e.rotation.x=-.3;if(!q.hold)arms[1].a.
 bl.t-=dt;if(bl.t<=0&&!bl.on){bl.on=1;bl.p=0}
 var lv=-.9;if(bl.on){bl.p+=dt/.15;var uu=bl.p<1?bl.p:2-bl.p;lv=-.9+2.1*Math.max(0,Math.min(1,uu));if(bl.p>=2){bl.on=0;bl.t=2+Math.random()*4}}
 lids[0].rotation.x=lids[1].rotation.x=lv}
-anim2(.016,0,{v:0,hold:!!o.torchOn});return{g:g,tor:tor,aL:arms[0].a,aR:arms[1].a,torch:torch,anim:anim2}});</script>
+anim2(.016,0,{v:0,hold:!!o.torchOn});return{g:g,tor:tor,aL:arms[0].a,aR:arms[1].a,torch:torch,anim:(window.__ANIMENG?window.__ANIMENG.attach({g:g,pel:pel,tor:tor,head:head,legs:legs,arms:arms,lids:lids,curl:curl},anim2):anim2)}});</script>
 <script>
 window.__MK=window.__MKN2||function(o){
 var T=THREE,SPG=new T.SphereGeometry(1,20,14),S0=1.45/1.75;
@@ -5952,7 +6216,7 @@ if(q.air){arms[0].a.rotation.x=-1;arms[0].e.rotation.x=-.3;if(!q.hold)arms[1].a.
 bl.t-=dt;if(bl.t<=0&&!bl.on){bl.on=1;bl.p=0}
 var lv=-.9;if(bl.on){bl.p+=dt/.15;var uu=bl.p<1?bl.p:2-bl.p;lv=-.9+2.1*Math.max(0,Math.min(1,uu));if(bl.p>=2){bl.on=0;bl.t=2+Math.random()*4}}
 lids[0].rotation.x=lids[1].rotation.x=lv}
-anim2(.016,0,{v:0,hold:!!o.torchOn});return{g:g,tor:tor,aL:arms[0].a,aR:arms[1].a,torch:torch,anim:anim2}});</script>
+anim2(.016,0,{v:0,hold:!!o.torchOn});return{g:g,tor:tor,aL:arms[0].a,aR:arms[1].a,torch:torch,anim:(window.__ANIMENG?window.__ANIMENG.attach({g:g,pel:pel,tor:tor,head:head,legs:legs,arms:arms,lids:lids,curl:curl},anim2):anim2)}});</script>
 <script>
 window.__MK=window.__MKN2||function(o){
 var T=THREE,SPG=new T.SphereGeometry(1,20,14),S0=1.45/1.75;
