@@ -2298,12 +2298,12 @@ css.textContent='@keyframes pzin{from{opacity:0;transform:translateY(-50%) trans
 +'body.pzedit [data-pzh]{touch-action:none!important}';
 document.head.appendChild(css);
 /* ---------- layout engine ---------- */
-const ED=[['joy','Joystick',120,120],['bSpr','Run',72,72],['bInt','Tap',60,60],['bTorch','Torch',60,60],['bMap','Map',60,60],['bMan','Open',60,60],['bCro','Jump',60,60],['pzNotes','Notes',60,60],['vp','Voice',130,100],['ge','Settings',32,32]];
+const ED=[['joy','Joystick',120,120],['bSpr','Run',72,72],['pzRunB','Run',64,64],['pzWalkB','Walk',64,64],['bInt','Tap',60,60],['bTorch','Torch',60,60],['bMap','Map',60,60],['bMan','Open',60,60],['bCro','Jump',60,60],['pzNotes','Notes',60,60],['vp','Voice',130,100],['ge','Settings',32,32]];
 const nb=[...document.querySelectorAll('#btns button')].find(b=>!b.id);if(nb)nb.id='pzNotes';
 const hc=document.createElement('style');hc.textContent='#btns{display:contents!important;transform:none!important}';document.head.appendChild(hc);
 let L=LS('pz33h')||{};
 const Wd=()=>innerWidth,Ht=()=>innerHeight;
-const defs=()=>{const W=Wd(),H=Ht(),a=W-145,b=W-76,r0=H-218,r1=H-149,r2=H-80;return{joy:[24,H-144],bSpr:[156,H-100],bInt:[a,r0],bTorch:[b,r0],bMap:[a,r1],bMan:[b,r1],bCro:[a,r2],pzNotes:[b,r2],vp:[12,46],ge:[W-44,46]}};
+const defs=()=>{const W=Wd(),H=Ht(),a=W-145,b=W-76,r0=H-218,r1=H-149,r2=H-80;return{joy:[24,H-144],bSpr:[156,H-100],pzRunB:[24,H-214],pzWalkB:[96,H-214],bInt:[a,r0],bTorch:[b,r0],bMap:[a,r1],bMan:[b,r1],bCro:[a,r2],pzNotes:[b,r2],vp:[12,46],ge:[W-44,46]}};
 function gi(id){const a=ED.find(x=>x[0]==id),e=q(id),c=L[id],d=defs()[id],s=c?c.s:1,w=(e&&e.offsetWidth)||a[2],h=(e&&e.offsetHeight)||a[3],x=c&&c.x!=null?c.x*Wd():d[0],y=c&&c.x!=null?c.y*Ht():d[1];return{a,e,s,w,h,cx:x+w/2,cy:y+h/2}}
 const rc=id=>{const g=gi(id),sw=g.w*g.s/2,sh=g.h*g.s/2;return[g.cx-sw,g.cy-sh,g.cx+sw,g.cy+sh]};
 function ensure(id){if(!L[id]||L[id].x==null){const g=gi(id),c=L[id]||{s:1,o:1};c.x=(g.cx-g.w/2)/Wd();c.y=(g.cy-g.h/2)/Ht();L[id]=c}return L[id]}
@@ -4010,7 +4010,7 @@ var T=THREE,PI=Math.PI,$=function(i){return document.getElementById(i)};
 var R=function(a,b){return a+Math.random()*(b-a)};
 var CFG={walk:2.7,run:4.6,slow:.6};
 /*RACE-SIM-V1*/
-var RACE=window.__RACE={roadHalf:5,step:1/120,mass:1300,wheelbase:2.7,cgA:1.25,iz:2100,cgH:.5,wheelR:.33,gears:[3.6,2.3,1.65,1.25,1.0],finalDrive:3.4,peakTorque:400,idleRpm:1000,redRpm:6800,shiftUp:6300,shiftDn:2600,driveEff:.9,drag:.78,roll:150,brakeF:9000,revF:2800,revMax:5,throttleRamp:4,gripMu:1.05,peakSlip:9,steerLow:32,steerHigh:6,steerHighSpeed:61,kIn:6,kOut:10,driftMinKmh:60,driftHold:.25,driftRearGrip:.55,driftSlipMin:15,driftSlipMax:35,driftAssist:30,camBack:4.2,camHigh:1.5,camAhead:6,fovLow:70,fovHigh:70,camOmega:8,camVelFollow:0,skidLife:12,pitchPerAcc:.0053,rollPerAcc:.0071};
+var RACE=window.__RACE={roadHalf:5,step:1/120,mass:1300,wheelbase:2.7,cgA:1.25,iz:2100,cgH:.5,wheelR:.33,gears:[3.6,2.3,1.65,1.25,1.0],finalDrive:3.4,peakTorque:400,idleRpm:1000,redRpm:6800,shiftUp:6300,shiftDn:2600,driveEff:.9,drag:.78,roll:150,brakeF:9000,revF:2800,revMax:5,throttleRamp:4,gripMu:1.05,peakSlip:9,steerLow:26,steerHigh:3,steerHighSpeed:45,kIn:3.2,kOut:6,driftMinKmh:95,driftHold:1.1,driftRearGrip:.7,driftSlipMin:10,driftSlipMax:22,driftAssist:18,camBack:4.2,camHigh:1.5,camAhead:6,fovLow:70,fovHigh:70,camOmega:8,camVelFollow:0,skidLife:12,pitchPerAcc:.0053,rollPerAcc:.0071};
 
 window.__SPW=CFG.walk;window.__SPR=CFG.run;
 var DR={on:0,car:null},ctl={G:0,B:0,L:0,R:0},kb={u:0,d:0,l:0,r:0},WK=0,eng=null,cars=[],loop=null,appr=null,LSAMP=[],ASAMP=[],bcn=null;
@@ -4219,10 +4219,10 @@ function tyre(al,mu,fz){var x=Math.abs(al)/(RACE.peakSlip*.01745);return -(al<0?
 function simStep(c,h,thr,str){
  var R=RACE,L=R.wheelbase,a=R.cgA,b=L-a,m=R.mass,u=c.v,w=c.w,r=c.r,sp=Math.abs(u),kmh=sp*3.6;
  c.th+=((thr>0?1:0)-c.th)*(1-Math.exp(-R.throttleRamp*h));
- var Mx=(R.steerLow+(R.steerHigh-R.steerLow)*Math.min(1,sp/R.steerHighSpeed))*.01745,tg=-str*Mx;
+ var sk=Math.min(1,sp/R.steerHighSpeed),Mx=(R.steerLow+(R.steerHigh-R.steerLow)*Math.sqrt(sk))*.01745,tg=-str*Mx;
  c.st+=(tg-c.st)*(1-Math.exp(-(Math.abs(tg)<Math.abs(c.st)?R.kOut:R.kIn)*h));
  c.hold=(str&&Math.abs(c.st)>Mx*.7)?c.hold+h:0;
- var flick=thr<0&&str&&u>8,trig=kmh>R.driftMinKmh&&(c.hold>R.driftHold||flick);
+ var flick=thr<0&&str&&u>26,trig=kmh>R.driftMinKmh&&(c.hold>R.driftHold||flick);
  if(!c.drOn){if(trig){c.drOn=1;c.side=str}}else if(!(str||flick)||kmh<30)c.drOn=0;
  var tgd=c.drOn?1:0,wn=c.drOn?10:12,ze=c.drOn?1:.45;
  c.drv+=(-wn*wn*(c.dr-tgd)-2*ze*wn*c.drv)*h;c.dr=Math.max(-.2,Math.min(1.15,c.dr+c.drv*h));
@@ -4244,7 +4244,7 @@ function simStep(c,h,thr,str){
  Fx-=(u>0?1:u<0?-1:0)*(R.drag*u*u+R.roll);
  var cd=Math.cos(d),sd=Math.sin(d),damp=-w*m*3*(1-fl);
  var du=(Fx-Ff*sd)/m+r*w,dw=(Ff*cd+Fr+damp)/m-r*u,dr=(a*Ff*cd-b*Fr)/R.iz;
- if(c.drOn){var be=Math.atan2(w,Math.max(sp,2)),bt=-c.side*(R.driftSlipMin+(R.driftSlipMax-R.driftSlipMin)*c.th)*.01745;dr+=Math.max(-8,Math.min(8,R.driftAssist*(bt-be)))-1.2*r}else dr-=.4*r;
+ if(c.drOn){var be=Math.atan2(w,Math.max(sp,2)),bt=-c.side*(R.driftSlipMin+(R.driftSlipMax-R.driftSlipMin)*c.th)*.01745;dr+=Math.max(-8,Math.min(8,R.driftAssist*(bt-be)))-1.2*r}else dr-=1.6*r;
  var k=1-Math.exp(-10*h);c.axs+=(Fx/m-c.axs)*k;c.ays+=((Ff*cd+Fr)/m-c.ays)*k;
  u+=du*h;w=Math.max(-30,Math.min(30,w+dw*h));r=Math.max(-3,Math.min(3,r+dr*h));
  if(thr===0&&Math.abs(u)<.2){u=0;w*=.9}
@@ -4678,7 +4678,7 @@ function cam3(dt){
 var _u=update;
 update=function(dt,t){
  var drv=B.classList.contains('pzdrive');
- if(drv)MV='n';
+ if(drv)window.__pzMV='n';MV=window.__pzMV||'n';if(drv)MV='n';
  else{
   var ws=MV==='walk'?S.ws:NS,cf=window.PS2CFG;
   if(cf){cf.walk=ws;cf.run=S.rs}
@@ -4710,7 +4710,7 @@ function CAT(){return[
  {k:'s',l:'Car field of view',min:50,max:100,st:1,u:'',g:function(){return CC.fov},s:function(v){CC.fov=+v;carSave()}},
  {k:'b',l:'Reset car camera',f:function(){CC.back=4.2;CC.high=1.5;CC.ahead=6;CC.fov=70;carSave();render()}}]],
 ['Movement',[
- {k:'g',l:'Mode',o:[['n','Normal'],['walk','Walk'],['run','Run']],g:function(){return MV},s:function(v){MV=v;paint()}},
+ {k:'g',l:'Mode',o:[['n','Normal'],['walk','Walk'],['run','Run']],g:function(){return MV},s:function(v){window.__pzMV=v}},
  {k:'s',l:'Walk speed',min:.8,max:2.4,st:.1,u:' m/s',g:function(){return S.ws},s:function(v){S.ws=+v;sv()}},
  {k:'s',l:'Run speed',min:3.5,max:7,st:.1,u:' m/s',g:function(){return S.rs},s:function(v){S.rs=+v;sv()}}]],
 ['View',[
@@ -4762,6 +4762,19 @@ D.addEventListener('pointerdown',function(e){
  var n=performance.now();
  if(n-t<350&&Math.hypot(e.clientX-x,e.clientY-y)<50){t=0;go()}else{t=n;x=e.clientX;y=e.clientY}
 },true)})();
+/*PZ-MV2*/
+(function(){
+var st=D.createElement('style');
+st.textContent='#bSpr,#pzW{display:none!important}.pzmv{position:fixed;left:calc(24px + env(safe-area-inset-left,0px));bottom:calc(150px + env(safe-area-inset-bottom,0px));width:64px;height:64px;border-radius:50%;border:2px solid rgba(255,255,255,.4);background:rgba(20,23,34,.8);color:#fff;font:700 12px system-ui,sans-serif;letter-spacing:.06em;z-index:31;touch-action:none;pointer-events:auto;padding:0;-webkit-tap-highlight-color:transparent}#pzWalkB{left:calc(96px + env(safe-area-inset-left,0px))}.pzmv.on{background:linear-gradient(145deg,rgba(76,201,160,.95),rgba(20,60,50,.95));box-shadow:0 0 14px rgba(76,201,160,.7)}body.pzdrive .pzmv{display:none!important}';
+D.head.appendChild(st);
+function mk(id,t){var b=D.createElement('button');b.id=id;b.className='pzmv';b.type='button';b.textContent=t;D.body.appendChild(b);return b}
+var rb=mk('pzRunB','RUN'),wb=mk('pzWalkB','WALK'),last=0,ck=String.fromCharCode(10003);
+function paint2(){var m=window.__pzMV||'n';rb.classList.toggle('on',m==='run');wb.classList.toggle('on',m==='walk');rb.textContent=m==='run'?'RUN '+ck:'RUN';wb.textContent=m==='walk'?'WALK '+ck:'WALK'}
+function hit(m){return function(e){if(B.classList.contains('pzedit'))return;e.preventDefault();e.stopPropagation();var n=performance.now();if(n-last<250)return;last=n;window.__pzMV=window.__pzMV===m?'n':m;paint2();try{navigator.vibrate&&navigator.vibrate(8)}catch(x){}}}
+[['pointerdown',null],['touchstart',{passive:false}]].forEach(function(a){rb.addEventListener(a[0],hit('run'),a[1]);wb.addEventListener(a[0],hit('walk'),a[1])});
+setInterval(paint2,300);paint2();
+setTimeout(function(){dispatchEvent(new Event('resize'))},300);
+})();
 }catch(e){console.log('PZP patch error',e)}})();
 </script><!--PZP-END-->
 <!--PZR-START--><script>window.__PZROAD={"pts":[[0.3,58.6],[-0.5,63],[-7,67.5],[-20,68.5],[-45,66],[-80,63],[-120,64],[-155,72],[-185,90],[-208,118],[-240,141],[-282,146],[-325,138],[-362,150],[-388,180],[-398,222],[-392,265],[-370,300],[-336,322],[-300,350],[-290,392],[-310,430],[-352,452],[-398,458],[-440,478],[-455,520],[-440,562],[-405,590],[-360,600],[-315,628],[-300,672],[-322,712]],"dirt":[[-120,64],[-119,92],[-136,126],[-164,160],[-200,186],[-242,184],[-270,164],[-282,146]]};
