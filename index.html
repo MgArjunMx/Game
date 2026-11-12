@@ -4344,17 +4344,17 @@ function carCam(c,dt,t){
  var R=RACE,sp=Math.hypot(c.vx,c.vz),kmh=sp*3.6,va=sp>3?Math.atan2(c.vx,c.vz):c.rh,d=Math.atan2(Math.sin(va-c.rh),Math.cos(va-c.rh));
  d=Math.max(-1.2,Math.min(1.2,d))*R.camVelFollow*Math.max(0,Math.min(1,(sp-3)/6));
  var tA=c.rh+d,e=Math.atan2(Math.sin(tA-camAng),Math.cos(tA-camAng));if(!camInit)camAng=tA;else camAng+=e*(1-Math.exp(-6*dt));
- var back=R.camBack,sa=Math.sin(camAng),ca=Math.cos(camAng),tx=c.rx-sa*back,tz=c.rz-ca*back,ty=R.camHigh+kmh*.004-c.kick*.07,w=R.camOmega;
+ var back=window.__pzBack?window.__pzBack(R.camBack,sp,dt):R.camBack,sa=Math.sin(camAng),ca=Math.cos(camAng),tx=c.rx-sa*back+c.vx*2/R.camOmega,tz=c.rz-ca*back+c.vz*2/R.camOmega,ty=R.camHigh+kmh*.0008-c.kick*.03,w=R.camOmega;
  if(hood){tx=c.rx+Math.sin(c.rh)*.4;tz=c.rz+Math.cos(c.rh)*.4;ty=1.15;w=40}
  if(!camInit){camP.set(tx,ty,tz);camV.set(0,0,0);camInit=1}
  var q;q=spr(camP.x,camV.x,tx,w,dt);camP.x=q[0];camV.x=q[1];q=spr(camP.y,camV.y,ty,w,dt);camP.y=q[0];camV.y=q[1];q=spr(camP.z,camV.z,tz,w,dt);camP.z=q[0];camV.z=q[1];
- var sh=kmh/220*.025+c.hit*.12+(window.__pzBump||0)*Math.min(1,kmh/50);cam.position.set(camP.x+Math.sin(t*41)*sh,camP.y+Math.sin(t*53)*sh,camP.z+Math.sin(t*47)*sh);
+ var sh=c.hit*.03+(window.__pzBump||0)*.2*Math.min(1,kmh/50);cam.position.set(camP.x+Math.sin(t*41)*sh,camP.y+Math.sin(t*53)*sh,camP.z+Math.sin(t*47)*sh);
  var la=hood?c.rh:camAng;cam.lookAt(c.rx+Math.sin(la)*R.camAhead,hood?1.1:1.1,c.rz+Math.cos(la)*R.camAhead);
- rollC+=(-c.ays*.005-rollC)*(1-Math.exp(-5*dt));
- fovC+=((R.fovLow+(R.fovHigh-R.fovLow)*Math.min(1,kmh/220))-fovC)*(1-Math.exp(-4*dt));cam.fov=fovC;cam.near=.3;cam.updateProjectionMatrix()}
+ rollC+=(-c.ays*.002-rollC)*(1-Math.exp(-5*dt));
+ fovC+=((R.fovLow+0)-fovC)*(1-Math.exp(-4*dt));cam.fov=fovC;cam.near=.3;cam.updateProjectionMatrix()}
 function driveStep(dt,t){
  var c=DR.car;if(!c)return;hudEnsure();fxInit();dt=Math.min(dt,.05);
- var thr=((ctl.G||kb.u)?1:0)-((ctl.B||kb.d)?1:0),str=((ctl.R||kb.r)?1:0)-((ctl.L||kb.l)?1:0),R=RACE,n=0,i;
+ var thr=((ctl.G||kb.u)?1:0)-((ctl.B||kb.d)?1:0),str=(function(r){return window.__pzSt?window.__pzSt(r,dt,Math.abs(c.v)*3.6):r})(((ctl.R||kb.r)?1:0)-((ctl.L||kb.l)?1:0)),R=RACE,n=0,i;
  tAcc+=dt;c.hit=0;
  while(tAcc>=R.step&&n<8){c.px=c.x;c.pz=c.z;c.ph=c.h;simStep(c,R.step,thr,str);tAcc-=R.step;n++}
  if(n>=8)tAcc=0;
@@ -4909,6 +4909,7 @@ window.__pzSurf=function(c,Rr,ed){var s=ed<5.2?0:ed<6.8?1:dd(c.x,c.z)<3.8?2:3;Rr
 }catch(e){console.log('PZR road error',e)}})();
 </script><!--PZR-END-->
 
+
 <!--PZPATCH-START--><script>(function PATCH(){try{
 if(window.__pzpa)return;window.__pzpa=1;
 var T=THREE,D=document,B=D.body,PI=Math.PI;
@@ -4959,8 +4960,20 @@ update=function(dt,t){
 /* ---------- 2. CAR: no drift, smoother ---------- */
 function tune(){var r=window.__RACE;if(!r)return;
  r.driftMinKmh=99999;r.driftHold=99;r.driftAssist=0;
- r.steerLow=19;r.steerHigh=3.4;r.kIn=2.4;r.kOut=4.5;
- r.throttleRamp=3;r.camOmega=6.5}
+ r.steerLow=24;r.steerHigh=4.2;r.kIn=3;r.kOut=5;
+ r.throttleRamp=3;r.camOmega=7;r.pitchPerAcc=.003;r.rollPerAcc=.004}
+/* smooth steering: finger/button gives a gradual turn, tap = small angle, hold = full lock, fast return to centre */
+var ssv=0;
+window.__pzSt=function(raw,dt,kmh){dt=Math.min(dt||0,.05);
+ var up=2.4/(1+kmh/140),rt=raw>ssv?(ssv<0?5:up):(ssv>0?5:up);
+ if(raw===0)rt=4.5;
+ var d=raw-ssv,st=Math.min(Math.abs(d),rt*dt);ssv+=d>0?st:-st;
+ if(Math.abs(ssv)<.002&&raw===0)ssv=0;return ssv};
+/* steady camera: no lag stretch at speed, only ~5% back/forward on accelerate/brake */
+var sp0=0,accS=0;
+window.__pzBack=function(base,sp,dt){dt=Math.min(dt||0,.05);
+ if(dt>0){var a=(sp-sp0)/dt;accS+=(Math.max(-30,Math.min(30,a))-accS)*(1-Math.exp(-3*dt))}sp0=sp;
+ return base*(1+.05*Math.max(-1,Math.min(1,accS/5)))};
 tune();setInterval(tune,1000);
 
 /* ---------- 3. REALISTIC HEADLIGHTS ---------- */
