@@ -487,10 +487,10 @@ function update(dt,t){
  const f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)+joy.y,r=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+joy.x;
  const dir=new T.Vector3(Math.sin(P.yaw),0,Math.cos(P.yaw)),rv=new T.Vector3(-Math.cos(P.yaw),0,Math.sin(P.yaw));
  const w=dir.clone().multiplyScalar(f).addScaledVector(rv,r);const mag=Math.min(1,w.length());if(w.lengthSq()>0)w.normalize();
- const wantRun=(keys.ShiftLeft||keys.Spr)&&mag>.1;
+ const wantRun=(window.__pzMODE==='run'||keys.ShiftLeft||keys.Spr)&&mag>.1;
  P.tired=Math.max(0,P.tired-dt);P.sprint=wantRun&&P.stam>0&&P.tired<=0;
- if(P.sprint){P.stam-=dt;if(P.stam<=0){P.stam=0;P.tired=2}}else P.stam=Math.min(5,P.stam+dt*5/3);
- const sp=P.sprint?(window.__SPR||4.6):P.crouch?1.8:(window.__SPW||2.7);w.multiplyScalar(sp*mag*(window.JJ&&JJ.y>0?.8:1));if(G.dead){if(G.tm<.9)w.set(-Math.sin(P.face),0,-Math.cos(P.face)).multiplyScalar(2.4);else w.set(0,0,0)}P.vel.lerp(w,1-Math.exp(-(w.lengthSq()>.01?11:16)*dt));
+ if(P.sprint){P.stam-=dt*.3;if(P.stam<=0){P.stam=0;P.tired=2}}else P.stam=Math.min(5,P.stam+dt*5/3);
+ const sp=window.__pzSP?window.__pzSP(P.sprint,P.crouch):(P.sprint?(window.__SPR||4.6):P.crouch?1.8:(window.__SPW||2.7));w.multiplyScalar(sp*mag*(window.JJ&&JJ.y>0?.8:1));if(G.dead){if(G.tm<.9)w.set(-Math.sin(P.face),0,-Math.cos(P.face)).multiplyScalar(2.4);else w.set(0,0,0)}P.vel.lerp(w,1-Math.exp(-(w.lengthSq()>.01?11:16)*dt));
  P.pos.addScaledVector(P.vel,dt);for(let i=0;i<2;i++){for(const c of cols){const cx=Math.max(c[0],Math.min(P.pos.x,c[1])),cz=Math.max(c[2],Math.min(P.pos.z,c[3])),dx=P.pos.x-cx,dz=P.pos.z-cz,d=Math.hypot(dx,dz);if(d<R){if(d>1e-4){P.pos.x+=dx/d*(R-d);P.pos.z+=dz/d*(R-d)}else P.pos.x+=R}}}
  const spd=P.vel.length();if(spd>.15&&!G.dead){let d=Math.atan2(P.vel.x,P.vel.z)-P.face;d=Math.atan2(Math.sin(d),Math.cos(d));P.face+=d*(1-Math.exp(-10*dt))}
  P.ph+=dt*spd*3;aarav.g.position.set(P.pos.x,0,P.pos.z);aarav.g.rotation.y=P.face;
@@ -4822,6 +4822,7 @@ window.__pzSurf=function(c,Rr,ed){var s=ed<5.2?0:ed<6.8?1:dd(c.x,c.z)<3.8?2:3;Rr
 
 
 
+
 <!--PZPATCH-START--><script>(function PATCH(){try{
 if(window.__pzpa)return;window.__pzpa=1;
 var T=THREE,D=document,B=D.body,PI=Math.PI;
@@ -4861,6 +4862,8 @@ function hit(e){
 bR.addEventListener('contextmenu',function(e){e.preventDefault()});bW.addEventListener('contextmenu',function(e){e.preventDefault()});
 paint();
 
+/* one source of truth for speed: the game reads these directly */
+window.__pzSP=function(sprint,crouch){return window.__pzMODE==='walk'?1.7:sprint?5.4:crouch?1.8:2.7};
 var _u=update;
 update=function(dt,t){
  if(B.classList.contains('pzdrive')){if(MODE!=='n'){MODE='n';paint()}}
@@ -4869,19 +4872,19 @@ update=function(dt,t){
   if(window.RUN)window.RUN.on=(MODE==='run');
   keys.Spr=(MODE==='run')?1:0;
  }
- window.__pzMV=MODE;prev=MODE;
+ window.__pzMV=MODE;window.__pzMODE=MODE;prev=MODE;
  _u(dt,t);
 };
 
 /* ---------- 2. CAR: no drift, smoother ---------- */
 function tune(){var r=window.__RACE;if(!r)return;
  r.driftMinKmh=99999;r.driftHold=99;r.driftAssist=0;
- r.steerLow=34;r.steerHigh=19;r.steerHighSpeed=45;r.kIn=5;r.kOut=7;
+ r.steerLow=44;r.steerHigh=34;r.steerHighSpeed=50;r.kIn=6;r.kOut=8;
  r.throttleRamp=3;r.camOmega=7;r.pitchPerAcc=.003;r.rollPerAcc=.004}
 /* smooth steering: finger/button gives a gradual turn, tap = small angle, hold = full lock, fast return to centre */
 var ssv=0;
 window.__pzSt=function(raw,dt,kmh){dt=Math.min(dt||0,.05);
- var up=3.4/(1+kmh/300),rt=raw>ssv?(ssv<0?5:up):(ssv>0?5:up);
+ var up=4.6/(1+kmh/400),rt=raw>ssv?(ssv<0?5:up):(ssv>0?5:up);
  if(raw===0)rt=4.5;
  var d=raw-ssv,st=Math.min(Math.abs(d),rt*dt);ssv+=d>0?st:-st;
  if(Math.abs(ssv)<.002&&raw===0)ssv=0;return ssv};
@@ -4942,6 +4945,29 @@ extra=function(dt,t){_x(dt,t);try{
  FF.concat(FT).forEach(function(f){f.visible=on});
  pool.visible=on;
 }catch(e){}};
+
+/* ---------- 4. POLISH: joystick curve, auto quality, touch ---------- */
+try{
+var st2=D.createElement('style');
+st2.textContent='html,body{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}#btns button{min-width:44px;min-height:44px}';
+D.head.appendChild(st2);
+/* joystick: gentle push = slow, full push = fast (finer control) */
+var _u2=update;
+update=function(dt,t){
+ var rx=joy.x,ry=joy.y,m=Math.hypot(rx,ry),cx=rx,cy=ry;
+ if(m>.001){var k=Math.pow(Math.min(1,m),1.35)/m;cx=rx*k;cy=ry*k;joy.x=cx;joy.y=cy}
+ try{_u2(dt,t)}finally{if(joy.x===cx&&joy.y===cy){joy.x=rx;joy.y=ry}}
+};
+/* auto quality: keeps frame rate steady by adjusting resolution */
+var _x2=extra,fa=0,fn=0,t0=performance.now(),lowC=0,maxR=Math.min(window.devicePixelRatio||1,1.5),qr=Math.min(maxR,1.25);
+extra=function(dt,t){_x2(dt,t);try{
+ if(localStorage.getItem('pzps2')==='1'||performance.now()-t0<6000)return;
+ fa+=dt;fn++;
+ if(fa>=2){var fps=fn/fa,nr=qr;fa=0;fn=0;
+  if(fps<38){lowC++;if(lowC>=2){nr=Math.max(.6,qr-.15);lowC=0}}else{lowC=0;if(fps>57)nr=Math.min(maxR,qr+.1)}
+  if(Math.abs(nr-qr)>.01){qr=nr;renderer.setPixelRatio(qr);renderer.setSize(innerWidth,innerHeight,true)}}
+}catch(e){}};
+}catch(e){console.log('PZPATCH polish error',e)}
 }catch(e){console.log('PZPATCH error',e)}})();</script><!--PZPATCH-END-->
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -5976,6 +6002,9 @@ launch=function(lv){
   if(b.dataset.s!=null)si=+b.dataset.s;if(b.dataset.k!=null)ki=+b.dataset.k;save(si+8*ki)});
  btn.onclick=function(){draw();sh.classList.add('on')};
  setInterval(function(){var L=D.getElementById('lobby'),on=L&&L.classList.contains('on');btn.classList.toggle('on',!!on);if(!on)sh.classList.remove('on')},400);
+ /* reconnect voice/party when the internet comes back */
+ addEventListener('offline',function(){try{toast('You are offline')}catch(e){}});
+ addEventListener('online',function(){try{toast('Back online');if(typeof party!=='undefined'&&party)joinParty(party)}catch(e){}});
 }catch(e){console.log('NC lobby error',e)}};NCLOBBY();</script><!--NCL-END--><!--R1-OUT-START--><script>(function __R1outer(){try{
  if(window.__r1o)return;window.__r1o=1;
  var D=document,NS='http://www.w3.org/2000/svg';
