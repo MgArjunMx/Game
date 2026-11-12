@@ -4879,7 +4879,7 @@ update=function(dt,t){
 /* ---------- 2. CAR: no drift, smoother ---------- */
 function tune(){var r=window.__RACE;if(!r)return;
  r.driftMinKmh=99999;r.driftHold=99;r.driftAssist=0;
- r.steerLow=44;r.steerHigh=34;r.steerHighSpeed=50;r.kIn=6;r.kOut=8;
+ r.steerLow=35;r.steerHigh=35;r.steerHighSpeed=50;r.kIn=5;r.kOut=7;
  r.throttleRamp=3;r.camOmega=7;r.pitchPerAcc=.003;r.rollPerAcc=.004}
 /* smooth steering: finger/button gives a gradual turn, tap = small angle, hold = full lock, fast return to centre */
 var ssv=0;
@@ -4968,7 +4968,98 @@ extra=function(dt,t){_x2(dt,t);try{
   if(Math.abs(nr-qr)>.01){qr=nr;renderer.setPixelRatio(qr);renderer.setSize(innerWidth,innerHeight,true)}}
 }catch(e){}};
 }catch(e){console.log('PZPATCH polish error',e)}
-}catch(e){console.log('PZPATCH error',e)}})();</script><!--PZPATCH-END-->
+}catch(e){console.log('PZPATCH error',e)}})();</script><script>/*PZ-FIXPACK-2*/
+(function FIXPACK2(){try{
+if(window.__pzfp2)return;window.__pzfp2=1;
+var T=THREE,S={v:0,bt:0};
+/* ===== CAR: steering 90% at low speed -> 10% at 140+ km/h ===== */
+function tuneCar(){var R=window.__RACE;if(!R)return;
+ R.steerLow=35;R.steerHigh=35;R.steerHighSpeed=50;R.kIn=5;R.kOut=7;
+ R.throttleRamp=2.6;R.driftMinKmh=99999;R.driftHold=99;R.driftAssist=0;R.camOmega=7}
+window.__pzSt=function(raw,dt,kmh){
+ dt=Math.min(dt||0,.05);tuneCar();
+ var R=window.__RACE,k=kmh||0,t=Math.min(1,k/140),f=.1+.8*Math.pow(1-t,1.4);
+ var held=!!document.querySelector('#pzcar .pzk[data-k="B"].on')||(typeof keys!=='undefined'&&(keys.KeyS||keys.ArrowDown));
+ S.bt=held?Math.min(1,S.bt+dt/.3):0;
+ if(R)R.brakeF=held?9000*(.2+.8*S.bt):9000;
+ var rate=raw===0?3.5:((S.v!==0&&(raw>0)!==(S.v>0))?6:3.5-1.7*t);
+ var d=raw-S.v,st=Math.min(Math.abs(d),rate*dt);S.v+=d>0?st:-st;
+ if(raw===0&&Math.abs(S.v)<.004)S.v=0;
+ return S.v*f};
+var os=window.__pzSurf;
+window.__pzSurf=function(c,R,ed){if(os)os(c,R,ed);if(c){if(c.shiftT>.03)c.shiftT=.03;c.kick=0}};
+tuneCar();
+/* ===== PLAYER BODY: own model, own walk/run ===== */
+var NC=window.NC,L=[],W=new T.Vector3(),ss=function(){return((window.PS2CFG&&window.PS2CFG.height)||1.45)/1.75};
+if(NC){var ob=NC.build,oa=NC.anim;
+ NC.build=function(){var c=ob.apply(NC,arguments);L.push(c);return c};
+ NC.anim=function(c,dt,t,q){q=q||{};var v=q.v||0;
+  try{c.g.getWorldPosition(W);
+   if(c.__h&&dt>0){var s=Math.hypot(W.x-c.__x,W.z-c.__z)/dt;if(s<14)c.__v+=(s-c.__v)*Math.min(1,dt*12)}else c.__v=0;
+   c.__h=1;c.__x=W.x;c.__z=W.z;v=c.__v/ss()}catch(e){}
+  return oa.call(NC,c,dt,t,{v:v,air:!!q.air&&!!window.JJ&&window.JJ.y>.05,vy:q.vy,hold:q.hold})}}
+var SH=[0xe5484d,0x3e8ef7,0x30c48d,0xf5b83d,0xa66cff,0xff7a45,0xeceef2,0x2b2f3a],SK=[0xf1c9a5,0xd9a47c,0xb67c55,0x8a5a3c,0x5e3b27],cc=+localStorage.pzcol||0;
+function mt(c){return new T.MeshLambertMaterial({color:c})}
+var mS=mt(SK[Math.floor(cc/8)%5]),mT=mt(SH[cc%8]),mP=mt(0x23262e),mH=mt(0x15100c),mO=mt(0xf2f2f4),mD=mt(0x0b0b0e),SG=new T.SphereGeometry(1,12,9);
+function sp(r,m,p,x,y,z,a,b,c){var o=new T.Mesh(SG,m);o.scale.set(r*(a||1),r*(b||1),r*(c||1));o.position.set(x,y,z);p.add(o);return o}
+function cy(r1,r2,h,m,p,x,y,z){var o=new T.Mesh(new T.CylinderGeometry(r1,r2,h,10),m);o.position.set(x,y,z);p.add(o);return o}
+function G(p,x,y,z){var g=new T.Group();g.position.set(x,y,z);p.add(g);return g}
+var root=new T.Group(),pel=G(root,0,.95,0),spine=G(pel,0,.05,0),head=G(spine,0,.62,0);
+sp(.17,mP,pel,0,0,0,1.05,.7,.75);
+cy(.17,.15,.5,mT,spine,0,.25,0).scale.z=.7;
+cy(.045,.05,.1,mS,spine,0,.55,0);
+sp(1,mS,head,0,.1,0,.1,.12,.11);
+var hc=new T.Mesh(new T.SphereGeometry(1,12,8,0,6.2832,0,1.75),mH);hc.scale.set(.108,.12,.118);hc.position.set(0,.11,-.01);hc.rotation.x=-.25;head.add(hc);
+[-1,1].forEach(function(s){sp(.014,mD,head,s*.04,.11,.1,1,1.3,.7)});
+var AR=[],LG=[];
+[1,-1].forEach(function(s){
+ var a=G(spine,s*.22,.45,0),e=G(a,0,-.27,0),h=G(e,0,-.25,0);
+ sp(.06,mT,a,0,0,0);cy(.05,.045,.27,mT,a,0,-.135,0);sp(.043,mS,e,0,0,0);cy(.042,.033,.24,mS,e,0,-.12,0);sp(.038,mS,h,0,-.04,0,1,1.3,.8);
+ AR.push({a:a,e:e,h:h});
+ var t=G(pel,s*.09,-.02,0),k=G(t,0,-.44,0);
+ sp(.088,mP,t,0,0,0);cy(.086,.066,.44,mP,t,0,-.22,0);sp(.066,mP,k,0,0,0);cy(.062,.05,.42,mP,k,0,-.21,0);
+ sp(.05,mO,k,0,-.43,.05,1,.7,2.1);
+ LG.push({t:t,k:k})});
+var torch=G(AR[1].h,0,-.05,.07);cy(.025,.025,.22,mD,torch,0,0,0).rotation.x=1.5708;torch.visible=false;
+scene.add(root);
+var ph=0,spd=0,px=null,pz=null,yaw=null,fr=0,okFlag=0,dbg=null,dt0=0,tN=0;
+function dbgSet(s){if(!dbg){dbg=document.createElement('div');dbg.style.cssText='position:fixed;left:6px;bottom:4px;z-index:99;font:10px monospace;color:#9fe;background:rgba(0,0,0,.5);padding:2px 6px;pointer-events:none';document.body.appendChild(dbg)}dbg.textContent=s}
+function clamp(a,b,x){return Math.max(a,Math.min(b,x))}
+function step(dt,t){
+ var g=aarav.g.position,s=0;
+ if(px!==null&&dt>0){s=Math.hypot(g.x-px,g.z-pz)/dt;if(s>14)s=0}
+ px=g.x;pz=g.z;
+ spd+=(s-spd)*Math.min(1,dt*10);if(s<.05&&spd<.1)spd=0;
+ var mv=clamp(0,1,spd/1.2),run=clamp(0,1,(spd-3.2)/1.6),cyc=1.5+1.1*run;
+ ph+=spd*dt/cyc*6.2832;
+ var A=(.28+.3*clamp(0,1,spd/2.7)+.25*run)*mv,air=!!window.JJ&&window.JJ.y>.05,has=!!P.has,reach=0,i,a,h,k,r;
+ for(i=0;i<2;i++){a=ph+i*Math.PI;h=-Math.sin(a)*A;k=.05+Math.max(0,Math.cos(a))*(.7+.7*run)*mv;
+  if(air){h=i?.3:-.7;k=.8}
+  LG[i].t.rotation.x=h;LG[i].k.rotation.x=k;
+  r=.44*Math.cos(h)+.42*Math.cos(h+k);if(r>reach)reach=r;
+  var Aa=(.35+.35*run)*mv,sh=Math.sin(a)*Aa,el=-(.15+.9*run*mv);
+  var arm=AR[i];arm.a.rotation.x=air?-2.2:sh;arm.e.rotation.x=air?-.3:el;
+  if(i===1&&has&&!air){arm.a.rotation.x=-1.15;arm.e.rotation.x=-.35}}
+ pel.position.y=air?.95:reach+.09;
+ spine.rotation.x=.04+.2*run*mv;spine.rotation.y=Math.sin(ph)*.12*mv;
+ spine.scale.y=1+.012*Math.sin(t*1.7)*(1-mv);
+ head.rotation.x=-.04-.1*run*mv;
+ torch.visible=has;
+ var ty=aarav.g.rotation.y;if(yaw===null)yaw=ty;yaw+=Math.atan2(Math.sin(ty-yaw),Math.cos(ty-yaw))*(1-Math.exp(-14*dt));
+ root.position.set(g.x,g.y,g.z);root.rotation.y=yaw;root.scale.setScalar(ss());
+ var dx=cam.position.x-g.x,dz=cam.position.z-g.z;
+ root.visible=aarav.g.visible&&Math.hypot(dx,dz)>.45&&!document.body.classList.contains('pzdrive');
+ fr++;
+ if(fr>3&&!okFlag)okFlag=1;
+ if(okFlag)for(i=0;i<L.length;i++){var c=L[i];if(c.__hid||c.root.parent!==scene)continue;
+  if(Math.abs(c.root.position.x-g.x)<.05&&Math.abs(c.root.position.z-g.z)<.05){c.__hid=1;Object.defineProperty(c.root,'visible',{get:function(){return false},set:function(){},configurable:true})}}
+ tN+=dt;if(tN<25&&(fr%20===0))dbgSet('body ok  speed '+spd.toFixed(1)+'  legs '+(Math.abs(LG[0].t.rotation.x)).toFixed(2)+'  old hidden '+L.filter(function(c){return c.__hid}).length)
+ else if(tN>=25&&dbg){dbg.remove();dbg=null;tN=99}}
+var _x=extra;
+extra=function(dt,t){_x(dt,t);try{if(typeof started!=='undefined'&&started)step(dt,t)}catch(e){dbgSet('ERR '+(e&&e.message))}};
+}catch(e){console.log('FIXPACK2 error',e)}})();
+</script>
+<!--PZPATCH-END-->
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
