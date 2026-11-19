@@ -5298,6 +5298,33 @@ var _x=extra,bad=0;
 extra=function(dt,t){_x(dt,t);try{tick(dt,t)}catch(e){if(!bad){bad=1;console.log('PZ-CHAR-V2 error',e)}}};
 console.log('PZ-CHAR-V2 loaded');
 }catch(e){console.log('PZ-CHAR-V2 load error',e)}})();</script><!--PZCH2-END-->
+<script>/*PZ-DIAG*/(function(){try{
+if(window.__pzdiag)return;window.__pzdiag=1;
+var D=document,fr=0,t0=performance.now(),fps=0,off={pl:0,sp:0},lights=[],hid=[],lt=0,open=0,taps=0,tt=0,txt='';
+var b=D.createElement('div');
+b.style.cssText='position:fixed;left:6px;top:calc(env(safe-area-inset-top,0px) + 92px);z-index:99;display:none;font:10px/1.4 monospace;color:#9fe;background:rgba(0,0,0,.72);padding:6px 8px;border-radius:10px';
+var pre=D.createElement('div');pre.style.cssText='white-space:pre;pointer-events:none';b.appendChild(pre);
+function btn(t,f){var x=D.createElement('button');x.type='button';x.textContent=t;x.style.cssText='margin:4px 4px 0 0;min-height:36px;padding:0 10px;border-radius:8px;border:1px solid #3a4a5f;background:#1a222b;color:#d8d2c8;font:700 11px system-ui';x.onclick=f;b.appendChild(x);return x}
+function restore(){hid.forEach(function(l){l.visible=true});hid.length=0}
+btn('POINT LIGHTS',function(){off.pl=!off.pl;this.style.opacity=off.pl?.45:1;if(!off.pl&&!off.sp)restore()});
+btn('TORCH',function(){off.sp=!off.sp;this.style.opacity=off.sp?.45:1;if(!off.pl&&!off.sp)restore()});
+btn('COPY',function(){var t=txt+'\n'+screen.width+'x'+screen.height+' dpr '+(devicePixelRatio||1)+'\n'+navigator.userAgent.slice(0,90),a=this,o=a.textContent;
+ function ok(){a.textContent='COPIED';setTimeout(function(){a.textContent=o},1400)}
+ try{navigator.clipboard.writeText(t).then(ok,function(){})}catch(e){}});
+D.body.appendChild(b);
+D.addEventListener('pointerdown',function(e){if(e.clientY>50||Math.abs(e.clientX-innerWidth/2)>60)return;var n=performance.now();taps=n-tt<1500?taps+1:1;tt=n;if(taps>=4){taps=0;open=!open;b.style.display=open?'block':'none'}},true);
+try{if(/diag/.test(parent.location.search)){open=1;b.style.display='block'}}catch(e){}
+var _x=extra;
+extra=function(dt,t){_x(dt,t);
+ fr++;var n=performance.now();
+ if(n-t0>=1000){fps=fr*1000/(n-t0);fr=0;t0=n;
+  if(open){var i=renderer.info,on=0;lights.forEach(function(l){if(l.visible&&l.intensity>.02)on++});
+   txt='FPS '+fps.toFixed(0)+'  PR '+renderer.getPixelRatio().toFixed(2)+'\ncalls '+i.render.calls+'  tris '+((i.render.triangles/1000)|0)+'k\ngeo '+i.memory.geometries+'  tex '+i.memory.textures+'\nlights on '+on+'/'+lights.length+'\nz '+(typeof P!=='undefined'?P.pos.z.toFixed(0):'-');
+   pre.textContent=txt}}
+ if(!open&&!off.pl&&!off.sp)return;
+ lt-=dt;if(lt<=0){lt=2;lights.length=0;scene.traverse(function(o){if(o.isLight&&!o.isAmbientLight&&!o.isHemisphereLight)lights.push(o)})}
+ if(off.pl||off.sp)lights.forEach(function(l){if((off.pl&&l.isPointLight||off.sp&&l.isSpotLight)&&l.visible){hid.push(l);l.visible=false}})};
+}catch(e){console.log('PZ-DIAG',e)}})();</script>
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
