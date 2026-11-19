@@ -5179,6 +5179,125 @@ extra=function(dt,t){_x(dt,t);try{if(typeof started!=='undefined'&&started)step(
   if(!modal()&&!G.dead&&!fin){ct+=dt;if(ct>=180&&k!=='exit'){ct=0;hint(k)}}};
 }catch(e){console.log('PZ-P4',e)}})();</script>
 <!--PZPATCH-END-->
+<!--PZCH2-START--><script>window.PZCHAR_CFG={"height":1.45,"walk":2.4,"run":5,"slow":1.7,"ramp":5,"look":1};</script><script>(function PAYLOAD(){try{
+if(window.__pzch2)return;window.__pzch2=1;
+var T=THREE,NC=window.NC;
+if(!NC||!NC.build){console.log('PZ-CHAR-V2: NC model missing, patch skipped');return}
+var C=Object.assign({height:1.45,walk:2.4,run:5,slow:1.7,ramp:5,look:1},window.PZCHAR_CFG||{});
+window.PZCHAR=C;
+
+/* ----- one character, built once, parked in its own holder ----- */
+var holder=new T.Group();holder.rotation.order='YXZ';
+var ch=NC.build({});holder.add(ch.g);scene.add(holder);
+var m=ch.m;
+var pack=new T.MeshPhongMaterial({color:0x2c3a2c,flatShading:true,shininess:4});
+var strap=new T.MeshPhongMaterial({color:0x1b1f1b,flatShading:true,shininess:4});
+function bx(w,h,d,mat,p,x,y,z){var o=new T.Mesh(new T.BoxGeometry(w,h,d),mat);o.position.set(x,y,z);p.add(o);return o}
+bx(.27,.32,.12,pack,ch.chest,0,.13,-.15);
+bx(.05,.3,.02,strap,ch.chest,.09,.15,.13);
+bx(.05,.3,.02,strap,ch.chest,-.09,.15,.13);
+bx(.34,.04,.23,strap,ch.spine,0,.02,0);
+bx(.08,.08,.05,pack,ch.spine,.13,0,.11);
+[0,1].forEach(function(i){var h=ch.A[i].h;
+ bx(.014,.05,.016,m.skin,h,-.016,-.098,.012);
+ bx(.014,.055,.016,m.skin,h,0,-.1,.012);
+ bx(.014,.05,.016,m.skin,h,.016,-.098,.012);
+ bx(.014,.04,.016,m.skin,h,0,-.05,.04)});
+
+/* soft self-glow so the character stays readable in dark rooms */
+function glow(){[m.shirt,m.shirt2,m.skin,m.pant].forEach(function(x){if(x.emissive)x.emissive.copy(x.color).multiplyScalar(.12)})}
+function applyStyle(){var cc=+localStorage.pzcol||0;if(ch.cc!==cc){NC.style(ch,cc);glow()}}
+glow();applyStyle();
+
+/* ----- state ----- */
+var s={ph:0,v:0,yaw:null,bank:0,px:null,pz:null,hold:0,wa:0,land:0,pAir:false,t0:Math.random()*10,st:0,pt:0};
+function wrap(a){return Math.atan2(Math.sin(a),Math.cos(a))}
+function clamp(a,b,x){return Math.max(a,Math.min(b,x))}
+function sm(a,b,x){x=clamp(0,1,(x-a)/(b-a));return x*x*(3-2*x)}
+
+/* ----- remove the old stacked bodies (they sit exactly on the player) ----- */
+function purge(){var g=aarav.g.position;
+ for(var i=scene.children.length-1;i>=0;i--){var o=scene.children[i];
+  if(o===holder||o===aarav.g||o===kabir.g||!o.isGroup||o.children.length!==1)continue;
+  var c=o.children[0];if(!c.isGroup||c.position.y<.8||c.position.y>1.1)continue;
+  if(Math.hypot(o.position.x-g.x,o.position.z-g.z)<.1)scene.remove(o)}}
+
+/* ----- smooth walk to run: speed eases instead of snapping ----- */
+var cur=C.walk,lt=performance.now();
+window.__pzSP=function(sprint,crouch){
+ var tg=window.__pzMODE==='walk'?C.slow:sprint?C.run:C.walk;
+ var n=performance.now(),dt=Math.min(.1,(n-lt)/1000);lt=n;
+ cur+=(tg-cur)*(1-Math.exp(-C.ramp*dt));return cur};
+
+/* ----- the animation ----- */
+function tick(dt,t){
+ if(!started)return;dt=clamp(0,.05,dt);if(dt<=0)return;
+ var g=aarav.g,pos=g.position,sc=C.height/1.75;
+ s.st-=dt;if(s.st<=0){s.st=1;applyStyle()}
+ s.pt-=dt;if(s.pt<=0){s.pt=.5;purge()}
+ /* real ground speed */
+ var sp=0;if(s.px!==null){sp=Math.hypot(pos.x-s.px,pos.z-s.pz)/dt;if(sp>14)sp=0}
+ s.px=pos.x;s.pz=pos.z;
+ s.v+=(sp-s.v)*(1-Math.exp(-12*dt));if(sp<.05&&s.v<.1)s.v=0;
+ var vl=s.v/sc,mv=sm(.2,1.1,s.v),run=sm(3.4,4.6,s.v);
+ /* jump + landing */
+ var J=window.JJ,air=!!J&&J.y>.03;
+ s.wa+=((air?1:0)-s.wa)*(1-Math.exp(-16*dt));
+ if(s.pAir&&!air)s.land=1;s.pAir=air;s.land=Math.max(0,s.land-dt/.28);
+ var lw=s.land>0?Math.sin(Math.PI*(1-s.land)):0,wa=s.wa;
+ /* stride locked to ground speed so feet do not slide */
+ var A=Math.min(.85,.3+.12*vl)*mv;
+ if(s.v>.05){var cyc=4*.86*Math.sin(Math.max(.2,A));s.ph=(s.ph+vl*dt/cyc)%1}
+ var th0=6.2832*s.ph,th1=th0+Math.PI,i,th,f=[0,0],k=[0,0],a=[0,0];
+ var K=.45+.75*run;
+ for(i=0;i<2;i++){th=i?th1:th0;
+  f[i]=A*Math.sin(th);
+  k[i]=(.07+K*Math.pow(Math.max(0,Math.cos(th)),1.3))*mv+.05*(1-mv)+lw*.5;
+  a[i]=(f[i]-k[i])+.3*Math.max(0,Math.cos(th))*Math.max(0,-Math.sin(th))*mv}
+ /* body weights */
+ var lean=.03+.05*mv+.17*run+lw*.2;
+ var pelY=Math.max(.44*Math.cos(f[0])+.42*Math.cos(k[0]-f[0]),.44*Math.cos(f[1])+.42*Math.cos(k[1]-f[1]))+.09-lw*.07;
+ var ag=.9+.4*run,aF=[f[0]*ag,f[1]*ag],el=-(.1+(.25+.85*run)*mv),ae=[el,el];
+ for(i=0;i<2;i++)ae[i]=el-.2*Math.max(0,-aF[i])*mv;
+ /* torch arm */
+ s.hold+=(((P.has)?1:0)-s.hold)*(1-Math.exp(-9*dt));var hd=s.hold;
+ if(hd>.01){aF[1]=aF[1]*(1-hd)+(-1.15-clamp(-.5,.6,P.pitch)*.6)*hd;ae[1]=ae[1]*(1-hd)-.5*hd}
+ /* in the air */
+ if(wa>.002){var u=1-wa;
+  f[0]=f[0]*u+.5*wa;f[1]=f[1]*u-.3*wa;k[0]=k[0]*u+.9*wa;k[1]=k[1]*u+.5*wa;a[0]*=u;a[1]*=u;
+  pelY=pelY*u+.9*wa;lean=lean*u-.04*wa;
+  aF[0]=aF[0]*u-1.4*wa;if(hd<.5)aF[1]=aF[1]*u-1.0*wa;ae[0]=ae[0]*u-.4*wa;ae[1]=ae[1]*u-.4*wa}
+ /* apply */
+ var sw=Math.sin(th0),cw=Math.cos(th0),br=Math.sin(t*1.7+s.t0),ws=Math.sin(t*.5+s.t0),idle=1-mv;
+ ch.pel.position.y=pelY;ch.pel.position.x=.014*sw*mv+.006*ws*idle;
+ ch.pel.rotation.z=-.03*sw*mv+.01*ws*idle;
+ ch.pel.rotation.y=-.13*(.5+run)*cw*mv*(1-wa);
+ /* turn smoothing + lean into the turn */
+ var ty=g.rotation.y;if(s.yaw===null)s.yaw=ty;
+ var d=wrap(ty-s.yaw),stp=d*(1-Math.exp(-14*dt));s.yaw+=stp;
+ s.bank+=(clamp(-7,7,stp/dt)-s.bank)*(1-Math.exp(-8*dt));
+ ch.spine.rotation.x=lean;
+ ch.spine.rotation.y=.13*(.5+run)*cw*mv*(1-wa);
+ ch.spine.rotation.z=clamp(-.22,.22,-s.bank*.035)*(.3+.7*mv);
+ ch.chest.scale.y=1+.012*br*idle;
+ /* head looks where the camera looks */
+ var rel=wrap(P.yaw-s.yaw);
+ ch.head.rotation.y=clamp(-.8,.8,rel*.5*C.look)-ch.spine.rotation.y*.8+.1*ws*idle;
+ ch.head.rotation.x=-clamp(-.5,.6,P.pitch)*.5*C.look-lean*.6+.03*Math.sin(t*.37+s.t0)*idle;
+ for(i=0;i<2;i++){
+  ch.L[i].t.rotation.x=-f[i];ch.L[i].k.rotation.x=k[i];ch.L[i].a.rotation.x=a[i]*(1-wa)+wa*.3;
+  ch.A[i].a.rotation.x=aF[i]+.02*ws*(i?-1:1)*idle;ch.A[i].e.rotation.x=ae[i];
+  ch.A[i].a.rotation.z=(i?-1:1)*(.07+.05*run*mv)}
+ ch.torch.visible=!!P.has;
+ /* place in the world */
+ holder.position.set(pos.x,pos.y,pos.z);holder.rotation.y=s.yaw;holder.rotation.x=P.fall||0;holder.scale.setScalar(sc);
+ var dx=cam.position.x-pos.x,dz=cam.position.z-pos.z;
+ holder.visible=g.visible&&Math.hypot(dx,dz)>.45&&!document.body.classList.contains('pzdrive');
+}
+var _x=extra,bad=0;
+extra=function(dt,t){_x(dt,t);try{tick(dt,t)}catch(e){if(!bad){bad=1;console.log('PZ-CHAR-V2 error',e)}}};
+console.log('PZ-CHAR-V2 loaded');
+}catch(e){console.log('PZ-CHAR-V2 load error',e)}})();</script><!--PZCH2-END-->
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
