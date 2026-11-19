@@ -5396,7 +5396,7 @@ async function joinParty(id){await TURN_READY;if(ch)await sb.removeChannel(ch);O
  ch.on('presence',{event:'sync'},()=>{members=ch.presenceState();
   Object.keys(members).forEach(k=>{if(k!=me.id&&!pc[k]&&me.id>k)call(k)});
   Object.keys(pc).forEach(k=>{if(!members[k]){pc[k].close();delete pc[k];const a=$('#a'+k);a&&a.remove()}});renderSquad()})
- .on('broadcast',{event:'sig'},({payload:p})=>{if(p.to==me.id)onSig(p)})
+ .on('broadcast',{event:'sig'},({payload:p})=>{if(p&&p.to==me.id&&/^[0-9a-f-]{36}$/i.test(String(p.from)))onSig(p)})
  .on('broadcast',{event:'go'},({payload:p})=>launch(Math.min(8,Math.max(1,Math.floor(+(p&&p.lv))||1))))
  .on('broadcast',{event:'pos'},({payload:p})=>{const w=$('#gf').contentWindow;if(!(G.on&&w))return;const q=window.cleanPos&&window.cleanPos(p);if(q)w.postMessage({t:'peer',p:q},'*')})
  .subscribe(s=>{if(s=='SUBSCRIBED')ch.track({n:prof.name,u:prof.username,c:+localStorage.pzcol||0,l:+localStorage.pzdone||0})});renderSquad()}
@@ -5549,8 +5549,8 @@ setInterval(()=>{try{if(G.on)return;const e=$('#mode');if(e&&!/^LEVEL/.test(e.te
 
 
 <script>/*PZ-PATCH-X1-OUTER*/(function(){try{
-const ADM_ID="";
-const isAdm=()=>!!(ADM_ID&&me&&me.id===ADM_ID);
+
+const isAdm=()=>!!(typeof prof!=='undefined'&&prof&&prof.is_admin===true);
 Object.defineProperty(window,'__PZADMIN',{get:isAdm});
 const css=document.createElement('style');css.textContent=`
 .bg{background:radial-gradient(70% 55% at 50% 105%,rgba(143,136,255,.4),transparent 70%),radial-gradient(45% 40% at 12% 18%,rgba(94,194,183,.3),transparent 70%),radial-gradient(45% 40% at 88% 22%,rgba(255,150,120,.22),transparent 70%),linear-gradient(#090b13,#10131f)!important;background-size:130% 130%,130% 130%,130% 130%,100% 100%!important;animation:pzdr 20s ease-in-out infinite alternate}
@@ -6360,29 +6360,34 @@ launch=function(lv){
  var st=D.createElement('style');
  st.textContent='.ib .i{width:22px;height:22px;stroke-width:1.7;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));transition:transform .2s}.ib:active .i{transform:scale(.88)}';
  D.head.appendChild(st);
-}catch(e){console.log('R1 outer',e)}})();</script><!--R1-OUT-END--><script>/*PZ-SEC1*/(function SEC(){try{
- const ci=(v,a,b)=>Math.max(a,Math.min(b,Math.floor(+v)||a));
- const num=(v,m)=>Number.isFinite(+v)&&Math.abs(+v)<=m?+v:null;
- const KS=['it','seal','wd','fin','pw','pwc','pwf'];
- window.cleanPos=function(p){
-  if(!p||typeof p!=='object')return null;
-  const x=num(p.x,3000),z=num(p.z,3000),y=num(p.y,100);
-  if(x===null||z===null||y===null)return null;
-  const o={id:String(p.id||'').slice(0,64),n:String(p.n||'').slice(0,16),c:ci(p.c,0,39),x:x,z:z,y:y,on:p.on?1:0};
-  if(Array.isArray(p.ev))o.ev=p.ev.slice(0,3).filter(e=>e&&KS.includes(e.k)).map(e=>({k:e.k,u:String(e.u||'').slice(0,40),x:num(e.x,3000)||0,z:num(e.z,3000)||0,i:ci(e.i,0,64)}));
-  return o};
- const lvl=()=>+localStorage.pzdone||0,xp=()=>+localStorage.pzxp||0;
- let last='';
- async function pull(){try{
-  const r=await sb.auth.getUser(),m=(r.data&&r.data.user&&r.data.user.user_metadata)||{};
-  const d=ci(m.pzdone,0,8),x=ci(m.pzxp,0,1e7);last=d+'|'+x;
-  if(d>lvl())localStorage.pzdone=d;if(x>xp())localStorage.pzxp=x}catch(e){}}
- async function push(){const s=lvl()+'|'+xp();if(s===last)return;
-  try{const r=await sb.auth.updateUser({data:{pzdone:lvl(),pzxp:xp()}});if(!r.error)last=s}catch(e){}}
- const _e=enterLobby;enterLobby=async function(){await pull();return _e.apply(this,arguments)};
- const _l=window.lvDone;if(_l)window.lvDone=function(lv){lv=ci(lv,1,8);_l(lv);push()};
- setInterval(push,60000);
-}catch(e){console.log('PZ-SEC1',e)}})();</script>
+}catch(e){console.log('R1 outer',e)}})();</script><!--R1-OUT-END--><script>/*PZ-SEC2*/(function SEC(){try{
+const ci=(v,a,b)=>Math.max(a,Math.min(b,Math.floor(+v)||a));
+const num=(v,m)=>Number.isFinite(+v)&&Math.abs(+v)<=m?+v:null;
+const KS=['it','seal','wd','fin','pw','pwc','pwf'];
+window.cleanPos=function(p){
+ if(!p||typeof p!=='object')return null;
+ const x=num(p.x,3000),z=num(p.z,3000),y=num(p.y,100);
+ if(x===null||z===null||y===null)return null;
+ const o={id:String(p.id||'').slice(0,64),n:String(p.n||'').slice(0,16),c:ci(p.c,0,39),x:x,z:z,y:y,on:p.on?1:0};
+ if(Array.isArray(p.ev))o.ev=p.ev.slice(0,3).filter(e=>e&&KS.includes(e.k)).map(e=>({k:e.k,u:String(e.u||'').slice(0,40),x:num(e.x,3000)||0,z:num(e.z,3000)||0,i:ci(e.i,0,64)}));
+ return o};
+const lvl=()=>+localStorage.pzdone||0,xp=()=>+localStorage.pzxp||0;
+let srv=0,busy=0;
+async function pull(){try{
+ const r=await sb.from('progress').select('level_done,xp').eq('user_id',me.id).maybeSingle();
+ if(r.error)return;
+ const d=r.data?ci(r.data.level_done,0,8):0,x=r.data?ci(r.data.xp,0,1e7):0;
+ localStorage.pzdone=d;localStorage.pzxp=x;srv=x}catch(e){}}
+async function push(){if(busy)return;const g=xp()-srv;if(g<=0)return;busy=1;
+ try{const r=await sb.rpc('pz_add_xp',{n:Math.min(g,600)});if(!r.error&&typeof r.data==='number'){srv=r.data;localStorage.pzxp=r.data}}catch(e){}
+ busy=0}
+const _e=enterLobby;enterLobby=async function(){await pull();return _e.apply(this,arguments)};
+const _l=window.lvDone;
+window.lvDone=async function(lv){lv=ci(lv,1,8);let d=-1;
+ try{const r=await sb.rpc('pz_complete_level',{lv:lv});if(!r.error&&typeof r.data==='number'){d=r.data;localStorage.pzdone=d}}catch(e){}
+ if(d>=lv&&_l)_l(lv);else toast('Level progress could not be saved. Check your internet.')};
+setInterval(push,60000);
+}catch(e){console.log('PZ-SEC2',e)}})();</script>
 <script>(function PRE(LIST){try{
  if(!LIST.length)return;
  const _l=launch;let busy=0;
