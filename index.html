@@ -5070,7 +5070,8 @@ const SB_KEY='sb_publishable_3EAExKGfbQ180UKQy_I4pQ_IZfZdfzH';
 // TURN is needed for mobile data (cellular). Paste your Metered / Cloudflare credentials here:
 const TURN=[];
 let ICE=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
-const TURN_READY=(async()=>{try{const c=new AbortController(),tm=setTimeout(()=>c.abort(),4500);const r=await fetch('https://zghost.metered.live/api/v1/turn/credentials?apiKey=71b9bad5ad3830a7f210b19c0d017811ee8e',{signal:c.signal});clearTimeout(tm);const t=await r.json();if(Array.isArray(t)&&t.length){ICE=[...ICE,...t];console.log('TURN ready',t.length)}else console.warn('TURN bad response',t)}catch(e){console.warn('TURN fetch failed',e)}})();
+const TURN_URL="";
+const TURN_READY=(async()=>{try{const c=new AbortController(),tm=setTimeout(()=>c.abort(),4500);const r=await fetch((TURN_URL||'about:blank'),{signal:c.signal});clearTimeout(tm);const t=await r.json();if(Array.isArray(t)&&t.length){ICE=[...ICE,...t];console.log('TURN ready',t.length)}else console.warn('TURN bad response',t)}catch(e){console.warn('TURN fetch failed',e)}})();
 // ==================
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -5119,11 +5120,11 @@ async function enterLobby(){show('lobby');init3d();
  $('#mn').textContent=prof.name;$('#mu').textContent='@'+prof.username;
  const o=sb.channel('online',{config:{presence:{key:me.id}}});
  o.on('presence',{event:'sync'},()=>{online=new Set(Object.keys(o.presenceState()));$('#onc').textContent=online.size+' online';renderFr()}).subscribe(s=>{if(s=='SUBSCRIBED')o.track({u:prof.username})});
- sb.channel('u:'+me.id).on('broadcast',{event:'invite'},({payload:p})=>{pend=p.party;$('#it').innerHTML=`<b>${esc(p.name)}</b> invited you to their squad.`;$('#shI').classList.add('on')})
+ sb.channel('u:'+me.id).on('broadcast',{event:'invite'},({payload:p})=>{pend=/^[0-9a-f-]{36}$/i.test(String(p.party))?p.party:null;$('#it').innerHTML=`<b>${esc(p.name)}</b> invited you to their squad.`;$('#shI').classList.add('on')})
   .on('broadcast',{event:'fr'},()=>loadFriends()).subscribe();
  loadFriends();
  const pm=new URLSearchParams(location.search).get('party');history.replaceState(null,'',location.pathname);
- await initMic();joinParty(pm||me.id)}
+ await initMic();joinParty(/^[0-9a-f-]{36}$/i.test(pm||'')?pm:me.id)}
 async function initMic(){try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:{ideal:true},noiseSuppression:{ideal:true},autoGainControl:{ideal:true},channelCount:1,voiceIsolation:true,googEchoCancellation:true,googNoiseSuppression:true,googHighpassFilter:true}})}catch(e){stream=null;muted=true;ic($('#bmic'),'mic0');$('#bmic').classList.add('off');toast('Mic blocked. Allow mic in browser settings to talk.')}}
 async function ping(uid,ev,p){const t=sb.channel('u:'+uid);t.subscribe(s=>{if(s=='SUBSCRIBED'){t.send({type:'broadcast',event:ev,payload:p||{}});setTimeout(()=>sb.removeChannel(t),900)}})}
 
@@ -5143,7 +5144,7 @@ $('#fl').onclick=async e=>{const t=e.target.closest('button');if(!t)return;
  if(t.dataset.acc){await sb.from('friendships').update({status:'ok'}).eq('id',t.dataset.acc);ping(t.dataset.u,'fr');loadFriends()}
  if(t.dataset.no){await sb.from('friendships').delete().eq('id',t.dataset.no);loadFriends()}
  if(t.dataset.inv){ping(t.dataset.inv,'invite',{party,name:prof.name});toast('Invite sent')}};
-$('#qb').onclick=async()=>{const q=$('#q').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');if(!q)return;
+$('#qb').onclick=async()=>{const q=$('#q').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,16);if(!q)return;
  const {data}=await sb.from('profiles').select('id,name,username').ilike('username',q+'%').neq('id',me.id).limit(8);
  const ex=new Set([...fr,...rq].map(p=>p.id));sr=(data||[]).filter(p=>!ex.has(p.id));if(!sr.length)toast('No player found');renderFr()};
 $('#q').onkeydown=e=>e.key=='Enter'&&$('#qb').click();
@@ -5158,8 +5159,8 @@ async function joinParty(id){await TURN_READY;if(ch)await sb.removeChannel(ch);O
   Object.keys(members).forEach(k=>{if(k!=me.id&&!pc[k]&&me.id>k)call(k)});
   Object.keys(pc).forEach(k=>{if(!members[k]){pc[k].close();delete pc[k];const a=$('#a'+k);a&&a.remove()}});renderSquad()})
  .on('broadcast',{event:'sig'},({payload:p})=>{if(p.to==me.id)onSig(p)})
- .on('broadcast',{event:'go'},({payload:p})=>launch(p&&p.lv))
- .on('broadcast',{event:'pos'},({payload:p})=>{const w=$('#gf').contentWindow;if(G.on&&w)w.postMessage({t:'peer',p},'*')})
+ .on('broadcast',{event:'go'},({payload:p})=>launch(Math.min(8,Math.max(1,Math.floor(+(p&&p.lv))||1))))
+ .on('broadcast',{event:'pos'},({payload:p})=>{const w=$('#gf').contentWindow;if(!(G.on&&w))return;const q=window.cleanPos&&window.cleanPos(p);if(q)w.postMessage({t:'peer',p:q},'*')})
  .subscribe(s=>{if(s=='SUBSCRIBED')ch.track({n:prof.name,u:prof.username,c:+localStorage.pzcol||0,l:+localStorage.pzdone||0})});renderSquad()}
 const send=(k,d)=>ch.send({type:'broadcast',event:'sig',payload:{to:k,from:me.id,...d}});
 function mk(k){const p=new RTCPeerConnection({iceServers:ICE});pc[k]=p;stream&&stream.getTracks().forEach(t=>p.addTrack(t,stream));
@@ -5280,7 +5281,7 @@ const _rs=renderSquad;renderSquad=function(){const n=Object.keys(members).length
  _rs();const s=$('#sq40');if(s)s.textContent='Squad '+n+'/'+MAXP};
 $('#fl').addEventListener('click',e=>{const t=e.target.closest('button');if(t&&t.dataset.inv&&Object.keys(members).length>=MAXP){e.stopPropagation();toast('Squad is full (4/4).')}},true);
 /* search: matches anywhere in username or name */
-$('#qb').onclick=async()=>{const q=$('#q').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');if(!q)return;
+$('#qb').onclick=async()=>{const q=$('#q').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'').slice(0,16);if(!q)return;
  const {data}=await sb.from('profiles').select('id,name,username').or('username.ilike.*'+q+'*,name.ilike.*'+q+'*').neq('id',me.id).limit(12);
  const ex=new Set([...fr,...rq].map(p=>p.id));sr=(data||[]).filter(p=>!ex.has(p.id));if(!sr.length)toast('No player found');renderFr()};
 /* each squad member gets a different color + pop-in */
@@ -5310,8 +5311,8 @@ setInterval(()=>{try{if(G.on)return;const e=$('#mode');if(e&&!/^LEVEL/.test(e.te
 
 
 <script>/*PZ-PATCH-X1-OUTER*/(function(){try{
-const ADM="kumar";
-const isAdm=()=>!!(ADM&&prof&&me&&(String(prof.username).toLowerCase()===ADM||String(me.email||'').toLowerCase()===ADM||me.id===ADM));
+const ADM_ID="";
+const isAdm=()=>!!(ADM_ID&&me&&me.id===ADM_ID);
 Object.defineProperty(window,'__PZADMIN',{get:isAdm});
 const css=document.createElement('style');css.textContent=`
 .bg{background:radial-gradient(70% 55% at 50% 105%,rgba(143,136,255,.4),transparent 70%),radial-gradient(45% 40% at 12% 18%,rgba(94,194,183,.3),transparent 70%),radial-gradient(45% 40% at 88% 22%,rgba(255,150,120,.22),transparent 70%),linear-gradient(#090b13,#10131f)!important;background-size:130% 130%,130% 130%,130% 130%,100% 100%!important;animation:pzdr 20s ease-in-out infinite alternate}
@@ -6121,4 +6122,27 @@ launch=function(lv){
  var st=D.createElement('style');
  st.textContent='.ib .i{width:22px;height:22px;stroke-width:1.7;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));transition:transform .2s}.ib:active .i{transform:scale(.88)}';
  D.head.appendChild(st);
-}catch(e){console.log('R1 outer',e)}})();</script><!--R1-OUT-END--></body></html>
+}catch(e){console.log('R1 outer',e)}})();</script><!--R1-OUT-END--><script>/*PZ-SEC1*/(function SEC(){try{
+ const ci=(v,a,b)=>Math.max(a,Math.min(b,Math.floor(+v)||a));
+ const num=(v,m)=>Number.isFinite(+v)&&Math.abs(+v)<=m?+v:null;
+ const KS=['it','seal','wd','fin','pw','pwc','pwf'];
+ window.cleanPos=function(p){
+  if(!p||typeof p!=='object')return null;
+  const x=num(p.x,3000),z=num(p.z,3000),y=num(p.y,100);
+  if(x===null||z===null||y===null)return null;
+  const o={id:String(p.id||'').slice(0,64),n:String(p.n||'').slice(0,16),c:ci(p.c,0,39),x:x,z:z,y:y,on:p.on?1:0};
+  if(Array.isArray(p.ev))o.ev=p.ev.slice(0,3).filter(e=>e&&KS.includes(e.k)).map(e=>({k:e.k,u:String(e.u||'').slice(0,40),x:num(e.x,3000)||0,z:num(e.z,3000)||0,i:ci(e.i,0,64)}));
+  return o};
+ const lvl=()=>+localStorage.pzdone||0,xp=()=>+localStorage.pzxp||0;
+ let last='';
+ async function pull(){try{
+  const r=await sb.auth.getUser(),m=(r.data&&r.data.user&&r.data.user.user_metadata)||{};
+  const d=ci(m.pzdone,0,8),x=ci(m.pzxp,0,1e7);last=d+'|'+x;
+  if(d>lvl())localStorage.pzdone=d;if(x>xp())localStorage.pzxp=x}catch(e){}}
+ async function push(){const s=lvl()+'|'+xp();if(s===last)return;
+  try{const r=await sb.auth.updateUser({data:{pzdone:lvl(),pzxp:xp()}});if(!r.error)last=s}catch(e){}}
+ const _e=enterLobby;enterLobby=async function(){await pull();return _e.apply(this,arguments)};
+ const _l=window.lvDone;if(_l)window.lvDone=function(lv){lv=ci(lv,1,8);_l(lv);push()};
+ setInterval(push,60000);
+}catch(e){console.log('PZ-SEC1',e)}})();</script>
+</body></html>
