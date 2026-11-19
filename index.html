@@ -5119,6 +5119,65 @@ extra=function(dt,t){_x(dt,t);try{if(typeof started!=='undefined'&&started)step(
    else if(gq.length){try{scan(gq.shift())}catch(e){}}
    else{done=1;console.log('PZ-PERF1 merged '+mergedFrom+' meshes into '+mergedTo);break}}};
 }catch(e){console.log('PZ-PERF1 MG',e)}})();</script>
+<script>/*PZ-P4*/(function P4(){try{
+ const D=document,q=i=>D.getElementById(i),B=D.body;
+ const css=D.createElement('style');
+ css.textContent='#bMap,#bMan,#pzNotes,#mvBox,#pzRunB,#pzWalkB,#bSpr,#pzW,#pzSb,#obj,#pzINb{display:none!important}'
+ +'#p4m{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 12px);z-index:31;width:56px;height:56px;border-radius:16px;border:1px solid rgba(255,255,255,.3);background:rgba(20,23,34,.85);color:#eceef6;font:700 11px system-ui;letter-spacing:.06em;touch-action:manipulation}'
+ +'body.pzdrive #p4m{display:none}'
+ +'#p4o{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translateX(-50%);z-index:7;max-width:46vw;text-align:center;pointer-events:none;font:600 14px/1.3 system-ui;color:#eceef6;background:rgba(0,0,0,.5);padding:6px 14px;border-radius:14px}'
+ +'#p4h{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 54px);transform:translateX(-50%);z-index:7;max-width:70vw;text-align:center;pointer-events:none;font:600 13px/1.4 system-ui;color:#ffe3a0;background:rgba(40,28,6,.8);border:1px solid #b08a30;padding:8px 14px;border-radius:14px;opacity:0;transition:opacity .4s}'
+ +'.p4v{position:fixed;inset:0;z-index:80;background:rgba(3,5,10,.82);display:none;align-items:center;justify-content:center}.p4v.on{display:flex}'
+ +'.p4c{width:min(92vw,420px);max-height:90vh;overflow:auto;background:#10151a;border:1px solid #3a4a5f;border-radius:18px;padding:18px;color:#d8d2c8;font:15px/1.5 system-ui;text-align:center}'
+ +'.p4c h3{margin:0 0 6px;font:italic 700 22px Georgia,serif;color:#ffd98a}.p4c p{margin:0 0 14px;color:#b9b4a8}'
+ +'.p4c button{display:block;width:100%;min-height:52px;margin:8px 0 0;border-radius:14px;border:1px solid #3a4a5f;background:#1a222b;color:#eceef6;font:700 16px system-ui;touch-action:manipulation}'
+ +'.p4c button.pr{background:linear-gradient(135deg,#8f88ff,#6a62f0);border:0}.p4c .r2{display:flex;gap:8px}.p4c .r2 button{margin-top:12px}';
+ D.head.appendChild(css);
+ const mk=(t,id,cls,h)=>{const e=D.createElement(t);if(id)e.id=id;if(cls)e.className=cls;if(h!=null)e.innerHTML=h;B.appendChild(e);return e};
+ const obE=mk('div','p4o'),hiE=mk('div','p4h'),mb=mk('button','p4m','','MENU');
+ const mv=mk('div','p4menu','p4v','<div class="p4c"><h3>Menu</h3><button data-a="map">Map</button><button data-a="items">Items</button><button data-a="notes">Notes</button><button data-a="set">Settings</button><button data-a="help">How to play</button><button data-a="x" class="pr">Back to game</button></div>');
+ const tv=mk('div','p4tut','p4v','');
+ [mv,tv].forEach(e=>e.addEventListener('pointerdown',x=>x.stopPropagation()));
+ let open=0;
+ const intro=()=>{const e=q('ethi');return !e||e.style.display!=='flex'};
+ const modal=()=>open||tv.classList.contains('on');
+ const press=id=>{const e=q(id);if(e)e.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}))};
+ function tog(v){open=v;mv.classList.toggle('on',!!v);joy.x=joy.y=0}
+ mb.onclick=()=>tog(!open);
+ mv.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;tog(0);
+  if(a==='map')mapOpen();else if(a==='items')press('bMan');else if(a==='notes')press('pzNotes');
+  else if(a==='set'){const g=q('pzSb');if(g)g.click()}else if(a==='help')tut()});
+ /* tutorial */
+ const TUT=[['Move','Drag the left stick to walk. Push it all the way to run.'],['Interact','When a yellow prompt appears, tap TAP (or the prompt) to pick up, read or open.'],['Torch','Switch the torch on when the lights flicker. It keeps the ghost away.'],['Menu','MENU holds your map, items, notes and settings.']];
+ function tut(){let i=0;tv.classList.add('on');joy.x=joy.y=0;
+  const draw=()=>{tv.innerHTML='<div class="p4c"><h3>'+TUT[i][0]+'</h3><p>'+TUT[i][1]+'</p><div class="r2"><button data-t="s">Skip</button><button class="pr" data-t="n">'+(i<TUT.length-1?'Next':'Start')+'</button></div></div>'};
+  draw();tv.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.t==='n'&&i<TUT.length-1){i++;draw()}else{tv.classList.remove('on');try{localStorage.pz_tut=1}catch(x){}}}}
+ /* objective + hint */
+ const HT={torch:'The torch is on the bedside table in this room.',map:'The map lies on the floor next to the dead man, between the beds.',door:'The Ward door has a 4-digit lock. The notice board shows a date: day first, then month.',power:'Power is out. The Power Room is on the east side of the main corridor, next to the nurse station.',items:'Ritual items are hidden in rooms on the upper floors. Stairs need 2 fuses from that floor.',gate:'Break the glowing seals in the main building, then open the Final Gate. Its 4-digit code is on torn pages.',exit:'Walk out of the gate and cross the road to the Safe House.'};
+ const OB={torch:'Find the torch',map:'Take the hospital map',door:'Open the Ward door',power:'Fix the generator in the Power Room',items:'Find the ritual items',gate:'Break the seals, open the Final Gate',exit:'Run to the Safe House'};
+ function key(){const w=window.__PW;
+  if(!P.has)return'torch';if(!P.map)return'map';if(!doorOpen)return'door';
+  if(w&&(w.st==='OUT'||w.st==='CUTFLK'))return'power';
+  if(fin)return'exit';if(inv.size<3)return'items';return'gate'}
+ let ck='',ct=0,ht=0,hs=0,hh=null;
+ function hint(k){hiE.textContent='Hint: '+HT[k];hiE.style.opacity=1;clearTimeout(hh);hh=setTimeout(()=>hiE.style.opacity=0,9000)}
+ /* auto-run on full push */
+ let run=0;const _u=update;
+ update=function(dt,t){const m=Math.hypot(joy.x,joy.y);run=run?(m>.8):(m>.94);
+  if(!B.classList.contains('pzdrive'))window.__pzMV=run?'run':'n';_u(dt,t)};
+ /* calm time after a chase */
+ let RL=0,pst=0;
+ ['cry','whisper','scratch','glass','knock','breath','beat'].forEach(n=>{const f=S[n];if(typeof f!=='function')return;
+  S[n]=function(){if(G.st===0&&!G.dead&&performance.now()<RL)return;return f.apply(S,arguments)}});
+ let tutDone=0;const _x=extra;
+ extra=function(dt,t){_x(dt,t);
+  if(started&&G.on&&!G.dead&&G.st===0&&pst>0)RL=performance.now()+45000;pst=G.st;
+  if(modal()){G.prot=Math.max(G.prot,2);joy.x=joy.y=0}
+  if(!started||!intro())return;
+  if(!tutDone){tutDone=1;let s=0;try{s=localStorage.pz_tut}catch(e){}if(!s)tut()}
+  const k=key();if(k!==ck){ck=k;ct=0;hiE.style.opacity=0;obE.textContent=OB[k]}
+  if(!modal()&&!G.dead&&!fin){ct+=dt;if(ct>=180&&k!=='exit'){ct=0;hint(k)}}};
+}catch(e){console.log('PZ-P4',e)}})();</script>
 <!--PZPATCH-END-->
 </template>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
