@@ -5335,8 +5335,8 @@ const SB_KEY='sb_publishable_3EAExKGfbQ180UKQy_I4pQ_IZfZdfzH';
 // TURN is needed for mobile data (cellular). Paste your Metered / Cloudflare credentials here:
 const TURN=[];
 let ICE=[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}];
-const TURN_URL="";
-const TURN_READY=(async()=>{try{const c=new AbortController(),tm=setTimeout(()=>c.abort(),4500);const r=await fetch((TURN_URL||'about:blank'),{signal:c.signal});clearTimeout(tm);const t=await r.json();if(Array.isArray(t)&&t.length){ICE=[...ICE,...t];console.log('TURN ready',t.length)}else console.warn('TURN bad response',t)}catch(e){console.warn('TURN fetch failed',e)}})();
+const TURN_URL="https://kcktgsaljxzmflaroegk.supabase.co/functions/v1/turn";
+const TURN_READY=(async()=>{try{const c=new AbortController(),tm=setTimeout(()=>c.abort(),4500);const r=await fetch((TURN_URL||'about:blank'),{signal:c.signal,headers:{apikey:SB_KEY}});clearTimeout(tm);const t=await r.json();if(Array.isArray(t)&&t.length){ICE=[...ICE,...t];console.log('TURN ready',t.length)}else console.warn('TURN bad response',t)}catch(e){console.warn('TURN fetch failed',e)}})();
 // ==================
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -5385,7 +5385,7 @@ async function enterLobby(){show('lobby');init3d();
  $('#mn').textContent=prof.name;$('#mu').textContent='@'+prof.username;
  const o=sb.channel('online',{config:{presence:{key:me.id}}});
  o.on('presence',{event:'sync'},()=>{online=new Set(Object.keys(o.presenceState()));$('#onc').textContent=online.size+' online';renderFr()}).subscribe(s=>{if(s=='SUBSCRIBED')o.track({u:prof.username})});
- sb.channel('u:'+me.id).on('broadcast',{event:'invite'},({payload:p})=>{pend=/^[0-9a-f-]{36}$/i.test(String(p.party))?p.party:null;$('#it').innerHTML=`<b>${esc(p.name)}</b> invited you to their squad.`;$('#shI').classList.add('on')})
+ sb.channel('u:'+me.id).on('broadcast',{event:'invite'},({payload:p})=>{pend=/^[0-9a-f-]{36}$/i.test(String(p.party))?p.party:null;$('#it').innerHTML=`<b>${esc(String(p.name).slice(0,16))}</b> invited you to their squad.`;$('#shI').classList.add('on')})
   .on('broadcast',{event:'fr'},()=>loadFriends()).subscribe();
  loadFriends();
  const pm=new URLSearchParams(location.search).get('party');history.replaceState(null,'',location.pathname);
@@ -5424,7 +5424,7 @@ async function joinParty(id){await TURN_READY;if(ch)await sb.removeChannel(ch);O
   Object.keys(members).forEach(k=>{if(k!=me.id&&!pc[k]&&me.id>k)call(k)});
   Object.keys(pc).forEach(k=>{if(!members[k]){pc[k].close();delete pc[k];const a=$('#a'+k);a&&a.remove()}});renderSquad()})
  .on('broadcast',{event:'sig'},({payload:p})=>{if(p&&p.to==me.id&&/^[0-9a-f-]{36}$/i.test(String(p.from)))onSig(p)})
- .on('broadcast',{event:'go'},({payload:p})=>launch(Math.min(8,Math.max(1,Math.floor(+(p&&p.lv))||1))))
+ .on('broadcast',{event:'go'},({payload:p})=>{if(p&&p.from===party)launch(Math.min(8,Math.max(1,Math.floor(+(p&&p.lv))||1)))})
  .on('broadcast',{event:'pos'},({payload:p})=>{const w=$('#gf').contentWindow;if(!(G.on&&w))return;const q=window.cleanPos&&window.cleanPos(p);if(q)w.postMessage({t:'peer',p:q},'*')})
  .subscribe(s=>{if(s=='SUBSCRIBED')ch.track({n:prof.name,u:prof.username,c:+localStorage.pzcol||0,l:+localStorage.pzdone||0})});renderSquad()}
 const send=(k,d)=>ch.send({type:'broadcast',event:'sig',payload:{to:k,from:me.id,...d}});
@@ -5471,7 +5471,7 @@ $('#lo').onclick=async()=>{if(confirm('Guest accounts cannot be recovered after 
 
 // ----- game launch: WARD 13 runs in an iframe (ward13.html); this page keeps voice + party alive -----
 const G={on:0};
-$('#start').onclick=()=>{const lv=computeLv();if(Object.keys(members).length>1)ch.send({type:'broadcast',event:'go',payload:{lv}});launch(lv)};
+$('#start').onclick=()=>{const lv=computeLv();if(Object.keys(members).length>1)ch.send({type:'broadcast',event:'go',payload:{lv,from:me.id}});launch(lv)};
 function launch(lv){window.__PZLV=lv||computeLv();loadTo('Loading',()=>{fs();show('game');G.on=1;document.body.classList.add('ingame');$('#gf').srcdoc='<!DOCTYPE html>'+$('#w13').innerHTML})}
 function leave(){G.on=0;document.body.classList.remove('ingame');$('#gf').srcdoc='<body style="background:#000">';show('lobby')}
 addEventListener('message',e=>{if(e.source!==$('#gf').contentWindow)return;const m=e.data||{};
@@ -5577,7 +5577,7 @@ setInterval(()=>{try{if(G.on)return;const e=$('#mode');if(e&&!/^LEVEL/.test(e.te
 
 <script>/*PZ-PATCH-X1-OUTER*/(function(){try{
 
-const isAdm=()=>!!(typeof prof!=='undefined'&&prof&&prof.is_admin===true);
+let __admC=null;const isAdm=()=>{if(__admC===null&&typeof sb!=='undefined'&&typeof me!=='undefined'&&me){__admC=false;sb.rpc('pz_is_admin').then(r=>{__admC=r.data===true})}return __admC===true};setInterval(isAdm,2000);
 Object.defineProperty(window,'__PZADMIN',{get:isAdm});
 const css=document.createElement('style');css.textContent=`
 .bg{background:radial-gradient(70% 55% at 50% 105%,rgba(143,136,255,.4),transparent 70%),radial-gradient(45% 40% at 12% 18%,rgba(94,194,183,.3),transparent 70%),radial-gradient(45% 40% at 88% 22%,rgba(255,150,120,.22),transparent 70%),linear-gradient(#090b13,#10131f)!important;background-size:130% 130%,130% 130%,130% 130%,100% 100%!important;animation:pzdr 20s ease-in-out infinite alternate}
