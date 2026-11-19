@@ -4554,7 +4554,7 @@ function tick(dt,t){
  /* player */
  var air=!!(window.JJ&&JJ.y>.02),vy=window.JJ?JJ.v:0,dx=cam.position.x-pos.x,dz=cam.position.z-pos.z,fp=Math.hypot(dx,dz)<C.hideFpDist;
  me.root.scale.setScalar(S);me.root.position.set(pos.x,pos.y,pos.z);me.root.rotation.y=window.NC.turn(me,g.rotation.y,dt);me.root.rotation.x=(typeof P!=='undefined'&&P.fall)||0;
- me.root.visible=g.visible&&!fp;me.torch.visible=!!(typeof P!=='undefined'&&P.has);
+ me.root.visible=false;me.torch.visible=!!(typeof P!=='undefined'&&P.has);
  pose(me,dt,t,speedOf(me,pos.x,pos.z,dt),air,vy,me.torch.visible);
  /* Kabir (idle NPC) */
  kb.root.position.copy(kabir.g.position);kb.root.rotation.y=kabir.g.rotation.y;pose(kb,dt,t,0,false,0,false);
@@ -4955,7 +4955,7 @@ D.head.appendChild(st2);
 var _u2=update;
 update=function(dt,t){
  var rx=joy.x,ry=joy.y,m=Math.hypot(rx,ry),cx=rx,cy=ry;
- if(m>.001){var k=Math.pow(Math.min(1,m),1.35)/m;cx=rx*k;cy=ry*k;joy.x=cx;joy.y=cy}
+ if(m>.001){var k=Math.min(1,m)/m;cx=rx*k;cy=ry*k;joy.x=cx;joy.y=cy}
  try{_u2(dt,t)}finally{if(joy.x===cx&&joy.y===cy){joy.x=rx;joy.y=ry}}
 };
 /* auto quality: keeps frame rate steady by adjusting resolution */
@@ -5021,7 +5021,7 @@ var AR=[],LG=[];
  sp(.05,mO,k,0,-.43,.05,1,.7,2.1);
  LG.push({t:t,k:k})});
 var torch=G(AR[1].h,0,-.05,.07);cy(.025,.025,.22,mD,torch,0,0,0).rotation.x=1.5708;torch.visible=false;
-scene.add(root);
+/*pz: old body removed*/
 var ph=0,spd=0,px=null,pz=null,yaw=null,fr=0,okFlag=0,dbg=null,dt0=0,tN=0;
 function dbgSet(s){if(!dbg){dbg=document.createElement('div');dbg.style.cssText='position:fixed;left:6px;bottom:4px;z-index:99;font:10px monospace;color:#9fe;background:rgba(0,0,0,.5);padding:2px 6px;pointer-events:none';document.body.appendChild(dbg)}dbg.textContent=s}
 function clamp(a,b,x){return Math.max(a,Math.min(b,x))}
@@ -5056,7 +5056,7 @@ function step(dt,t){
  tN+=dt;if(tN<25&&(fr%20===0))dbgSet('body ok  speed '+spd.toFixed(1)+'  legs '+(Math.abs(LG[0].t.rotation.x)).toFixed(2)+'  old hidden '+L.filter(function(c){return c.__hid}).length)
  else if(tN>=25&&dbg){dbg.remove();dbg=null;tN=99}}
 var _x=extra;
-extra=function(dt,t){_x(dt,t);try{if(typeof started!=='undefined'&&started)step(dt,t)}catch(e){dbgSet('ERR '+(e&&e.message))}};
+extra=function(dt,t){_x(dt,t);};
 }catch(e){console.log('FIXPACK2 error',e)}})();
 </script>
 <script>/*PZ-PERF1*/(function QM(){try{
@@ -5163,7 +5163,7 @@ extra=function(dt,t){_x(dt,t);try{if(typeof started!=='undefined'&&started)step(
  function hint(k){hiE.textContent='Hint: '+HT[k];hiE.style.opacity=1;clearTimeout(hh);hh=setTimeout(()=>hiE.style.opacity=0,9000)}
  /* auto-run on full push */
  let run=0;const _u=update;
- update=function(dt,t){const m=Math.hypot(joy.x,joy.y);run=run?(m>.8):(m>.94);
+ update=function(dt,t){const m=Math.hypot(joy.x,joy.y);run=run?(m>.75):(m>.88);
   if(!B.classList.contains('pzdrive'))window.__pzMV=run?'run':'n';_u(dt,t)};
  /* calm time after a chase */
  let RL=0,pst=0;
