@@ -2087,7 +2087,7 @@ if(window.__pz30)return;window.__pz30=1;
 const T=THREE,LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}},esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* 1. camera: close behind the shoulder, very light bob */
 const hd=new T.Vector3(),L=new T.Vector3(),rv=new T.Vector3(),wn=new T.Vector3(),dv=new T.Vector3();
-const _u=update;update=function(dt,t){_u(dt,t);
+const _u=update;update=function(dt,t){_u(dt,t); return;
  const cp=Math.cos(P.pitch);L.set(Math.sin(P.yaw)*cp,Math.sin(P.pitch),Math.cos(P.yaw)*cp);rv.set(-Math.cos(P.yaw),0,Math.sin(P.yaw));
  hd.set(P.pos.x,aarav.g.position.y+1.35,P.pos.z);
  wn.copy(hd).addScaledVector(L,-1.45).addScaledVector(rv,.38);
@@ -2158,7 +2158,7 @@ addEventListener('message',e=>{if(e.source!==parent)return;const m=e.data||{};if
 /* game sound volume */
 let lm=null,lg=-1;const _x=extra;extra=function(dt,t){_x(dt,t);if(typeof mst!=='undefined'&&mst&&(lm!==mst||lg!==VV.g)){lm=mst;lg=VV.g;mst.gain.value=.8*VV.g/100}};
 }catch(e){console.log('pz30 game patch error',e)}})()</script><script>/*PZ-V32-GAME*/(function G32(){try{
-if(window.__pz32)return;window.__pz32=1;
+if(window.__pz32)return;window.__pz32=1;return;
 const T=THREE,LS=(k,v)=>{try{if(v===undefined)return JSON.parse(localStorage.getItem(k));localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const C=Object.assign({d:1.05,h:1.4,s:.32,q:'high'},LS('pz32c')||{}),sv=()=>LS('pz32c',C);
 /* sharp resolution (earlier patches had locked pixel ratio at 1) */
@@ -2306,7 +2306,7 @@ const hd=new T.Vector3(),L=new T.Vector3(),wn=new T.Vector3(),dv=new T.Vector3()
 const _u=update;update=function(dt,t){
  const px=P.pos.x,pz=P.pos.z;_u(dt,t);
  const idle=!(keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight)&&Math.abs(joy.x)+Math.abs(joy.y)<.02;
- if(idle&&!G.dead&&P.vel.length()<.1){P.vel.set(0,0,0);P.pos.x=px;P.pos.z=pz;aarav.g.position.x=px;aarav.g.position.z=pz}
+ if(idle&&!G.dead&&P.vel.length()<.1){P.vel.set(0,0,0);P.pos.x=px;P.pos.z=pz;aarav.g.position.x=px;aarav.g.position.z=pz} return;
  const cp=Math.cos(P.pitch),sy=Math.sin(P.yaw),cy=Math.cos(P.yaw);
  L.set(sy*cp,Math.sin(P.pitch),cy*cp);
  an.set(P.pos.x,aarav.g.position.y+C.h,P.pos.z);
@@ -2666,7 +2666,7 @@ const hd=new T.Vector3(),an=new T.Vector3(),L2=new T.Vector3(),off=new T.Vector3
 let has=0,cd=Cm.d,root=null,rt=0;
 const _u=update;
 update=function(dt,t){
- _u(dt,t);
+ _u(dt,t); return;
  try{
   const cp=Math.cos(P.pitch),sy=Math.sin(P.yaw),cy=Math.cos(P.yaw),fp=Cm.d<.3;
   L2.set(sy*cp,Math.sin(P.pitch),cy*cp);
@@ -3788,7 +3788,7 @@ var bc=new T.Mesh(new T.SphereGeometry(.35,8,6),new T.MeshBasicMaterial({color:0
 var PE=new Set(),_hp=HB.peer;HB.peer=function(){var o=_hp.apply(this,arguments);PE.add(o);return o};
 function carOn(){var e=items.find(function(i){return i.t==='Tap to get out'});return e&&e.x<1e5}
 var L3=new T.Vector3(),hd=new T.Vector3(),dv=new T.Vector3(),off=new T.Vector3(),o2=new T.Vector3(),cd=V.d;
-var _u=update;update=function(dt,t){_u(dt,t);try{
+var _u=update;update=function(dt,t){_u(dt,t); return;try{
  if(carOn())return;
  var fp=V.fp,cp=Math.cos(P.pitch),sy=Math.sin(P.yaw),cy=Math.cos(P.yaw),J=window.JJ?JJ.y:0,ey=aarav.g.position.y-J;
  L3.set(sy*cp,Math.sin(P.pitch),cy*cp);hd.set(P.pos.x,aarav.g.position.y+(fp?1.33:1.3),P.pos.z);
